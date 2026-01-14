@@ -64,12 +64,12 @@ export default function ContactPage() {
             <h2 className="text-2xl font-semibold text-gray-900 mb-6 mt-8">Location</h2>
             
             <div className="bg-gray-50 rounded-lg p-6">
-              <address className="not-italic text-gray-600 space-y-2">
-                <div className="font-medium">CozyCatKitchen</div>
-                <div>Sector 134, Noida</div>
-                <div>Uttar Pradesh 201304</div>
-                <div>India</div>
-              </address>
+            <address className="not-italic text-gray-600 space-y-2">
+              <div className="font-medium">CozyCatKitchen</div>
+              <div>Sector 134, Noida</div>
+              <div>Uttar Pradesh 201304</div>
+              <div>India</div>    
+            </address>  
             </div>
           </div>
         </div>
