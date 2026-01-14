@@ -66,8 +66,7 @@ export default function ContactPage() {
             <div className="bg-gray-50 rounded-lg p-6">
               <address className="not-italic text-gray-600 space-y-2">
                 <div className="font-medium">CozyCatKitchen</div>
-                <div>Sector 134</div>
-                <div>Noida</div>
+                <div>Sector 134, Noida</div>
                 <div>Uttar Pradesh 201304</div>
                 <div>India</div>
               </address>
