@@ -36,7 +36,7 @@ export default function ContactPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-2">Email</h3>
                 <p className="text-gray-600">
                   <a href="mailto:orders@cozycatkitchen.com" className="text-orange-500 hover:text-orange-600">
-                    orders@cozycatkitchen.com
+                    cozycatkitchen@gmail.com
                   </a>
                 </p>
               </div>
@@ -66,9 +66,9 @@ export default function ContactPage() {
             <div className="bg-gray-50 rounded-lg p-6">
               <address className="not-italic text-gray-600 space-y-2">
                 <div className="font-medium">CozyCatKitchen</div>
-                <div>123 Pet Food Lane</div>
-                <div>Kitchen Area, Culinary District</div>
-                <div>Mumbai, Maharashtra 400001</div>
+                <div>Sector 134</div>
+                <div>Noida/div>
+                <div>Uttar Pradesh 201304</div>
                 <div>India</div>
               </address>
             </div>
