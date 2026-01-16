@@ -1,17 +1,25 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, Package, Phone, MessageCircle, ArrowRight } from 'lucide-react'
 
 export default function OrderSuccessPage() {
+  const searchParams = useSearchParams()
   const [orderNumber, setOrderNumber] = useState('')
 
   useEffect(() => {
-    // Generate a mock order number
-    setOrderNumber('CC' + new Date().getFullYear().toString().slice(-2) + 
-                  String(Math.floor(Math.random() * 1000000)).padStart(6, '0'))
-  }, [])
+    // Get order number from URL params or generate a mock one
+    const orderFromUrl = searchParams.get('order')
+    if (orderFromUrl) {
+      setOrderNumber(orderFromUrl)
+    } else {
+      // Generate a mock order number
+      setOrderNumber('CC' + new Date().getFullYear().toString().slice(-2) + 
+                    String(Math.floor(Math.random() * 1000000)).padStart(6, '0'))
+    }
+  }, [searchParams])
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-16">
@@ -54,6 +62,24 @@ export default function OrderSuccessPage() {
               <span>Order will be delivered in 2-4 days</span>
             </div>
           </div>
+        </div>
+
+        {/* Order Tracking Link */}
+        <div className="bg-orange-50 rounded-lg p-6 max-w-md mx-auto mb-8">
+          <h3 className="font-semibold mb-3 flex items-center gap-2">
+            <Package className="w-5 h-5 text-orange-500" />
+            Track Your Order
+          </h3>
+          <p className="text-sm text-gray-700 mb-4">
+            Use your order number to track the status of your order in real-time.
+          </p>
+          <Link
+            href={`/orders/${orderNumber}`}
+            className="inline-flex items-center justify-center w-full px-4 py-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors font-medium"
+          >
+            Track Order #{orderNumber}
+            <ArrowRight className="ml-2 w-4 h-4" />
+          </Link>
         </div>
 
         {/* Contact Options */}

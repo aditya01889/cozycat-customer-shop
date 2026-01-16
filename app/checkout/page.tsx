@@ -1,23 +1,25 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '@/lib/supabase/client'
-import { useCartStore } from '@/lib/store/cart'
 import { useRouter } from 'next/navigation'
+import { useCartStore } from '@/lib/store/cart'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase/client'
 import toast from 'react-hot-toast'
-import { ArrowLeft, Truck, Phone, Mail, MapPin, CreditCard } from 'lucide-react'
+import { ArrowLeft, Truck, Shield, CreditCard, User, Phone, MapPin } from 'lucide-react'
 
 export default function CheckoutPage() {
   const router = useRouter()
   const { items, getTotalPrice, clearCart } = useCartStore()
+  const { user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Form state
   const [customerInfo, setCustomerInfo] = useState({
-    firstName: '',
-    lastName: '',
+    firstName: user?.user_metadata?.name?.split(' ')[0] || '',
+    lastName: user?.user_metadata?.name?.split(' ').slice(1).join(' ') || '',
     phone: '',
-    email: '',
+    email: user?.email || '',
     whatsappNumber: ''
   })
 
@@ -83,11 +85,11 @@ export default function CheckoutPage() {
       // Generate order number
       const orderNumber = 'ORD-' + Date.now().toString().slice(-8)
 
-      // Create order with guest customer info in notes field
+      // Create order with customer info
       const orderData = {
         order_number: orderNumber,
-        customer_id: null, // Guest order - no customer record
-        delivery_address_id: null, // Guest order - no address record
+        customer_id: user?.id || null, // Use user ID if logged in
+        delivery_address_id: null, // Could be enhanced to save addresses
         payment_method: paymentMethod,
         payment_status: 'pending',
         subtotal,
@@ -104,7 +106,8 @@ export default function CheckoutPage() {
           city: address.city,
           state: address.state,
           pincode: address.pincode,
-          delivery_notes: address.deliveryNotes
+          delivery_notes: address.deliveryNotes,
+          is_guest_order: !user // Flag to identify guest orders
         }),
         status: 'pending'
       }
@@ -148,7 +151,7 @@ export default function CheckoutPage() {
       // Clear cart and redirect to success
       clearCart()
       toast.success('Order placed successfully!')
-      router.push('/order-success')
+      router.push(`/order-success?order=${orderNumber}`)
       
     } catch (error) {
       console.error('Order placement error:', error)

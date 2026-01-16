@@ -56,6 +56,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 alt={product.name}
                 width={600}
                 height={600}
+                loading="eager"
                 className="w-full h-full object-cover"
               />
             ) : (

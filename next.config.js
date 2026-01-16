@@ -14,6 +14,16 @@ const nextConfig = {
     // !! WARN !!
     ignoreDuringBuilds: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'xfnbhheapralprcwjvzl.supabase.co',
+        port: '',
+        pathname: '/storage/v1/object/public/**',
+      },
+    ],
+  },
 }
 
 module.exports = nextConfig

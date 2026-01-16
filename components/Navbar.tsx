@@ -1,13 +1,19 @@
 'use client'
 
 import Link from 'next/link'
-import { ShoppingCart, Menu, X } from 'lucide-react'
+import { ShoppingCart, Menu, X, Package, User, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const totalItems = useCartStore(state => state.getTotalItems())
+  const { user, signOut } = useAuth()
+
+  const handleSignOut = async () => {
+    await signOut()
+  }
 
   return (
     <nav className="bg-white shadow-sm sticky top-0 z-50">
@@ -26,12 +32,36 @@ export default function Navbar() {
             <Link href="/products" className="text-gray-700 hover:text-orange-500 transition-colors">
               Products
             </Link>
-            <Link href="/about" className="text-gray-700 hover:text-orange-500 transition-colors">
-              About
+            <Link href="/track-order" className="text-gray-700 hover:text-orange-500 transition-colors flex items-center gap-1">
+              <Package className="w-4 h-4" />
+              Track Order
             </Link>
-            <Link href="/contact" className="text-gray-700 hover:text-orange-500 transition-colors">
-              Contact
-            </Link>
+            {user ? (
+              <>
+                {(user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin')) && (
+                  <Link href="/admin/products" className="text-gray-700 hover:text-orange-500 transition-colors flex items-center gap-1">
+                    <Package className="w-4 h-4" />
+                    Admin
+                  </Link>
+                )}
+                <Link href="/profile" className="text-gray-700 hover:text-orange-500 transition-colors flex items-center gap-1">
+                  <User className="w-4 h-4" />
+                  Profile
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="text-gray-700 hover:text-orange-500 transition-colors flex items-center gap-1"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link href="/auth" className="text-gray-700 hover:text-orange-500 transition-colors flex items-center gap-1">
+                <User className="w-4 h-4" />
+                Sign In
+              </Link>
+            )}
             <Link href="/cart" className="relative p-2 text-gray-700 hover:text-orange-500 transition-colors">
               <ShoppingCart className="w-6 h-6" />
               {totalItems > 0 && (
@@ -64,19 +94,54 @@ export default function Navbar() {
               Products
             </Link>
             <Link
-              href="/about"
-              className="block px-3 py-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-md"
+              href="/track-order"
+              className="block px-3 py-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-md flex items-center gap-2"
               onClick={() => setIsMenuOpen(false)}
             >
-              About
+              <Package className="w-4 h-4" />
+              Track Order
             </Link>
-            <Link
-              href="/contact"
-              className="block px-3 py-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-md"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Contact
-            </Link>
+            {user ? (
+              <>
+                {user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin') && (
+                  <Link
+                    href="/admin/products"
+                    className="block px-3 py-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-md flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <Package className="w-4 h-4" />
+                    Admin
+                  </Link>
+                )}
+                <Link
+                  href="/profile"
+                  className="block px-3 py-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-md flex items-center gap-2"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  <User className="w-4 h-4" />
+                  Profile
+                </Link>
+                <button
+                  onClick={() => {
+                    handleSignOut()
+                    setIsMenuOpen(false)
+                  }}
+                  className="block w-full text-left px-3 py-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-md flex items-center gap-2"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/auth"
+                className="block px-3 py-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-md flex items-center gap-2"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                <User className="w-4 h-4" />
+                Sign In
+              </Link>
+            )}
             <Link
               href="/cart"
               className="block px-3 py-2 text-gray-700 hover:text-orange-500 hover:bg-gray-100 rounded-md"
