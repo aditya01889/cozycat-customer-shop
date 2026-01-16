@@ -177,29 +177,30 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center mb-8">
-        <button
-          onClick={() => router.back()}
-          className="flex items-center text-gray-600 hover:text-gray-900"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Cart
-        </button>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 py-12">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header with Cat Theme */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-4">
+            <span className="text-3xl">🛒</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            Checkout
+          </h1>
+          <p className="text-xl text-gray-600">
+            Almost there! Let's get your cat's delicious meals ready for delivery 🐾
+          </p>
+        </div>
 
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Checkout</h1>
-
-      <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">
-        {/* Main Form */}
-        <div className="lg:col-span-2 space-y-8">
-          {/* Customer Information */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center">
-              <Phone className="w-5 h-5 mr-2 text-orange-500" />
-              Customer Information
-            </h2>
+        <form onSubmit={handleSubmit} className="grid lg:grid-cols-3 gap-8">
+          {/* Main Form */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Customer Information */}
+            <div className="bg-white rounded-2xl shadow-lg p-8">
+              <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+                <span className="mr-3">👤</span>
+                Customer Information
+              </h2>
             
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -269,9 +270,9 @@ export default function CheckoutPage() {
           </div>
 
           {/* Delivery Address */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center">
-              <MapPin className="w-5 h-5 mr-2 text-orange-500" />
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+              <span className="mr-3">🏠</span>
               Delivery Address
             </h2>
             
@@ -371,9 +372,9 @@ export default function CheckoutPage() {
           </div>
 
           {/* Payment Method */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-lg font-semibold mb-4 flex items-center">
-              <CreditCard className="w-5 h-5 mr-2 text-orange-500" />
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+              <span className="mr-3">💳</span>
               Payment Method
             </h2>
             
@@ -414,8 +415,11 @@ export default function CheckoutPage() {
 
         {/* Order Summary */}
         <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
+          <div className="bg-white rounded-2xl shadow-lg p-8 sticky top-24">
+            <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+              <span className="mr-3">📋</span>
+              Order Summary
+            </h2>
             
             {/* Items List */}
             <div className="space-y-3 mb-6">
@@ -456,9 +460,19 @@ export default function CheckoutPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-orange-500 text-white py-3 px-6 rounded-full hover:bg-orange-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+              className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 px-6 rounded-full hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-bold disabled:opacity-50 disabled:cursor-not-allowed mt-6 flex items-center justify-center"
             >
-              {isSubmitting ? 'Placing Order...' : 'Place Order'}
+              {isSubmitting ? (
+                <>
+                  <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent mr-2"></span>
+                  Placing Order...
+                </>
+              ) : (
+                <>
+                  <span className="mr-2">🐾</span>
+                  Place Order
+                </>
+              )}
             </button>
 
             <div className="mt-4 text-xs text-gray-500 space-y-1">
@@ -469,6 +483,7 @@ export default function CheckoutPage() {
           </div>
         </div>
       </form>
+      </div>
     </div>
   )
 }

@@ -17,12 +17,25 @@ interface ProductDetailProps {
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
-  const [selectedVariant, setSelectedVariant] = useState(product.product_variants[0])
+  const [selectedVariant, setSelectedVariant] = useState(product.product_variants?.[0] || null)
   const [quantity, setQuantity] = useState(1)
   const { addItem } = useCartStore()
 
+  // Debug: Log product variants to see what's available
+  console.log('Product variants:', product.product_variants)
+  console.log('Selected variant:', selectedVariant)
+
   const handleAddToCart = () => {
-    addItem({
+    console.log('Add to cart clicked, selected variant:', selectedVariant)
+    
+    if (!selectedVariant) {
+      toast.error('Please select a variant first', {
+        icon: '⚠️',
+      })
+      return
+    }
+
+    const cartItem = {
       productId: product.id,
       variantId: selectedVariant.id,
       productName: product.name,
@@ -30,9 +43,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       price: selectedVariant.price,
       quantity,
       sku: selectedVariant.sku || ''
-    })
+    }
     
-    toast.success(`${product.name} added to cart!`, {
+    console.log('Adding to cart:', cartItem)
+    
+    addItem(cartItem)
+    
+    toast.success(`${product.name} (${formatWeight(selectedVariant.weight_grams)}) added to cart!`, {
       icon: '🛒',
     })
   }
@@ -100,32 +117,50 @@ export default function ProductDetail({ product }: ProductDetailProps) {
 
           {/* Price */}
           <div className="flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-gray-900">₹{selectedVariant.price}</span>
-            <span className="text-lg text-gray-500">{formatWeight(selectedVariant.weight_grams)}</span>
+            <span className="text-3xl font-bold text-gray-900">
+              {selectedVariant ? `₹${selectedVariant.price}` : 'Price not available'}
+            </span>
+            {selectedVariant && (
+              <span className="text-lg text-gray-500">{formatWeight(selectedVariant.weight_grams)}</span>
+            )}
           </div>
 
           {/* Variants */}
-          {product.product_variants.length > 1 && (
-            <div>
-              <h3 className="font-semibold mb-3">Choose Size:</h3>
-              <div className="grid grid-cols-2 gap-3">
+          <div>
+            <h3 className="font-semibold mb-3">
+              {!product.product_variants || product.product_variants.length === 0 
+                ? 'No variants available' 
+                : product.product_variants.length > 1 
+                  ? 'Choose Size:' 
+                  : 'Size:'
+              }
+            </h3>
+            {!product.product_variants || product.product_variants.length === 0 ? (
+              <div className="p-4 bg-gray-50 rounded-lg text-gray-500">
+                No variants available for this product.
+              </div>
+            ) : (
+              <div className={`grid ${product.product_variants.length > 1 ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
                 {product.product_variants.map((variant) => (
                   <button
                     key={variant.id}
                     onClick={() => setSelectedVariant(variant)}
                     className={`p-3 rounded-lg border-2 transition-colors ${
-                      selectedVariant.id === variant.id
+                      selectedVariant?.id === variant.id
                         ? 'border-orange-500 bg-orange-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
                     <div className="font-medium">{formatWeight(variant.weight_grams)}</div>
                     <div className="text-sm text-gray-600">₹{variant.price}</div>
+                    {selectedVariant?.id === variant.id && (
+                      <div className="text-xs text-orange-600 font-medium mt-1">✓ Selected</div>
+                    )}
                   </button>
                 ))}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Quantity */}
           <div>
@@ -151,10 +186,15 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           <div className="flex space-x-4">
             <button
               onClick={handleAddToCart}
-              className="flex-1 bg-orange-500 text-white py-3 px-6 rounded-full hover:bg-orange-600 transition-colors font-medium flex items-center justify-center"
+              disabled={!selectedVariant}
+              className={`flex-1 py-3 px-6 rounded-full font-medium flex items-center justify-center transition-colors ${
+                selectedVariant
+                  ? 'bg-orange-500 text-white hover:bg-orange-600'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
             >
               <ShoppingCart className="w-5 h-5 mr-2" />
-              Add to Cart
+              {selectedVariant ? 'Add to Cart' : 'Select a variant'}
             </button>
             <button className="p-3 rounded-full border border-gray-300 hover:bg-gray-50">
               <Heart className="w-5 h-5" />

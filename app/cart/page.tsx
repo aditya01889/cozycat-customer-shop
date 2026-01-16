@@ -1,7 +1,7 @@
 'use client'
 
 import { useCartStore } from '@/lib/store/cart'
-import { Trash2, Plus, Minus, ShoppingCart, ArrowRight } from 'lucide-react'
+import { Trash2, Plus, Minus, ShoppingCart, ArrowRight, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
@@ -17,20 +17,64 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <ShoppingCart className="w-8 h-8 text-gray-400" />
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50">
+        <div className="max-w-4xl mx-auto px-4 py-16">
+          <div className="text-center">
+            {/* Empty Cart Illustration */}
+            <div className="relative inline-block mb-8">
+              <div className="w-32 h-32 bg-gradient-to-br from-orange-100 to-pink-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-pulse">
+                <ShoppingCart className="w-16 h-16 text-orange-500" />
+              </div>
+              <div className="absolute -top-2 -right-2 text-4xl animate-bounce" style={{ animationDelay: '0.2s' }}>😺</div>
+            </div>
+            
+            {/* Main Message */}
+            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+              Your cart is empty
+            </h1>
+            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+              Your cat is waiting for delicious meals! Let's fill this cart with some tasty treats! 🐾
+            </p>
+            
+            {/* Call to Action */}
+            <div className="space-y-4">
+              <Link
+                href="/products"
+                className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-full hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-bold text-lg shadow-lg"
+              >
+                <span className="mr-3">🍽️</span>
+                Browse Delicious Meals
+                <ArrowRight className="ml-3 w-5 h-5" />
+              </Link>
+              
+              <div className="flex justify-center space-x-8 text-sm text-gray-500">
+                <div className="flex items-center">
+                  <span className="text-2xl mr-2">🚚</span>
+                  <span>Free delivery above ₹500</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-2xl mr-2">💰</span>
+                  <span>Cash on delivery</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="text-2xl mr-2">⭐</span>
+                  <span>Made fresh to order</span>
+                </div>
+              </div>
+            </div>
+            
+            {/* Cat Animation */}
+            <div className="mt-12">
+              <div className="flex justify-center space-x-4">
+                <span className="text-3xl animate-pulse">🐾</span>
+                <span className="text-3xl animate-bounce" style={{ animationDelay: '0.2s' }}>🐾</span>
+                <span className="text-3xl animate-ping" style={{ animationDelay: '0.4s' }}>🐾</span>
+              </div>
+              <p className="text-gray-600 mt-4">
+                Thank you for choosing CozyCatKitchen! Your cat will love you for it! 😺
+              </p>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Your cart is empty</h1>
-          <p className="text-gray-600 mb-8">Looks like you haven't added any delicious cat food yet!</p>
-          <Link
-            href="/products"
-            className="inline-flex items-center px-6 py-3 bg-orange-500 text-white rounded-full hover:bg-orange-600 transition-colors"
-          >
-            Browse Products
-            <ArrowRight className="ml-2 w-4 h-4" />
-          </Link>
         </div>
       </div>
     )
@@ -41,122 +85,193 @@ export default function CartPage() {
   const total = subtotal + deliveryFee
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Shopping Cart</h1>
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50">
+      {/* Header */}
+      <div className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center">
+              <Link href="/products" className="flex items-center text-gray-600 hover:text-gray-900 mr-4">
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Continue Shopping
+              </Link>
+              <span className="text-2xl mr-3">🛒</span>
+              <h1 className="text-xl font-bold text-gray-900">Shopping Cart</h1>
+            </div>
+            <div className="text-sm text-gray-600">
+              {items.reduce((sum, item) => sum + item.quantity, 0)} items
+            </div>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Cart Items */}
-        <div className="lg:col-span-2 space-y-4">
-          {items.map((item) => (
-            <div key={item.variantId} className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-start space-x-4">
-                {/* Product Image */}
-                <div className="w-20 h-20 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-2xl">🍽️</span>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Page Title */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-4">
+            <span className="text-3xl">🛒</span>
+          </div>
+          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+            Your Shopping Cart
+          </h2>
+          <p className="text-xl text-gray-600">
+            Review your delicious cat food selections 🐾
+          </p>
+        </div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Cart Items */}
+          <div className="lg:col-span-2 space-y-4">
+            {items.map((item) => (
+              <div key={item.variantId} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 p-6">
+                <div className="flex items-start space-x-4">
+                  {/* Product Image */}
+                  <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <span className="text-3xl">🍽️</span>
+                  </div>
+
+                  {/* Product Details */}
+                  <div className="flex-1">
+                    <h3 className="font-bold text-lg text-gray-900 mb-1">{item.productName}</h3>
+                    <p className="text-sm text-gray-600 mb-2">{formatWeight(item.weight)}</p>
+                    <p className="text-lg font-bold text-orange-600">₹{item.price}</p>
+                  </div>
+
+                  {/* Quantity Controls */}
+                  <div className="flex flex-col items-end space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
+                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                      >
+                        <Minus className="w-4 h-4" />
+                      </button>
+                      <span className="w-12 text-center font-semibold text-lg">{item.quantity}</span>
+                      <button
+                        onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
+                        className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Remove Button */}
+                    <button
+                      onClick={() => removeItem(item.variantId)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
 
-                {/* Product Details */}
-                <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">{item.productName}</h3>
-                  <p className="text-sm text-gray-600">{formatWeight(item.weight)}</p>
-                  <p className="text-sm font-medium text-orange-500">₹{item.price}</p>
+                {/* Item Total */}
+                <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                  <span className="text-sm text-gray-600">Item total</span>
+                  <span className="font-bold text-lg text-gray-900">₹{item.price * item.quantity}</span>
                 </div>
-
-                {/* Quantity Controls */}
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
-                    className="p-1 rounded border border-gray-300 hover:bg-gray-50"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="w-8 text-center">{item.quantity}</span>
-                  <button
-                    onClick={() => updateQuantity(item.variantId, item.quantity + 1)}
-                    className="p-1 rounded border border-gray-300 hover:bg-gray-50"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Remove Button */}
-                <button
-                  onClick={() => removeItem(item.variantId)}
-                  className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
               </div>
+            ))}
 
-              {/* Item Total */}
-              <div className="mt-4 pt-4 border-t flex justify-between items-center">
-                <span className="text-sm text-gray-600">Item total</span>
-                <span className="font-semibold">₹{item.price * item.quantity}</span>
+            {/* Cart Actions */}
+            <div className="flex justify-between items-center pt-6 border-t">
+              <button
+                onClick={clearCart}
+                className="text-red-500 hover:text-red-600 font-medium flex items-center transition-colors"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Clear Cart
+              </button>
+              <Link
+                href="/products"
+                className="text-orange-500 hover:text-orange-600 font-medium flex items-center transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Continue Shopping
+              </Link>
+            </div>
+          </div>
+
+          {/* Order Summary */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden sticky top-24">
+              <div className="p-6 border-b bg-gradient-to-r from-orange-50 to-pink-50">
+                <h2 className="text-xl font-semibold text-gray-900 flex items-center">
+                  <span className="mr-2">📋</span>
+                  Order Summary
+                </h2>
+              </div>
+              
+              <div className="p-6">
+                <div className="space-y-4 mb-6">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
+                    <span className="font-medium">₹{subtotal}</span>
+                  </div>
+                  
+                  <div className="flex justify-between text-gray-700">
+                    <span>Delivery Fee</span>
+                    <span className={`font-medium ${deliveryFee === 0 ? 'text-green-600' : ''}`}>
+                      {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
+                    </span>
+                  </div>
+                  
+                  {subtotal < 500 && (
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+                      <p className="text-sm text-green-700 font-medium flex items-center">
+                        <span className="mr-2">🚚</span>
+                        Add ₹{500 - subtotal} more for free delivery!
+                      </p>
+                    </div>
+                  )}
+                  
+                  <div className="border-t pt-4">
+                    <div className="flex justify-between font-bold text-xl">
+                      <span>Total</span>
+                      <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+                        ₹{total}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <Link
+                  href="/checkout"
+                  className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 px-6 rounded-2xl hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-bold text-center block shadow-lg"
+                >
+                  Proceed to Checkout
+                  <ArrowRight className="w-5 h-5 ml-2 inline" />
+                </Link>
+
+                <div className="mt-6 p-4 bg-gray-50 rounded-lg space-y-2">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">💰</span>
+                    <span>Cash on Delivery (COD) available</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">⭐</span>
+                    <span>Made fresh to order</span>
+                  </div>
+                  <div className="flex items-center text-sm text-gray-600">
+                    <span className="mr-2">🚚</span>
+                    <span>2-4 days delivery</span>
+                  </div>
+                </div>
               </div>
             </div>
-          ))}
-
-          {/* Clear Cart */}
-          <div className="flex justify-between items-center pt-4">
-            <button
-              onClick={clearCart}
-              className="text-red-500 hover:text-red-600 text-sm font-medium"
-            >
-              Clear Cart
-            </button>
-            <Link
-              href="/products"
-              className="text-orange-500 hover:text-orange-600 text-sm font-medium"
-            >
-              Continue Shopping
-            </Link>
           </div>
         </div>
 
-        {/* Order Summary */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
-            <h2 className="text-lg font-semibold mb-4">Order Summary</h2>
-            
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-sm">
-                <span>Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)</span>
-                <span>₹{subtotal}</span>
-              </div>
-              
-              <div className="flex justify-between text-sm">
-                <span>Delivery Fee</span>
-                <span className={deliveryFee === 0 ? 'text-green-600' : ''}>
-                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
-                </span>
-              </div>
-              
-              {subtotal < 500 && (
-                <p className="text-xs text-green-600">
-                  Add ₹{500 - subtotal} more for free delivery!
-                </p>
-              )}
-              
-              <div className="border-t pt-3">
-                <div className="flex justify-between font-semibold">
-                  <span>Total</span>
-                  <span className="text-lg">₹{total}</span>
-                </div>
-              </div>
-            </div>
-
-            <Link
-              href="/checkout"
-              className="w-full bg-orange-500 text-white py-3 px-6 rounded-full hover:bg-orange-600 transition-colors font-medium text-center block"
-            >
-              Proceed to Checkout
-            </Link>
-
-            <div className="mt-4 text-xs text-gray-500 space-y-1">
-              <p>• Cash on Delivery (COD) available</p>
-              <p>• Made fresh to order</p>
-              <p>• 2-4 days delivery</p>
-            </div>
+        {/* Cat Illustration */}
+        <div className="text-center mt-12">
+          <div className="text-6xl mb-4">🐾</div>
+          <p className="text-gray-600">
+            Thank you for choosing CozyCatKitchen! Your cat will love you for it! 😺
+          </p>
+          <div className="flex justify-center space-x-4 mt-4">
+            <span className="text-2xl animate-pulse">🐾</span>
+            <span className="text-2xl animate-bounce" style={{ animationDelay: '0.2s' }}>🐾</span>
+            <span className="text-2xl animate-ping" style={{ animationDelay: '0.4s' }}>🐾</span>
           </div>
         </div>
       </div>

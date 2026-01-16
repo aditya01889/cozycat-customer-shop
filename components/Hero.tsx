@@ -38,8 +38,9 @@ export default function Hero() {
               </h1>
               <p className="text-xl text-gray-600 mb-6">
                 Where every meal is made with 
-                <span className="text-orange-500 font-semibold">love</span> and 
-                <span className="text-pink-500 font-semibold">purry</span>
+                <span className="text-orange-500 font-semibold"> love </span>
+                and 
+                <span className="text-pink-500 font-semibold"> purry </span>
               </p>
             </div>
 
@@ -94,6 +95,7 @@ export default function Hero() {
       </div>
       <div className="absolute bottom-4 left-4 text-xl animate-bounce">
         🐾
+      </div>
       </div>
     </section>
   )

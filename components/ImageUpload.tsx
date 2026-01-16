@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { Upload, X, Image as ImageIcon, CheckCircle, AlertCircle } from 'lucide-react'
 
@@ -15,6 +15,11 @@ export default function ImageUpload({ onUploadComplete, currentImage }: ImageUpl
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(currentImage || null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // Update preview when currentImage prop changes
+  useEffect(() => {
+    setPreview(currentImage || null)
+  }, [currentImage])
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]

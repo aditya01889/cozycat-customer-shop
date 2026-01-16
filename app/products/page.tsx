@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/database'
 import ProductGrid from '@/components/ProductGrid'
 import ProductFilters from '@/components/ProductFilters'
+import SearchInput from '@/components/SearchInput'
 
 type Product = Database['public']['Tables']['products']['Row']
 type ProductVariant = Database['public']['Tables']['product_variants']['Row']
@@ -10,7 +11,7 @@ type Category = Database['public']['Tables']['categories']['Row']
 export default async function ProductsPage({
   searchParams
 }: {
-  searchParams: Promise<{ category?: string; price?: string }>
+  searchParams: Promise<{ category?: string; price?: string; search?: string }>
 }) {
   const resolvedParams = await searchParams
   const supabase = await createClient()
@@ -31,6 +32,11 @@ export default async function ProductsPage({
     `)
     .eq('is_active', true)
     .order('display_order')
+
+  // Apply search filter if specified
+  if (resolvedParams.search) {
+    productsQuery = productsQuery.ilike('name', `%${resolvedParams.search}%`)
+  }
 
   // Filter by category if specified
   if (resolvedParams.category) {
@@ -94,31 +100,38 @@ export default async function ProductsPage({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col lg:flex-row gap-8">
-        {/* Filters Sidebar */}
-        <div className="w-full lg:w-64 flex-shrink-0">
-          <ProductFilters 
-            categories={categories || []}
-            selectedCategory={resolvedParams.category}
-          />
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header with Cat Theme */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-4">
+            <span className="text-3xl">🍽️</span>
+          </div>
+          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            {resolvedParams.category 
+              ? categories?.find((c: any) => c.slug === resolvedParams.category)?.name || 'Products'
+              : 'All Products'
+            }
+          </h1>
+          <p className="text-xl text-gray-600">
+            {filteredProducts?.length || 0} delicious meals for your cat 🐾
+          </p>
         </div>
 
-        {/* Products Grid */}
-        <div className="flex-1">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              {resolvedParams.category 
-                ? categories?.find((c: any) => c.slug === resolvedParams.category)?.name || 'Products'
-                : 'All Products'
-              }
-            </h1>
-            <p className="text-gray-600">
-              {filteredProducts?.length || 0} products available
-            </p>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Filters Sidebar */}
+          <div className="w-full lg:w-64 flex-shrink-0">
+            <SearchInput />
+            <ProductFilters 
+              categories={categories || []}
+              selectedCategory={resolvedParams.category}
+            />
           </div>
 
-          <ProductGrid products={filteredProducts} />
+          {/* Products Grid */}
+          <div className="flex-1">
+            <ProductGrid products={filteredProducts} />
+          </div>
         </div>
       </div>
     </div>

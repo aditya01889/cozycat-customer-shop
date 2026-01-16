@@ -16,19 +16,23 @@ export default function ProductFilters({ categories, selectedCategory }: Product
   const priceRange = searchParams.get('price')
 
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm">
-      <h3 className="font-semibold text-lg mb-4">Categories</h3>
+    <div className="bg-white rounded-2xl shadow-lg p-6 sticky top-4">
+      <h3 className="text-xl font-bold text-orange-800 mb-6 flex items-center">
+        <span className="mr-3">🐾</span>
+        Categories
+      </h3>
       
-      <ul className="space-y-2">
+      <ul className="space-y-3">
         <li>
           <Link
             href="/products"
-            className={`block px-3 py-2 rounded-md transition-colors ${
+            className={`block px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
               !selectedCategory
                 ? 'text-gray-700 hover:bg-gray-100'
-                : 'bg-orange-100 text-orange-700 font-medium'
+                : 'bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold shadow-lg'
             }`}
           >
+            <span className="mr-2">🍽️</span>
             All Products
           </Link>
         </li>
@@ -37,29 +41,37 @@ export default function ProductFilters({ categories, selectedCategory }: Product
           <li key={category.id}>
             <Link
               href={`/products?category=${category.slug}`}
-              className={`block px-3 py-2 rounded-md transition-colors ${
+              className={`block px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                 selectedCategory === category.slug
-                  ? 'bg-orange-100 text-orange-700 font-medium'
+                  ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold shadow-lg'
                   : 'text-gray-700 hover:bg-gray-100'
               }`}
             >
-              {category.name}
-              <span className="block text-sm text-gray-500 mt-1">
-                {category.description}
+              <span className="mr-2">
+                {category.slug === 'meals' ? '🍽️' : category.slug === 'broths' ? '🥣' : category.slug === 'cookies' ? '🍪' : category.slug === 'cupcakes' ? '🧁' : '📦'}
               </span>
+              <div>
+                <div className="font-bold">{category.name}</div>
+                <div className="text-sm text-gray-500 mt-1">
+                  {category.description}
+                </div>
+              </div>
             </Link>
           </li>
         ))}
       </ul>
 
-      <div className="mt-8 pt-6 border-t">
-        <h3 className="font-semibold text-lg mb-4">Price Range</h3>
+      <div className="mt-8 pt-6 border-t border-orange-200">
+        <h3 className="text-xl font-bold text-orange-800 mb-6 flex items-center">
+          <span className="mr-3">💰</span>
+          Price Range
+        </h3>
         
-        <div className="space-y-2">
-          <label className="flex items-center">
+        <div className="space-y-3">
+          <label className="flex items-center p-3 bg-white rounded-lg border-2 border-orange-200 hover:bg-orange-50 transition-colors cursor-pointer">
             <input
               type="checkbox"
-              className="mr-2"
+              className="mr-3 w-5 h-5 text-orange-600"
               checked={priceRange === 'under-100'}
               onChange={(e) => {
                 const params = new URLSearchParams(searchParams)
@@ -72,13 +84,13 @@ export default function ProductFilters({ categories, selectedCategory }: Product
                 window.location.href = `/products${queryString ? `?${queryString}` : ''}`
               }}
             />
-            <span className="text-sm">Under ₹100</span>
+            <span className="text-gray-700">Under ₹100</span>
           </label>
           
-          <label className="flex items-center">
+          <label className="flex items-center p-3 bg-white rounded-lg border-2 border-orange-200 hover:bg-orange-50 transition-colors cursor-pointer">
             <input
               type="checkbox"
-              className="mr-2"
+              className="mr-3 w-5 h-5 text-orange-600"
               checked={priceRange === '100-200'}
               onChange={(e) => {
                 const params = new URLSearchParams(searchParams)
@@ -91,13 +103,13 @@ export default function ProductFilters({ categories, selectedCategory }: Product
                 window.location.href = `/products${queryString ? `?${queryString}` : ''}`
               }}
             />
-            <span className="text-sm">₹100 - ₹200</span>
+            <span className="text-gray-700">₹100 - ₹200</span>
           </label>
           
-          <label className="flex items-center">
+          <label className="flex items-center p-3 bg-white rounded-lg border-2 border-orange-200 hover:bg-orange-50 transition-colors cursor-pointer">
             <input
               type="checkbox"
-              className="mr-2"
+              className="mr-3 w-5 h-5 text-orange-600"
               checked={priceRange === '200-400'}
               onChange={(e) => {
                 const params = new URLSearchParams(searchParams)
@@ -110,13 +122,13 @@ export default function ProductFilters({ categories, selectedCategory }: Product
                 window.location.href = `/products${queryString ? `?${queryString}` : ''}`
               }}
             />
-            <span className="text-sm">₹200 - ₹400</span>
+            <span className="text-gray-700">₹200 - ₹400</span>
           </label>
           
-          <label className="flex items-center">
+          <label className="flex items-center p-3 bg-white rounded-lg border-2 border-orange-200 hover:bg-orange-50 transition-colors cursor-pointer">
             <input
               type="checkbox"
-              className="mr-2"
+              className="mr-3 w-5 h-5 text-orange-600"
               checked={priceRange === 'above-400'}
               onChange={(e) => {
                 const params = new URLSearchParams(searchParams)
@@ -129,7 +141,7 @@ export default function ProductFilters({ categories, selectedCategory }: Product
                 window.location.href = `/products${queryString ? `?${queryString}` : ''}`
               }}
             />
-            <span className="text-sm">Above ₹400</span>
+            <span className="text-gray-700">Above ₹400</span>
           </label>
         </div>
       </div>

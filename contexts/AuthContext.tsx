@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
 import toast from 'react-hot-toast'
+import { useCartStore } from '@/lib/store/cart'
 
 interface AuthContextType {
   user: User | null
@@ -153,6 +154,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = async () => {
     try {
       setLoading(true)
+      
+      // Clear the cart before signing out
+      const { clearCart } = useCartStore.getState()
+      clearCart()
+      
       const { error } = await supabase.auth.signOut()
       if (error) throw error
       toast.success('Signed out successfully')
