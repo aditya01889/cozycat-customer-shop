@@ -195,10 +195,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!signOutSuccess) {
         try {
           console.log('🔄 Method 2: Trying to clear session...')
-          await supabase.auth.setSession({
+          
+          // Add timeout to prevent hanging
+          const sessionPromise = supabase.auth.setSession({
             access_token: '',
             refresh_token: ''
           })
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Session clear timeout')), 3000)
+          )
+          
+          await Promise.race([sessionPromise, timeoutPromise])
           console.log('✅ Session cleared (method 2)')
           signOutSuccess = true
         } catch (method2Error) {
