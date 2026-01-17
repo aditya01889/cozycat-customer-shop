@@ -704,16 +704,16 @@ function AdminUsersContent() {
                 
                 try {
                   // Update profiles table
-                  const { error: profileError, data } = await supabase
+                  const { error: profileError, data: profileData } = await supabase
                     .from('profiles')
                     .update({
-                      id: (selectedUser as any).profiles?.id,
                       full_name: editName,
                       email: editEmail,
                       phone: editPhone
                     })
+                    .eq('id', (selectedUser as any).profiles?.id)
 
-                  console.log('Profile update result:', { error: profileError, data })
+                  console.log('Profile update result:', { error: profileError, data: profileData })
 
                   if (profileError) {
                     console.error('Error updating profile:', profileError)
@@ -721,20 +721,49 @@ function AdminUsersContent() {
                     return
                   }
 
-                  // Update customers table if phone exists
-                  if (editPhone) {
-                    console.log('Updating customer phone...')
-                    const { error: customerError, data } = await supabase
+                  // Update customers table - handle phone number changes
+                  console.log('Handling customer phone update...')
+                  
+                  // First check if customer record exists
+                  const { data: existingCustomer, error: checkError } = await supabase
+                    .from('customers')
+                    .select('id')
+                    .eq('profile_id', selectedUser.id)
+                    .single()
+                  
+                  if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" error
+                    console.error('Error checking customer record:', checkError)
+                  }
+                  
+                  if (existingCustomer) {
+                    // Update existing customer record
+                    const { error: customerError, data: customerData } = await supabase
                       .from('customers')
                       .update({
-                        user_id: selectedUser.id,
-                        phone: editPhone
+                        phone: editPhone || null
                       })
+                      .eq('profile_id', selectedUser.id)
 
-                    console.log('Customer update result:', { error: customerError, data })
+                    console.log('Customer update result:', { error: customerError, data: customerData })
 
                     if (customerError) {
                       console.error('Error updating customer phone:', customerError)
+                      alert(`Warning: Failed to update customer phone: ${customerError.message}`)
+                    }
+                  } else if (editPhone) {
+                    // Create new customer record if phone is provided
+                    const { error: createCustomerError, data: newCustomerData } = await supabase
+                      .from('customers')
+                      .insert({
+                        profile_id: selectedUser.id,
+                        phone: editPhone
+                      })
+
+                    console.log('Customer creation result:', { error: createCustomerError, data: newCustomerData })
+
+                    if (createCustomerError) {
+                      console.error('Error creating customer record:', createCustomerError)
+                      alert(`Warning: Failed to create customer record: ${createCustomerError.message}`)
                     }
                   }
 
