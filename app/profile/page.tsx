@@ -26,18 +26,45 @@ interface Order {
   }
 }
 
+interface Profile {
+  full_name: string
+  phone: string | null
+  email: string | null
+}
+
 export default function ProfilePage() {
   const { user, signOut } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
+  const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(true)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => {
     if (user) {
+      fetchUserProfile()
       fetchUserOrders()
     }
   }, [user])
+
+  const fetchUserProfile = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('full_name, phone, email')
+        .eq('id', user?.id)
+        .single()
+
+      if (error) {
+        console.error('Error fetching profile:', error)
+        return
+      }
+
+      setProfile(data)
+    } catch (error) {
+      console.error('Error fetching profile:', error)
+    }
+  }
 
   const fetchUserOrders = async () => {
     try {
@@ -229,7 +256,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="font-semibold text-gray-800">Name</p>
-                <p className="text-gray-600">{user?.user_metadata?.name || 'Cat Parent'}</p>
+                <p className="text-gray-600">{profile?.full_name || 'Cat Parent'}</p>
               </div>
             </div>
 
@@ -249,7 +276,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <p className="font-semibold text-gray-800">Phone</p>
-                <p className="text-gray-600">{user?.user_metadata?.phone || '+91-98736-48122'}</p>
+                <p className="text-gray-600">{profile?.phone || '+91-98736-48122'}</p>
               </div>
             </div>
 
@@ -331,10 +358,10 @@ export default function ProfilePage() {
                               <User className="w-4 h-4 mr-2 text-gray-500" />
                               <span className="text-sm text-gray-600">Customer</span>
                             </div>
-                            <p className="font-medium text-gray-800">{user?.user_metadata?.name || 'Customer'}</p>
+                            <p className="font-medium text-gray-800">{profile?.full_name || 'Customer'}</p>
                             <p className="text-sm text-gray-500">{user?.email}</p>
-                            {user?.user_metadata?.phone && (
-                              <p className="text-sm text-gray-500">{user.user_metadata.phone}</p>
+                            {profile?.phone && (
+                              <p className="text-sm text-gray-500">{profile.phone}</p>
                             )}
                           </div>
                           

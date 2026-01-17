@@ -22,29 +22,42 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   const ensureCustomerRecord = async (user: User) => {
-  try {
-    // First, create/update the profile record
-    const { error: profileError } = await supabase
-      .from('profiles')
-      .upsert({
-        id: user.id,
-        role: 'customer',
-        full_name: user.user_metadata?.name || 'User',
-        email: user.email,
-        phone: null,
-        updated_at: new Date().toISOString()
-      })
+    try {
+      // First, check if profile already exists with role
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('role, phone, full_name')
+        .eq('id', user.id)
+        .single()
 
-    if (profileError) {
-      console.error('Error creating/updating profile record:', profileError)
-    }
+      // Only create/update profile if it doesn't exist or needs updating
+      const profileRole = existingProfile?.role || 'customer' // Preserve existing role
+      
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          role: profileRole, // Use existing role, don't override
+          full_name: existingProfile?.full_name || user.user_metadata?.name || 'User',
+          email: user.email,
+          phone: existingProfile?.phone || null, // Preserve existing phone
+          updated_at: new Date().toISOString()
+        })
 
-    // Then check if customer record exists
-    const { data: existingCustomer } = await supabase
-      .from('customers')
-      .select('id')
-      .eq('id', user.id)
-      .single()
+      if (profileError) {
+        console.error('Error creating/updating profile record:', profileError)
+      }
+
+      if (existingProfile?.role && existingProfile.role !== 'customer') {
+        return
+      }
+
+      // Then check if customer record exists
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('id')
+        .eq('id', user.id)
+        .single()
 
     if (!existingCustomer) {
       // Get the profile ID first

@@ -317,7 +317,7 @@ export interface Database {
       profiles: {
         Row: {
           id: string
-          role: 'admin' | 'partner' | 'customer'
+          role: 'admin' | 'partner' | 'customer' | 'operations'
           full_name: string
           phone: string | null
           email: string | null
@@ -327,7 +327,7 @@ export interface Database {
         }
         Insert: {
           id?: string
-          role: 'admin' | 'partner' | 'customer'
+          role: 'admin' | 'partner' | 'customer' | 'operations'
           full_name: string
           phone?: string | null
           email?: string | null
@@ -337,7 +337,7 @@ export interface Database {
         }
         Update: {
           id?: string
-          role?: 'admin' | 'partner' | 'customer'
+          role?: 'admin' | 'partner' | 'customer' | 'operations'
           full_name?: string
           phone?: string | null
           email?: string | null

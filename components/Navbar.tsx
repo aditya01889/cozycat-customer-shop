@@ -5,17 +5,43 @@ import { ShoppingCart, Menu, X, Package, User, LogOut } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase/client'
 import ProductSearch from '@/components/ProductSearch'
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isClient, setIsClient] = useState(false)
+  const [role, setRole] = useState<string | null>(null)
   const totalItems = useCartStore(state => state.getTotalItems())
   const { user, signOut } = useAuth()
 
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  useEffect(() => {
+    const loadRole = async () => {
+      if (!user) {
+        setRole(null)
+        return
+      }
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (error) {
+        setRole(null)
+        return
+      }
+
+      setRole((data as any)?.role ?? null)
+    }
+
+    loadRole()
+  }, [user])
 
   const handleSignOut = async () => {
     await signOut()
@@ -50,6 +76,12 @@ export default function Navbar() {
                   <Link href="/admin" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
                     <span className="text-lg">⚙️</span>
                     Admin
+                  </Link>
+                )}
+                {(role === 'operations' || role === 'admin') && (
+                  <Link href="/operations" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
+                    <span className="text-lg">🏭</span>
+                    Operations
                   </Link>
                 )}
                 <Link href="/profile" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
@@ -120,6 +152,16 @@ export default function Navbar() {
                   >
                     <span className="mr-2">⚙️</span>
                     Admin
+                  </Link>
+                )}
+                {(role === 'operations' || role === 'admin') && (
+                  <Link
+                    href="/operations"
+                    className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span className="mr-2">🏭</span>
+                    Operations
                   </Link>
                 )}
                 <Link

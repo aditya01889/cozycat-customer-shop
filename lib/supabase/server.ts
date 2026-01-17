@@ -4,6 +4,7 @@ import { Database } from '@/types/database'
 
 export const createClient = async () => {
   const cookieStore = await cookies()
+  
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -19,6 +20,13 @@ export const createClient = async () => {
           cookieStore.set({ name, value: '', ...options })
         },
       },
+      // Add auth configuration to ensure session is passed
+      auth: {
+        flowType: 'pkce',
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        persistSession: true
+      }
     }
   )
 }

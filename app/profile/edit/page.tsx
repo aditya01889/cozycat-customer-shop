@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase/client'
 import { User, ArrowLeft, Save, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 
@@ -23,11 +24,30 @@ export default function EditProfilePage() {
     }
 
     if (user) {
-      setFormData({
-        name: user.user_metadata?.name || '',
-        phone: user.user_metadata?.phone || '',
-        email: user.email || ''
-      })
+      const loadProfile = async () => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name, phone')
+          .eq('id', user.id)
+          .single()
+
+        if (error) {
+          setFormData({
+            name: '',
+            phone: '',
+            email: user.email || ''
+          })
+          return
+        }
+
+        setFormData({
+          name: data?.full_name || '',
+          phone: data?.phone || '',
+          email: user.email || ''
+        })
+      }
+
+      loadProfile()
     }
   }, [user, loading, router])
 
@@ -36,20 +56,23 @@ export default function EditProfilePage() {
     setIsLoading(true)
 
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const response = await fetch('/api/user/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          ...(session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {}),
         },
         body: JSON.stringify(formData),
       })
 
       if (response.ok) {
         toast.success('Profile updated successfully!')
+        router.refresh()
         router.push('/profile')
       } else {
         const error = await response.json()
-        toast.error(error.message || 'Failed to update profile')
+        toast.error(error.details || error.message || error.error || 'Failed to update profile')
       }
     } catch (error) {
       toast.error('An error occurred while updating your profile')
