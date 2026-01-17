@@ -4,9 +4,18 @@ import { useCartStore } from '@/lib/store/cart'
 import { Trash2, Plus, Minus, ShoppingCart, ArrowRight, ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useEffect } from 'react'
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, getTotalPrice, clearCart } = useCartStore()
+  const { items, removeItem, updateQuantity, getTotalPrice, clearCart, updateCartItemsWithImages } = useCartStore()
+
+  // Debug: Log cart items to see what data we have
+  console.log('Cart items:', items)
+
+  // Fetch missing product images when component mounts
+  useEffect(() => {
+    updateCartItemsWithImages()
+  }, [updateCartItemsWithImages])
 
   const formatWeight = (grams: number) => {
     if (grams >= 1000) {
@@ -126,8 +135,31 @@ export default function CartPage() {
               <div key={item.variantId} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 p-6">
                 <div className="flex items-start space-x-4">
                   {/* Product Image */}
-                  <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <span className="text-3xl">🍽️</span>
+                  <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {item.productImage && item.productImage.trim() !== '' ? (
+                      <Image
+                        src={item.productImage}
+                        alt={item.productName}
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          console.error('Image failed to load:', item.productImage);
+                          // Fallback to emoji on error
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            const emoji = document.createElement('span');
+                            emoji.className = 'text-3xl';
+                            emoji.textContent = '🍽️';
+                            parent.appendChild(emoji);
+                          }
+                        }}
+                      />
+                    ) : (
+                      <span className="text-3xl">🍽️</span>
+                    )}
                   </div>
 
                   {/* Product Details */}

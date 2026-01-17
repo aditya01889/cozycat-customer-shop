@@ -42,7 +42,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
       weight: selectedVariant.weight_grams,
       price: selectedVariant.price,
       quantity,
-      sku: selectedVariant.sku || ''
+      sku: selectedVariant.sku || '',
+      productImage: product.image_url || undefined
     }
     
     console.log('Adding to cart:', cartItem)

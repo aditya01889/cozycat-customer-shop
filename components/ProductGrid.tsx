@@ -77,7 +77,8 @@ function ProductCard({ product }: { product: Product }) {
       weight: variant.weight_grams,
       price: variant.price,
       quantity: 1,
-      sku: variant.sku || ''
+      sku: variant.sku || '',
+      productImage: product.image_url || undefined
     })
     toast.success(`${product.name} (${formatWeight(variant.weight_grams)}) added to cart!`)
     setShowVariantModal(false)

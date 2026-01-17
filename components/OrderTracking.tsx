@@ -17,9 +17,23 @@ import {
   Home
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 type Order = Database['public']['Tables']['orders']['Row'] & {
-  order_items: Database['public']['Tables']['order_items']['Row'][]
+  order_items: (Database['public']['Tables']['order_items']['Row'] & {
+    product_variant: {
+      id: string
+      product_id: string
+      weight_grams: number
+      price: number
+      sku: string | null
+      created_at: string
+      product: {
+        name: string
+        image_url: string | null
+      }
+    }
+  })[]
   customer_info?: any
 }
 
@@ -224,15 +238,25 @@ export default function OrderTracking({ order, fromProfile = false, fromAdmin = 
                     {order.order_items.map((item) => (
                       <div key={item.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                         <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center">
-                            <span className="text-2xl">🍽️</span>
+                          <div className="w-16 h-16 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center overflow-hidden">
+                            {item.product_variant?.product?.image_url ? (
+                              <Image
+                                src={item.product_variant.product.image_url}
+                                alt={item.product_variant.product.name}
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-2xl">🍽️</span>
+                            )}
                           </div>
                           <div>
                             <p className="font-semibold text-gray-900">
-                              Product #{item.product_id}
+                              {item.product_variant?.product?.name || `Product #${item.product_id}`}
                             </p>
                             <p className="text-sm text-gray-600">
-                              {item.quantity} × Variant #{item.variant_id}
+                              {item.quantity} × {item.product_variant?.weight_grams ? `${item.product_variant.weight_grams}g` : `Variant #${item.variant_id}`}
                             </p>
                           </div>
                         </div>
