@@ -271,13 +271,13 @@ function AdminDashboardContent() {
                   <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600" />
                 </Link>
 
-                <button className="flex items-center justify-between p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors group w-full">
+                <Link href="/admin/analytics" className="flex items-center justify-between p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors group w-full">
                   <div className="flex items-center">
                     <TrendingUp className="w-5 h-5 text-green-600 mr-3" />
                     <span className="font-medium text-gray-900">View Analytics</span>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-600" />
-                </button>
+                </Link>
               </div>
 
               {/* Pending Orders Alert */}

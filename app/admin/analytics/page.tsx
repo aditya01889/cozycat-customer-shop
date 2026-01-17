@@ -67,13 +67,18 @@ function AdminAnalyticsContent() {
         { count: totalOrders },
         { count: totalUsers },
         { data: recentOrders },
-        { data: allOrders }
+        { data: allOrders },
+        { data: revenueChartOrders }
       ] = await Promise.all([
         supabase.from('products').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('*', { count: 'exact', head: true }),
         supabase.from('customers').select('*', { count: 'exact', head: true }),
         supabase.from('orders').select('*').order('created_at', { ascending: false }).limit(5),
-        supabase.from('orders').select('total_amount, created_at, status').gte('created_at', startDate.toISOString())
+        supabase.from('orders').select('total_amount, created_at, status').gte('created_at', startDate.toISOString()).neq('status', 'cancelled'),
+        // Fetch orders for the full 6-month period for revenue chart
+        supabase.from('orders').select('total_amount, created_at, status')
+          .gte('created_at', new Date(now.getFullYear(), now.getMonth() - 6, 1).toISOString())
+          .neq('status', 'cancelled')
       ])
 
       console.log('Total products:', totalProducts)
@@ -81,25 +86,24 @@ function AdminAnalyticsContent() {
       console.log('Total users:', totalUsers)
       console.log('Recent orders:', recentOrders)
 
-      // Calculate revenue (only from delivered orders)
-      const { data: deliveredOrders } = await supabase
-        .from('orders')
-        .select('total_amount')
-        .eq('status', 'delivered')
-
-      const totalRevenue = deliveredOrders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+      // Calculate revenue (from all non-cancelled orders in time range)
+      const totalRevenue = allOrders?.reduce((sum, order) => {
+        return sum + (parseFloat(order.total_amount) || 0)
+      }, 0) || 0
       console.log('Total revenue:', totalRevenue)
 
-      // Calculate growth rates (simplified - comparing with previous period)
+      // Calculate growth rates (comparing with previous period)
       const previousStartDate = new Date(startDate.getTime() - (daysAgo * 24 * 60 * 60 * 1000))
       const { data: previousOrders } = await supabase
         .from('orders')
         .select('total_amount, created_at')
         .gte('created_at', previousStartDate.toISOString())
         .lt('created_at', startDate.toISOString())
-        .eq('status', 'delivered')
+        .neq('status', 'cancelled')
 
-      const previousRevenue = previousOrders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+      const previousRevenue = previousOrders?.reduce((sum, order) => {
+        return sum + (parseFloat(order.total_amount) || 0)
+      }, 0) || 0
       const revenueGrowth = previousRevenue > 0 ? ((totalRevenue - previousRevenue) / previousRevenue) * 100 : 0
 
       // Order status breakdown
@@ -115,29 +119,101 @@ function AdminAnalyticsContent() {
 
       console.log('Order status breakdown:', orderStatusBreakdown)
 
-      // Get top products (simplified - just fetch products and add mock sales data)
-      const { data: productsData } = await supabase
+      // Get top products using a two-step approach to avoid join issues
+      console.log('Fetching real top products data...')
+      
+      // Step 1: Get all order items in date range
+      const { data: testOrderItems } = await supabase
+  .from('order_items')
+  .select('order_id, product_variant_id, quantity, unit_price, total_price')
+
+      // Step 2: Get orders in date range
+      const { data: ordersInDateRange } = await supabase
+        .from('orders')
+        .select('id, created_at, status')
+        .gte('created_at', startDate.toISOString())
+        .neq('status', 'cancelled')
+
+      console.log('Test order items:', testOrderItems)
+
+      // Step 3: Create a set of valid order IDs
+      const validOrderIds = new Set(ordersInDateRange?.map(order => order.id) || [])
+
+      // Step 4: Filter order items to only include those from valid orders
+      const filteredOrderItems = testOrderItems?.filter(item => 
+        validOrderIds.has(item.order_id)
+      ) || []
+
+      console.log('Filtered order items:', filteredOrderItems)
+
+      // Step 5: Get product names for the variants
+      const variantIds = [...new Set(filteredOrderItems.map(item => item.product_variant_id))]
+      const { data: variantData } = await supabase
+        .from('product_variants')
+        .select('id, product_id')
+        .in('id', variantIds)
+
+      const { data: productData } = await supabase
         .from('products')
-        .select('name, price')
-        .limit(5)
+        .select('id, name')
+        .in('id', variantData?.map(v => v.product_id) || [])
 
-      const topProducts = productsData?.map((product: any, index: number) => ({
-        id: product.id,
-        name: product.name,
-        total_sold: Math.floor(Math.random() * 50) + 10,
-        revenue: Math.floor(Math.random() * 10000) + 1000
-      })) || []
+      // Create product name lookup
+      const productNameLookup: Record<string, string> = productData?.reduce((acc, product) => {
+        acc[product.id] = product.name
+        return acc
+      }, {} as Record<string, string>) || {}
 
-      console.log('Top products:', topProducts)
+      // Step 6: Aggregate product data
+      const productAggregates: Record<string, any> = filteredOrderItems.reduce((acc: Record<string, any>, item: any) => {
+        const variant = variantData?.find((v: any) => v.id === item.product_variant_id)
+        const productId = variant?.product_id || item.product_variant_id
+        const productName = productNameLookup[productId] || 'Unknown Product'
+        
+        if (!acc[productId]) {
+          acc[productId] = {
+            id: productId,
+            name: productName,
+            total_sold: 0,
+            revenue: 0
+          }
+        }
+        acc[productId].total_sold += item.quantity || 0
+        acc[productId].revenue += parseFloat(item.total_price) || 0
+        return acc
+      }, {})
 
-      // Monthly revenue (simplified placeholder data)
+      const topProducts = Object.values(productAggregates)
+        .sort((a: any, b: any) => b.revenue - a.revenue)
+        .slice(0, 5)
+
+      console.log('Top products aggregated:', topProducts)
+
+      // Calculate monthly revenue from actual orders (6-month period)
+      console.log('Revenue chart orders:', revenueChartOrders)
+      
+      const monthlyRevenueMap = revenueChartOrders?.reduce((acc: any, order) => {
+        const month = new Date(order.created_at).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+        if (!acc[month]) {
+          acc[month] = 0
+        }
+        acc[month] += parseFloat(order.total_amount) || 0
+        return acc
+      }, {}) || {}
+
+      // Get last 6 months of data
       const monthlyRevenue = Array.from({ length: 6 }, (_, i) => {
         const date = new Date(now.getFullYear(), now.getMonth() - i, 1)
+        const month = date.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+        const revenue = monthlyRevenueMap[month] || 0
         return {
-          month: date.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
-          revenue: Math.floor(Math.random() * 50000) + 10000
+          month,
+          revenue
         }
       }).reverse()
+
+      console.log('Monthly revenue detailed:', monthlyRevenue)
+      console.log('Monthly revenue map:', monthlyRevenueMap)
 
       setAnalytics({
         totalRevenue,
@@ -291,15 +367,36 @@ function AdminAnalyticsContent() {
               <BarChart3 className="w-5 h-5 text-gray-400" />
             </div>
             <div className="h-64 flex items-end justify-between space-x-2">
-              {analytics.monthlyRevenue.map((month, index) => (
-                <div key={index} className="flex-1 flex flex-col items-center">
-                  <div 
-                    className="w-full bg-orange-500 rounded-t"
-                    style={{ height: `${(month.revenue / Math.max(...analytics.monthlyRevenue.map(m => m.revenue))) * 100}%` }}
-                  ></div>
-                  <span className="text-xs text-gray-600 mt-2">{month.month}</span>
+              {analytics.monthlyRevenue.length > 0 ? (
+                (() => {
+                  console.log('Rendering chart with data:', analytics.monthlyRevenue)
+                  return analytics.monthlyRevenue.map((month, index) => {
+                    const maxRevenue = Math.max(...analytics.monthlyRevenue.map(m => m.revenue), 1)
+                    const heightPercentage = (month.revenue / maxRevenue) * 100
+                    // Ensure minimum visible height for zero values
+                    const displayHeight = month.revenue > 0 ? heightPercentage : 5
+                    
+                    console.log(`Month ${index}: ${month.month}, Revenue: ${month.revenue}, Height: ${displayHeight}%`)
+                    
+                    return (
+                      <div key={index} className="flex-1 flex flex-col items-center">
+                        <div 
+                          className={`w-full rounded-t ${month.revenue > 0 ? 'bg-orange-500' : 'bg-gray-300'}`}
+                          style={{ height: `${displayHeight}%`, minHeight: '10px' }}
+                        ></div>
+                        <span className="text-xs text-gray-600 mt-2">{month.month}</span>
+                        {month.revenue > 0 && (
+                          <span className="text-xs text-gray-500">₹{month.revenue.toLocaleString()}</span>
+                        )}
+                      </div>
+                    )
+                  })
+                })()
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-500">
+                  <p className="text-center">No revenue data available</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
