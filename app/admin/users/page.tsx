@@ -84,6 +84,11 @@ function AdminUsersContent() {
     }
   }
 
+  const isAdminUser = (user: any) => {
+    const email = (user as any).profiles?.email || (user as any).email || ''
+    return email.includes('aditya01889@gmail.com') || email.includes('admin')
+  }
+
   const fetchUsers = async () => {
     try {
       console.log('Fetching admin users...')
@@ -139,20 +144,11 @@ function AdminUsersContent() {
 
           console.log('Using profiles data:', data)
           
-          // Debug: Log the first profile to see what fields we have
-          if (data && data.length > 0) {
-            console.log('Sample profile data:', data[0])
-            console.log('Profile fields:', Object.keys(data[0]))
-            console.log('Profile values:', {
-              id: data[0].id,
-              full_name: data[0].full_name,
-              email: data[0].email,
-              phone: data[0].phone,
-              created_at: data[0].created_at
-            })
-          }
+          // Filter out admin users from the display
+          const filteredData = data.filter((user: any) => !isAdminUser(user))
+          console.log('Filtered data (excluding admins):', filteredData)
           
-          setUsers(data || [])
+          setUsers(filteredData as User[])
         } else {
           console.log('No user data found in either table')
           setUsers([])
@@ -188,10 +184,14 @@ function AdminUsersContent() {
         console.log('Admin users error:', error)
         console.log('Users count:', data?.length)
         
+        // Filter out admin users from the display
+        const filteredData = (data || []).filter((user: any) => !isAdminUser(user))
+        console.log('Filtered data (excluding admins):', filteredData)
+        
         // Process orders data to calculate totals
-        if (data && data.length > 0) {
+        if (filteredData && filteredData.length > 0) {
           // Fetch orders for all users
-          const userIds = data.map((user: any) => user.id)
+          const userIds = filteredData.map((user: any) => user.id)
           const { data: ordersData, error: ordersError } = await supabase
             .from('orders')
             .select('id, customer_id, total_amount, status, created_at')
@@ -200,7 +200,7 @@ function AdminUsersContent() {
           console.log('Orders data:', ordersData)
           console.log('Orders error:', ordersError)
 
-          const processedData = data.map((user: any) => {
+          const processedData = filteredData.map((user: any) => {
             const userOrders = ordersData?.filter((order: any) => order.customer_id === user.id) || []
             const totalOrders = userOrders.length
             const totalSpent = userOrders.reduce((sum: number, order: any) => sum + (order.total_amount || 0), 0)
@@ -233,7 +233,7 @@ function AdminUsersContent() {
           
           setUsers(processedData)
         } else {
-          setUsers(data || [])
+          setUsers(filteredData as User[])
         }
       }
     } catch (error) {
@@ -438,9 +438,16 @@ function AdminUsersContent() {
                     </span>
                   </div>
                   <div>
-                    <h3 className="font-semibold text-gray-900">
-                      {(selectedUser as any).profiles?.full_name || 'Unknown User'}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-gray-900">
+                        {(selectedUser as any).profiles?.full_name || 'Unknown User'}
+                      </h3>
+                      {isAdminUser(selectedUser) && (
+                        <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
+                          ADMIN
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-gray-500">{(selectedUser as any).profiles?.email || 'No email'}</p>
                     <p className="text-sm text-gray-500">{(selectedUser as any).profiles?.phone || 'No phone'}</p>
                   </div>
@@ -500,7 +507,7 @@ function AdminUsersContent() {
                   </div>
                 </div>
                 
-                {selectedUser.notes && (
+                {(selectedUser as any).notes && (
                   <div className="mt-6">
                     <h5 className="font-semibold text-gray-900 mb-2">Notes</h5>
                     <p className="text-gray-600 bg-gray-50 rounded-lg p-3">{(selectedUser as any).notes}</p>
@@ -587,7 +594,13 @@ function AdminUsersContent() {
                     </button>
                     <button 
                       onClick={() => setShowDeleteModal(true)}
-                      className="flex items-center justify-center px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors font-medium"
+                      className={`flex items-center justify-center px-4 py-2 rounded-lg transition-colors font-medium ${
+                        isAdminUser(selectedUser) 
+                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                          : 'bg-red-100 text-red-700 hover:bg-red-200'
+                      }`}
+                      disabled={isAdminUser(selectedUser)}
+                      title={isAdminUser(selectedUser) ? 'Cannot delete admin users' : 'Delete user'}
                     >
                       <Trash2 className="w-4 h-4 mr-2" />
                       Delete User

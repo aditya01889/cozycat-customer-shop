@@ -13,7 +13,6 @@ import {
   DollarSign, 
   Clock,
   ChevronRight,
-  Settings,
   LogOut
 } from 'lucide-react'
 
@@ -35,7 +34,7 @@ export default function AdminDashboard() {
 }
 
 function AdminDashboardContent() {
-  const { user } = useAuth()
+  const { user, signOut } = useAuth()
   const [stats, setStats] = useState<DashboardStats>({
     totalProducts: 0,
     totalOrders: 0,
@@ -162,10 +161,11 @@ function AdminDashboardContent() {
               <span className="text-sm text-gray-600">
                 Welcome, {user?.user_metadata?.name || 'Admin'}
               </span>
-              <button className="p-2 text-gray-500 hover:text-gray-700">
-                <Settings className="w-5 h-5" />
-              </button>
-              <button className="p-2 text-gray-500 hover:text-gray-700">
+              <button 
+                onClick={signOut}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Sign out"
+              >
                 <LogOut className="w-5 h-5" />
               </button>
             </div>
