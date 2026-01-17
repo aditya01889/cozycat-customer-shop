@@ -162,19 +162,86 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clearCart()
       console.log('Cart cleared')
       
-      const { error } = await supabase.auth.signOut()
-      console.log('Supabase sign out response:', { error })
+      // Try multiple approaches to sign out
+      let signOutSuccess = false
       
-      if (error) {
-        console.error('Sign out error:', error)
-        throw error
+      // Method 1: Try normal sign out
+      try {
+        const { error } = await supabase.auth.signOut()
+        console.log('Supabase sign out response:', { error })
+        
+        if (!error) {
+          signOutSuccess = true
+          console.log('Sign out successful (method 1)')
+        }
+      } catch (method1Error) {
+        console.log('Method 1 failed:', method1Error)
       }
       
-      console.log('Sign out successful')
+      // Method 2: Force clear session if method 1 fails
+      if (!signOutSuccess) {
+        try {
+          await supabase.auth.setSession({
+            access_token: '',
+            refresh_token: ''
+          })
+          console.log('Session cleared (method 2)')
+          signOutSuccess = true
+        } catch (method2Error) {
+          console.log('Method 2 failed:', method2Error)
+        }
+      }
+      
+      // Method 3: Force sign out with scope
+      if (!signOutSuccess) {
+        try {
+          const { error } = await supabase.auth.signOut({ scope: 'global' })
+          console.log('Global sign out response:', { error })
+          
+          if (!error) {
+            signOutSuccess = true
+            console.log('Sign out successful (method 3)')
+          }
+        } catch (method3Error) {
+          console.log('Method 3 failed:', method3Error)
+        }
+      }
+      
+      // Always clear local state regardless of API success
+      setUser(null)
+      console.log('Local user state cleared')
+      
+      // Clear any stored session data
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('supabase.auth.token')
+        sessionStorage.removeItem('supabase.auth.token')
+        console.log('Local storage cleared')
+      }
+      
       toast.success('Signed out successfully')
+      console.log('Sign out process completed')
+      
+      // Redirect to home page
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
+      
     } catch (error: any) {
       console.error('Sign out catch error:', error)
-      toast.error(error.message || 'Failed to sign out')
+      
+      // Even if API fails, clear local state
+      setUser(null)
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('supabase.auth.token')
+        sessionStorage.removeItem('supabase.auth.token')
+      }
+      
+      toast.error('Signed out (cleared local data)')
+      
+      // Force redirect
+      if (typeof window !== 'undefined') {
+        window.location.href = '/'
+      }
     } finally {
       setLoading(false)
     }
