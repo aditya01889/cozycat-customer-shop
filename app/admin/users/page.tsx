@@ -31,6 +31,12 @@ function AdminUsersContent() {
   const [showAddNoteModal, setShowAddNoteModal] = useState(false)
   const [showCustomerOrders, setShowCustomerOrders] = useState(false)
   const [customerOrders, setCustomerOrders] = useState<any[]>([])
+  const [showEmailModal, setShowEmailModal] = useState(false)
+  const [emailSubject, setEmailSubject] = useState('')
+  const [emailBody, setEmailBody] = useState('')
+  const [editName, setEditName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
+  const [editPhone, setEditPhone] = useState('')
   const [userNote, setUserNote] = useState('')
 
   useEffect(() => {
@@ -39,14 +45,39 @@ function AdminUsersContent() {
 
   const fetchCustomerOrders = async (customerId: string) => {
     try {
+      console.log('Fetching orders for customer:', customerId)
+      
+      // First fetch the orders
       const { data: ordersData, error: ordersError } = await supabase
         .from('orders')
         .select('*')
         .eq('customer_id', customerId)
         .order('created_at', { ascending: false })
 
-      if (ordersError) throw ordersError
-      setCustomerOrders(ordersData || [])
+      if (ordersError) {
+        console.error('Orders fetch error:', ordersError)
+        throw ordersError
+      }
+
+      console.log('Found orders:', ordersData?.length || 0)
+
+      // Then fetch order items for each order
+      const ordersWithItems = await Promise.all(
+        (ordersData || []).map(async (order: any) => {
+          const { data: itemsData, error: itemsError } = await supabase
+            .from('order_items')
+            .select('*')
+            .eq('order_id', order.id)
+
+          return {
+            ...order,
+            items: itemsData || [],
+            items_count: itemsData?.length || 0
+          }
+        })
+      )
+
+      setCustomerOrders(ordersWithItems)
     } catch (error) {
       console.error('Error fetching customer orders:', error)
       setCustomerOrders([])
@@ -320,7 +351,12 @@ function AdminUsersContent() {
         <div
           key={user.id}
           className="border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow cursor-pointer"
-          onClick={() => setSelectedUser(user)}
+          onClick={() => {
+            console.log('User data clicked:', user)
+            console.log('User phone:', (user as any).phone)
+            console.log('User profiles:', (user as any).profiles)
+            setSelectedUser(user)
+          }}
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
@@ -332,13 +368,16 @@ function AdminUsersContent() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  {(user as any).profiles?.full_name || 
-                   `Customer ${(user as any).id?.slice(0, 8) || 'Unknown'}`}
+                  {(user as any).profiles?.full_name || 'Customer'}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  {(user as any).profiles?.email || 
-                   ((user as any).phone ? `Phone: ${(user as any).phone}` : 'No contact info')}
+                  {(user as any).profiles?.email || (user as any).email || 'No email'}
                 </p>
+                {(user as any).profiles?.phone && (
+                  <p className="text-sm text-gray-500">
+                    Phone: {(user as any).profiles?.phone}
+                  </p>
+                )}
               </div>
             </div>
             
@@ -403,9 +442,7 @@ function AdminUsersContent() {
                       {(selectedUser as any).profiles?.full_name || 'Unknown User'}
                     </h3>
                     <p className="text-sm text-gray-500">{(selectedUser as any).profiles?.email || 'No email'}</p>
-                    <div className="text-xs text-gray-400 mt-1">
-                      ID: {selectedUser.id}
-                    </div>
+                    <p className="text-sm text-gray-500">{(selectedUser as any).profiles?.phone || 'No phone'}</p>
                   </div>
                 </div>
                 
@@ -485,7 +522,9 @@ function AdminUsersContent() {
                       onClick={() => {
                         const email = (selectedUser as any).profiles?.email
                         if (email) {
-                          window.location.href = `mailto:${email}?subject=CozyCatKitchen - Customer Support&body=Dear ${(selectedUser as any).profiles?.full_name || 'Customer'},\n\n`
+                          setEmailSubject(`CozyCatKitchen - Regarding your recent orders`)
+                          setEmailBody(`Dear ${(selectedUser as any).profiles?.full_name || 'Customer'},\n\nWe hope you're enjoying your experience with CozyCatKitchen!\n\n`)
+                          setShowEmailModal(true)
                         } else {
                           alert('No email address available for this user')
                         }
@@ -515,7 +554,32 @@ function AdminUsersContent() {
                       Order History
                     </button>
                     <button 
-                      onClick={() => setShowPasswordModal(true)}
+                      onClick={async () => {
+                        const email = (selectedUser as any).profiles?.email
+                        const customerName = (selectedUser as any).profiles?.full_name || 'Unknown'
+                        
+                        if (!email) {
+                          alert('No email address available for this user')
+                          return
+                        }
+                        
+                        if (confirm(`Reset password for ${customerName}?\n\nThis will send a password reset email to: ${email}\n\nContinue?`)) {
+                          try {
+                            const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                              redirectTo: `${window.location.origin}/reset-password`
+                            })
+                            
+                            if (error) {
+                              alert(`Error sending reset email: ${error.message}`)
+                            } else {
+                              alert(`Password reset email sent successfully to ${email}!\n\nThe user will receive an email with instructions to reset their password.`)
+                              setShowPasswordModal(false)
+                            }
+                          } catch (error: any) {
+                            alert(`Failed to send reset email: ${error?.message || 'Unknown error'}`)
+                          }
+                        }
+                      }}
                       className="flex items-center justify-center px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition-colors font-medium"
                     >
                       <UserIcon className="w-4 h-4 mr-2" />
@@ -583,7 +647,12 @@ function AdminUsersContent() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-900">Edit User</h3>
             <button
-              onClick={() => setShowEditModal(false)}
+              onClick={() => {
+                setEditName((selectedUser as any).profiles?.full_name || '')
+                setEditEmail((selectedUser as any).profiles?.email || (selectedUser as any).email || '')
+                setEditPhone((selectedUser as any).profiles?.phone || (selectedUser as any).phone || '')
+                setShowEditModal(false)
+              }}
               className="text-gray-400 hover:text-gray-600"
             >
               <span className="text-2xl">✕</span>
@@ -595,7 +664,8 @@ function AdminUsersContent() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
               <input
                 type="text"
-                defaultValue={(selectedUser as any).profiles?.full_name || ''}
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
@@ -603,7 +673,8 @@ function AdminUsersContent() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input
                 type="email"
-                defaultValue={(selectedUser as any).profiles?.email || ''}
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
@@ -611,7 +682,8 @@ function AdminUsersContent() {
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
               <input
                 type="tel"
-                defaultValue={(selectedUser as any).profiles?.phone || (selectedUser as any).phone || ''}
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
               />
             </div>
@@ -625,9 +697,79 @@ function AdminUsersContent() {
               Cancel
             </button>
             <button
-              onClick={() => {
-                alert('User information updated successfully!')
-                setShowEditModal(false)
+              onClick={async () => {
+                console.log('Save button clicked')
+                console.log('Edit data:', { editName, editEmail, editPhone })
+                console.log('Selected user:', selectedUser)
+                
+                try {
+                  // Update profiles table
+                  const { error: profileError, data } = await supabase
+                    .from('profiles')
+                    .update({
+                      id: (selectedUser as any).profiles?.id,
+                      full_name: editName,
+                      email: editEmail,
+                      phone: editPhone
+                    })
+
+                  console.log('Profile update result:', { error: profileError, data })
+
+                  if (profileError) {
+                    console.error('Error updating profile:', profileError)
+                    alert(`Error updating profile: ${profileError.message}`)
+                    return
+                  }
+
+                  // Update customers table if phone exists
+                  if (editPhone) {
+                    console.log('Updating customer phone...')
+                    const { error: customerError, data } = await supabase
+                      .from('customers')
+                      .update({
+                        user_id: selectedUser.id,
+                        phone: editPhone
+                      })
+
+                    console.log('Customer update result:', { error: customerError, data })
+
+                    if (customerError) {
+                      console.error('Error updating customer phone:', customerError)
+                    }
+                  }
+
+                  // Update selectedUser state
+                  setSelectedUser({
+                    ...(selectedUser as any),
+                    profiles: {
+                      ...(selectedUser as any).profiles,
+                      full_name: editName,
+                      email: editEmail,
+                      phone: editPhone
+                    }
+                  })
+
+                  // Update users array
+                  setUsers(users.map(user => 
+                    user.id === selectedUser.id 
+                      ? {
+                          ...user,
+                          profiles: {
+                            ...(user as any).profiles,
+                            full_name: editName,
+                            email: editEmail,
+                            phone: editPhone
+                          }
+                        }
+                      : user
+                  ))
+
+                  alert('User information updated successfully!')
+                  setShowEditModal(false)
+                } catch (error: any) {
+                  console.error('Error updating user:', error)
+                  alert(`Failed to update user: ${error?.message || 'Unknown error'}`)
+                }
               }}
               className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"
             >
@@ -797,6 +939,110 @@ function AdminUsersContent() {
       </div>
     )}
 
+    {/* Email Compose Modal */}
+    {showEmailModal && selectedUser && (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-6">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-xl font-bold text-gray-900">Compose Email</h3>
+            <button
+              onClick={() => setShowEmailModal(false)}
+              className="text-gray-400 hover:text-gray-600"
+            >
+              <span className="text-2xl">✕</span>
+            </button>
+          </div>
+          
+          <div className="mb-4">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">To:</span> {(selectedUser as any).profiles?.email || 'No email'}<br/>
+                <span className="font-medium">Customer:</span> {(selectedUser as any).profiles?.full_name || 'Unknown'}
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+              <input
+                type="text"
+                value={emailSubject}
+                onChange={(e) => setEmailSubject(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                placeholder="Enter email subject..."
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Message</label>
+              <textarea
+                value={emailBody}
+                onChange={(e) => setEmailBody(e.target.value)}
+                placeholder="Type your message here..."
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                rows={8}
+              />
+            </div>
+          </div>
+          
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => setShowEmailModal(false)}
+              className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={async () => {
+                const email = (selectedUser as any).profiles?.email
+                const customerName = (selectedUser as any).profiles?.full_name || 'Customer'
+                
+                if (!emailSubject.trim() || !emailBody.trim()) {
+                  alert('Please fill in both subject and message')
+                  return
+                }
+                
+                try {
+                  // Call Next.js API route
+                  const response = await fetch('/api/send-email', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      to: email,
+                      subject: emailSubject,
+                      body: emailBody,
+                      customerName: customerName
+                    })
+                  })
+
+                  const data = await response.json()
+
+                  if (!response.ok) {
+                    throw new Error(data.error || 'Failed to send email')
+                  }
+
+                  alert(`Email sent successfully to ${email}!\n\nSubject: ${emailSubject}\n\nMessage:\n${emailBody}`)
+                  
+                  // Reset form and close modal
+                  setEmailSubject('')
+                  setEmailBody('')
+                  setShowEmailModal(false)
+                } catch (error: any) {
+                  alert(`Failed to send email: ${error?.message || 'Unknown error'}`)
+                }
+              }}
+              className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
+            >
+              Send Email
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+
     {/* Customer Orders Modal */}
     {showCustomerOrders && selectedUser && (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -847,7 +1093,7 @@ function AdminUsersContent() {
                     </div>
                     <div className="text-right">
                       <p className="text-lg font-semibold text-gray-900">₹{order.total_amount || 0}</p>
-                      <p className="text-sm text-gray-600">{order.items?.length || 0} items</p>
+                      <p className="text-sm text-gray-600">{order.items_count || 0} items</p>
                     </div>
                   </div>
                 </div>

@@ -355,7 +355,6 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
-          )}
         </div>
 
         {/* Account Actions */}
