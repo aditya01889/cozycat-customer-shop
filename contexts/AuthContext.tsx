@@ -155,14 +155,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
       
-      // Clear the cart before signing out
+      console.log('Starting sign out process...')
+      
+      // Clear cart before signing out
       const { clearCart } = useCartStore.getState()
       clearCart()
+      console.log('Cart cleared')
       
       const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      console.log('Supabase sign out response:', { error })
+      
+      if (error) {
+        console.error('Sign out error:', error)
+        throw error
+      }
+      
+      console.log('Sign out successful')
       toast.success('Signed out successfully')
     } catch (error: any) {
+      console.error('Sign out catch error:', error)
       toast.error(error.message || 'Failed to sign out')
     } finally {
       setLoading(false)

@@ -38,6 +38,7 @@ export default function ProfilePage() {
 
   const fetchUserOrders = async () => {
     try {
+      console.log('Fetching orders for user:', user?.id)
       // Fetch orders for the current user
       const { data, error } = await supabase
         .from('orders')
@@ -53,7 +54,12 @@ export default function ProfilePage() {
         .order('created_at', { ascending: false })
         .limit(10)
 
-      if (error) throw error
+      console.log('Orders response:', { data, error })
+      
+      if (error) {
+        console.error('Supabase error:', error)
+        throw error
+      }
       setOrders(data || [])
     } catch (error) {
       console.error('Error fetching orders:', error)
