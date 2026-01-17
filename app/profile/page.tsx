@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
-import { User, Package, MapPin, Phone, Mail, Calendar, LogOut, Edit2, ArrowRight } from 'lucide-react'
+import { User, Package, MapPin, Phone, Mail, Calendar, LogOut, Edit2, ArrowRight, AlertTriangle, X } from 'lucide-react'
 import Link from 'next/link'
+import toast from 'react-hot-toast'
 
 interface Order {
   id: string
@@ -29,6 +30,8 @@ export default function ProfilePage() {
   const { user, signOut } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -71,19 +74,17 @@ export default function ProfilePage() {
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'pending':
-        return 'text-orange-600 bg-orange-50'
-      case 'confirmed':
-        return 'text-blue-600 bg-blue-50'
-      case 'in_production':
-        return 'text-purple-600 bg-purple-50'
-      case 'ready':
-        return 'text-green-600 bg-green-50'
-      case 'out_for_delivery':
-        return 'text-indigo-600 bg-indigo-50'
+        return 'bg-yellow-100 text-yellow-800'
+      case 'processing':
+        return 'bg-blue-100 text-blue-800'
+      case 'shipped':
+        return 'bg-purple-100 text-purple-800'
       case 'delivered':
-        return 'text-gray-600 bg-gray-50'
+        return 'bg-green-100 text-green-800'
+      case 'cancelled':
+        return 'bg-red-100 text-red-800'
       default:
-        return 'text-gray-600 bg-gray-50'
+        return 'bg-gray-100 text-gray-800'
     }
   }
 
@@ -93,6 +94,44 @@ export default function ProfilePage() {
       month: 'short',
       year: 'numeric'
     })
+  }
+
+  const handleDeleteAccount = async () => {
+    if (!user) return
+    
+    setDeleteLoading(true)
+    try {
+      // Get the current session token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        toast.error('Authentication error. Please sign in again.')
+        return
+      }
+
+      const response = await fetch('/api/user/delete-account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+      })
+
+      if (response.ok) {
+        toast.success('Account deleted successfully')
+        setShowDeleteModal(false)
+        // Sign out and redirect to home
+        await signOut()
+        window.location.href = '/'
+      } else {
+        const error = await response.json()
+        toast.error(error.message || 'Failed to delete account')
+      }
+    } catch (error) {
+      toast.error('An error occurred while deleting your account')
+    } finally {
+      setDeleteLoading(false)
+    }
   }
 
   if (!user) {
@@ -336,6 +375,14 @@ export default function ProfilePage() {
             </Link>
             
             <button
+              onClick={() => setShowDeleteModal(true)}
+              className="flex items-center justify-center w-full px-6 py-3 bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition-colors font-medium"
+            >
+              <span className="mr-2">🗑️</span>
+              Delete Account
+            </button>
+            
+            <button
               onClick={signOut}
               className="flex items-center justify-center w-full px-6 py-3 bg-gray-100 text-gray-700 rounded-full hover:bg-gray-200 transition-colors font-medium"
             >
@@ -358,6 +405,68 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-900 flex items-center">
+                <AlertTriangle className="w-6 h-6 text-red-500 mr-2" />
+                Delete Account
+              </h3>
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="mb-6">
+              <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                <p className="text-red-800 font-medium mb-2">⚠️ This action cannot be undone</p>
+                <p className="text-red-700 text-sm">
+                  Deleting your account will permanently remove:
+                </p>
+                <ul className="text-red-700 text-sm mt-2 ml-4 list-disc">
+                  <li>Your profile information</li>
+                  <li>Order history</li>
+                  <li>Saved preferences</li>
+                  <li>All account data</li>
+                </ul>
+              </div>
+
+              <p className="text-gray-600 text-sm">
+                Are you sure you want to delete your account? This action is permanent and cannot be recovered.
+              </p>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {deleteLoading ? (
+                  <>
+                    <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></span>
+                    Deleting...
+                  </>
+                ) : (
+                  'Delete Account'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
