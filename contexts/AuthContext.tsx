@@ -137,39 +137,108 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       console.log('🔐 Starting sign in process...')
       
-      // Add timeout to prevent hanging
-      const signInPromise = supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Sign in timeout - please try again')), 10000)
-      )
+      // Try multiple approaches for sign in
+      let signInSuccess = false
+      let userData = null
+      let lastError = null
       
-      const { data, error } = await Promise.race([signInPromise, timeoutPromise]) as any
-      console.log('📋 Sign in response:', { error, user: !!data?.user })
-      
-      if (error) {
-        console.error('❌ Sign in failed:', error)
-        throw error
+      // Method 1: Standard sign in with shorter timeout
+      try {
+        console.log('🔄 Method 1: Standard sign in...')
+        const signInPromise = supabase.auth.signInWithPassword({
+          email,
+          password,
+        })
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Standard sign in timeout')), 5000)
+        )
+        
+        const { data, error } = await Promise.race([signInPromise, timeoutPromise]) as any
+        console.log('📋 Method 1 response:', { error, user: !!data?.user })
+        
+        if (!error && data?.user) {
+          signInSuccess = true
+          userData = data.user
+          console.log('✅ Method 1 successful')
+        } else {
+          lastError = error
+          console.log('❌ Method 1 failed:', error)
+        }
+      } catch (method1Error) {
+        lastError = method1Error
+        console.log('❌ Method 1 exception:', method1Error)
       }
       
-      console.log('✅ Sign in successful')
-      toast.success('Welcome back!')
-    } catch (error: any) {
-      console.error('💥 Sign in error:', error)
+      // Method 2: Try with different auth options if method 1 fails
+      if (!signInSuccess) {
+        try {
+          console.log('🔄 Method 2: Alternative sign in...')
+          
+          // Create a new client instance with different options
+          const { createClient } = await import('@/lib/supabase/client')
+          const altSupabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            {
+              auth: {
+                persistSession: false,
+                autoRefreshToken: false,
+              }
+            }
+          )
+          
+          const signInPromise = altSupabase.auth.signInWithPassword({
+            email,
+            password,
+          })
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Alternative sign in timeout')), 5000)
+          )
+          
+          const { data, error } = await Promise.race([signInPromise, timeoutPromise]) as any
+          console.log('📋 Method 2 response:', { error, user: !!data?.user })
+          
+          if (!error && data?.user) {
+            signInSuccess = true
+            userData = data.user
+            console.log('✅ Method 2 successful')
+          } else {
+            lastError = error
+            console.log('❌ Method 2 failed:', error)
+          }
+        } catch (method2Error) {
+          lastError = method2Error
+          console.log('❌ Method 2 exception:', method2Error)
+        }
+      }
+      
+      if (signInSuccess && userData) {
+        console.log('🎉 Sign in successful overall')
+        toast.success('Welcome back!')
+        return
+      }
+      
+      // All methods failed
+      console.error('💥 All sign in methods failed:', lastError)
       
       // Provide better error messages
       let errorMessage = 'Failed to sign in'
-      if (error.message?.includes('timeout')) {
-        errorMessage = 'Sign in timed out - please check your connection and try again'
-      } else if (error.message?.includes('Invalid login credentials')) {
+      if (lastError?.message?.includes('timeout')) {
+        errorMessage = 'Sign in is currently experiencing issues. Please try again in a few minutes.'
+      } else if (lastError?.message?.includes('Invalid login credentials')) {
         errorMessage = 'Invalid email or password'
-      } else if (error.message) {
-        errorMessage = error.message
+      } else if (lastError?.message) {
+        errorMessage = lastError.message
+      } else {
+        errorMessage = 'Authentication service is temporarily unavailable. Please try again later.'
       }
       
       toast.error(errorMessage)
+      throw new Error(errorMessage)
+      
+    } catch (error: any) {
+      console.error('💥 Sign in catch error:', error)
+      toast.error(error.message || 'Failed to sign in')
       throw error
     } finally {
       setLoading(false)
