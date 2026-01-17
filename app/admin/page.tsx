@@ -61,15 +61,23 @@ function AdminDashboardContent() {
 
       console.log('Products count:', productsCount)
 
-      // Fetch orders count and recent orders
-      const { data: orders, count: ordersCount } = await supabase
+      // Fetch total orders count (excluding cancelled orders)
+      const { count: ordersCount } = await supabase
+        .from('orders')
+        .select('*', { count: 'exact', head: true })
+        .neq('status', 'cancelled')
+
+      console.log('Orders count:', ordersCount)
+
+      // Fetch recent orders (limited to 5, excluding cancelled)
+      const { data: orders } = await supabase
         .from('orders')
         .select('*')
+        .neq('status', 'cancelled')
         .order('created_at', { ascending: false })
         .limit(5)
 
-      console.log('Orders data:', orders)
-      console.log('Orders count:', ordersCount)
+      console.log('Recent orders data:', orders)
 
       // Fetch pending orders count
       const { count: pendingCount } = await supabase
@@ -79,15 +87,18 @@ function AdminDashboardContent() {
 
       console.log('Pending count:', pendingCount)
 
-      // Calculate total revenue (only from delivered orders)
-      const { data: deliveredOrders } = await supabase
+      // Calculate total revenue (from all non-cancelled orders)
+      const { data: allOrders } = await supabase
         .from('orders')
         .select('total_amount')
-        .eq('status', 'delivered')
+        .neq('status', 'cancelled')
 
-      console.log('Delivered orders:', deliveredOrders)
+      console.log('All orders for revenue:', allOrders)
 
-      const revenue = deliveredOrders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+      const revenue = allOrders?.reduce((sum, order) => {
+        const amount = parseFloat(order.total_amount) || 0
+        return sum + amount
+      }, 0) || 0
       console.log('Total revenue:', revenue)
 
       // Fetch users count (from profiles table)
