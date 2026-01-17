@@ -135,16 +135,41 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = async (email: string, password: string) => {
     try {
       setLoading(true)
-      const { data, error } = await supabase.auth.signInWithPassword({
+      console.log('🔐 Starting sign in process...')
+      
+      // Add timeout to prevent hanging
+      const signInPromise = supabase.auth.signInWithPassword({
         email,
         password,
       })
-
-      if (error) throw error
-
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Sign in timeout - please try again')), 10000)
+      )
+      
+      const { data, error } = await Promise.race([signInPromise, timeoutPromise]) as any
+      console.log('📋 Sign in response:', { error, user: !!data?.user })
+      
+      if (error) {
+        console.error('❌ Sign in failed:', error)
+        throw error
+      }
+      
+      console.log('✅ Sign in successful')
       toast.success('Welcome back!')
     } catch (error: any) {
-      toast.error(error.message || 'Failed to sign in')
+      console.error('💥 Sign in error:', error)
+      
+      // Provide better error messages
+      let errorMessage = 'Failed to sign in'
+      if (error.message?.includes('timeout')) {
+        errorMessage = 'Sign in timed out - please check your connection and try again'
+      } else if (error.message?.includes('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+      
+      toast.error(errorMessage)
       throw error
     } finally {
       setLoading(false)
