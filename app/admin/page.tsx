@@ -52,10 +52,14 @@ function AdminDashboardContent() {
 
   const fetchDashboardStats = async () => {
     try {
+      console.log('Fetching dashboard stats...')
+      
       // Fetch products count
       const { count: productsCount } = await supabase
         .from('products')
         .select('*', { count: 'exact', head: true })
+
+      console.log('Products count:', productsCount)
 
       // Fetch orders count and recent orders
       const { data: orders, count: ordersCount } = await supabase
@@ -64,24 +68,34 @@ function AdminDashboardContent() {
         .order('created_at', { ascending: false })
         .limit(5)
 
+      console.log('Orders data:', orders)
+      console.log('Orders count:', ordersCount)
+
       // Fetch pending orders count
       const { count: pendingCount } = await supabase
         .from('orders')
         .select('*', { count: 'exact', head: true })
         .eq('status', 'pending')
 
-      // Calculate total revenue
-      const { data: allOrders } = await supabase
+      console.log('Pending count:', pendingCount)
+
+      // Calculate total revenue (only from delivered orders)
+      const { data: deliveredOrders } = await supabase
         .from('orders')
         .select('total_amount')
-        .in('status', ['delivered', 'ready', 'out_for_delivery'])
+        .eq('status', 'delivered')
 
-      const revenue = allOrders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+      console.log('Delivered orders:', deliveredOrders)
 
-      // Fetch users count (approximate)
+      const revenue = deliveredOrders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+      console.log('Total revenue:', revenue)
+
+      // Fetch users count (from profiles table)
       const { count: usersCount } = await supabase
         .from('profiles')
         .select('*', { count: 'exact', head: true })
+
+      console.log('Users count:', usersCount)
 
       setStats({
         totalProducts: productsCount || 0,

@@ -26,9 +26,10 @@ type Order = Database['public']['Tables']['orders']['Row'] & {
 interface OrderTrackingProps {
   order: Order
   fromProfile?: boolean
+  fromAdmin?: boolean
 }
 
-export default function OrderTracking({ order, fromProfile = false }: OrderTrackingProps) {
+export default function OrderTracking({ order, fromProfile = false, fromAdmin = false }: OrderTrackingProps) {
   const [customerInfo, setCustomerInfo] = useState<any>(null)
 
   useEffect(() => {
@@ -131,9 +132,9 @@ export default function OrderTracking({ order, fromProfile = false }: OrderTrack
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <Link href={fromProfile ? "/profile" : "/track-order"} className="flex items-center text-gray-600 hover:text-gray-900 mr-4">
+              <Link href={fromAdmin ? "/admin/orders" : fromProfile ? "/profile" : "/track-order"} className="flex items-center text-gray-600 hover:text-gray-900 mr-4">
                 <ArrowLeft className="w-5 h-5 mr-2" />
-                Back to {fromProfile ? "Profile" : "Track Order"}
+                Back to {fromAdmin ? "Order Management" : fromProfile ? "Profile" : "Track Order"}
               </Link>
               <span className="text-2xl mr-3">🐾</span>
               <h1 className="text-xl font-bold text-gray-900">Order Tracking</h1>

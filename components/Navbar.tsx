@@ -47,7 +47,7 @@ export default function Navbar() {
             {user ? (
               <>
                 {(user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin')) && (
-                  <Link href="/admin/products" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
+                  <Link href="/admin" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
                     <span className="text-lg">⚙️</span>
                     Admin
                   </Link>
@@ -114,7 +114,7 @@ export default function Navbar() {
               <>
                 {user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin') && (
                   <Link
-                    href="/admin/products"
+                    href="/admin"
                     className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
                     onClick={() => setIsMenuOpen(false)}
                   >

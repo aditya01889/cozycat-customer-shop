@@ -16,7 +16,7 @@ export default function AdminAuth({ children }: { children: React.ReactNode }) {
 
     // Admin check - user must have "aditya01889@gmail.com" or contain "admin"
     if (!loading && user && !(user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin'))) {
-      router.push('/')
+      router.push('/admin')
       return
     }
   }, [user, loading, router])

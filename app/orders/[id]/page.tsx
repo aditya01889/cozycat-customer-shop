@@ -19,8 +19,9 @@ export default async function OrderTrackingPage({
   const resolvedSearchParams = await searchParams
   const supabase = await createClient()
 
-  // Check if user came from profile page
+  // Check where user came from
   const fromProfile = resolvedSearchParams.from === 'profile'
+  const fromAdmin = resolvedSearchParams.from === 'admin'
 
   // Try to find order by order_number first, then by ID
   let order: Order | null = null
@@ -69,5 +70,5 @@ export default async function OrderTrackingPage({
     notFound()
   }
 
-  return <OrderTracking order={order} fromProfile={fromProfile} />
+  return <OrderTracking order={order} fromProfile={fromProfile} fromAdmin={fromAdmin} />
 }
