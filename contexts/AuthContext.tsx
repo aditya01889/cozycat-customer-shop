@@ -169,15 +169,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Method 1: Try normal sign out
       try {
         console.log('🔄 Method 1: Trying normal sign out...')
-        const { error } = await supabase.auth.signOut()
-        console.log('📋 Supabase sign out response:', { error })
         
-        if (!error) {
+        // Add timeout to prevent hanging
+        const signOutPromise = supabase.auth.signOut()
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Sign out timeout')), 5000)
+        )
+        
+        const result = await Promise.race([signOutPromise, timeoutPromise]) as any
+        console.log('📋 Supabase sign out response:', { error: result?.error })
+        
+        if (!result?.error) {
           signOutSuccess = true
           console.log('✅ Sign out successful (method 1)')
         } else {
-          errorDetails = error
-          console.log('❌ Method 1 failed with error:', error)
+          errorDetails = result.error
+          console.log('❌ Method 1 failed with error:', result.error)
         }
       } catch (method1Error) {
         errorDetails = method1Error
