@@ -344,7 +344,7 @@ export default function ProfilePage() {
                           </div>
                           
                           <div className="text-right text-sm text-gray-500">
-                            {order.delivery_notes && !order.delivery_notes.includes('customer_name') && (
+                            {order.delivery_notes && !order.delivery_notes.includes("customer_name") && (
                               <p className="italic">"{order.delivery_notes}"</p>
                             )}
                           </div>
@@ -355,6 +355,7 @@ export default function ProfilePage() {
                 </div>
               )}
             </div>
+          )}
         </div>
 
         {/* Account Actions */}
