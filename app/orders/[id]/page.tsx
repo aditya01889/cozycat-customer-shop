@@ -9,12 +9,18 @@ type Order = Database['public']['Tables']['orders']['Row'] & {
 }
 
 export default async function OrderTrackingPage({
-  params
+  params,
+  searchParams
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ from?: string }>
 }) {
   const resolvedParams = await params
+  const resolvedSearchParams = await searchParams
   const supabase = await createClient()
+
+  // Check if user came from profile page
+  const fromProfile = resolvedSearchParams.from === 'profile'
 
   // Try to find order by order_number first, then by ID
   let order: Order | null = null
@@ -63,5 +69,5 @@ export default async function OrderTrackingPage({
     notFound()
   }
 
-  return <OrderTracking order={order} />
+  return <OrderTracking order={order} fromProfile={fromProfile} />
 }

@@ -303,7 +303,7 @@ export default function ProfilePage() {
                   {orders.map((order) => (
                     <Link 
                       key={order.id} 
-                      href={`/orders/${order.id}`}
+                      href={`/orders/${order.id}?from=profile`}
                       className="block bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
                     >
                       <div className="p-6">
