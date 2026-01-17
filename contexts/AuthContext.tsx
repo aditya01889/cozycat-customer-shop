@@ -155,93 +155,124 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
       
-      console.log('Starting sign out process...')
+      console.log('🚀 Starting sign out process...')
       
       // Clear cart before signing out
       const { clearCart } = useCartStore.getState()
       clearCart()
-      console.log('Cart cleared')
+      console.log('✅ Cart cleared')
       
       // Try multiple approaches to sign out
       let signOutSuccess = false
+      let errorDetails = null
       
       // Method 1: Try normal sign out
       try {
+        console.log('🔄 Method 1: Trying normal sign out...')
         const { error } = await supabase.auth.signOut()
-        console.log('Supabase sign out response:', { error })
+        console.log('📋 Supabase sign out response:', { error })
         
         if (!error) {
           signOutSuccess = true
-          console.log('Sign out successful (method 1)')
+          console.log('✅ Sign out successful (method 1)')
+        } else {
+          errorDetails = error
+          console.log('❌ Method 1 failed with error:', error)
         }
       } catch (method1Error) {
-        console.log('Method 1 failed:', method1Error)
+        errorDetails = method1Error
+        console.log('❌ Method 1 failed with exception:', method1Error)
       }
       
       // Method 2: Force clear session if method 1 fails
       if (!signOutSuccess) {
         try {
+          console.log('🔄 Method 2: Trying to clear session...')
           await supabase.auth.setSession({
             access_token: '',
             refresh_token: ''
           })
-          console.log('Session cleared (method 2)')
+          console.log('✅ Session cleared (method 2)')
           signOutSuccess = true
         } catch (method2Error) {
-          console.log('Method 2 failed:', method2Error)
+          console.log('❌ Method 2 failed:', method2Error)
+          errorDetails = method2Error
         }
       }
       
       // Method 3: Force sign out with scope
       if (!signOutSuccess) {
         try {
+          console.log('🔄 Method 3: Trying global sign out...')
           const { error } = await supabase.auth.signOut({ scope: 'global' })
-          console.log('Global sign out response:', { error })
+          console.log('📋 Global sign out response:', { error })
           
           if (!error) {
             signOutSuccess = true
-            console.log('Sign out successful (method 3)')
+            console.log('✅ Sign out successful (method 3)')
+          } else {
+            errorDetails = error
+            console.log('❌ Method 3 failed:', error)
           }
         } catch (method3Error) {
-          console.log('Method 3 failed:', method3Error)
+          console.log('❌ Method 3 failed:', method3Error)
+          errorDetails = method3Error
         }
       }
       
       // Always clear local state regardless of API success
+      console.log('🧹 Clearing local state...')
       setUser(null)
-      console.log('Local user state cleared')
+      console.log('✅ Local user state cleared')
       
       // Clear any stored session data
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('supabase.auth.token')
-        sessionStorage.removeItem('supabase.auth.token')
-        console.log('Local storage cleared')
+        const keysToRemove = ['supabase.auth.token', 'supabase.auth.refreshToken']
+        keysToRemove.forEach(key => {
+          localStorage.removeItem(key)
+          sessionStorage.removeItem(key)
+        })
+        console.log('✅ Local storage cleared')
       }
       
-      toast.success('Signed out successfully')
-      console.log('Sign out process completed')
-      
-      // Redirect to home page
-      if (typeof window !== 'undefined') {
-        window.location.href = '/'
+      // Show appropriate message
+      if (signOutSuccess) {
+        toast.success('Signed out successfully!')
+        console.log('🎉 Sign out process completed successfully')
+      } else {
+        toast.success('Signed out (cleared local data)')
+        console.log('⚠️ Sign out completed with fallback, API error:', errorDetails)
       }
+      
+      // Add delay before redirect to see console logs
+      console.log('⏳ Redirecting to home page in 2 seconds...')
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          console.log('🏠 Redirecting to home page now')
+          window.location.href = '/'
+        }
+      }, 2000)
       
     } catch (error: any) {
-      console.error('Sign out catch error:', error)
+      console.error('💥 Sign out catch error:', error)
       
-      // Even if API fails, clear local state
+      // Even if everything fails, clear local state
       setUser(null)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('supabase.auth.token')
         sessionStorage.removeItem('supabase.auth.token')
       }
       
-      toast.error('Signed out (cleared local data)')
+      toast.error('Signed out (emergency fallback)')
+      console.log('🚨 Emergency sign out completed')
       
-      // Force redirect
-      if (typeof window !== 'undefined') {
-        window.location.href = '/'
-      }
+      // Force redirect after delay
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          console.log('🏠 Emergency redirect to home page')
+          window.location.href = '/'
+        }
+      }, 2000)
     } finally {
       setLoading(false)
     }
