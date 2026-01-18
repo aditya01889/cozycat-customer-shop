@@ -8,6 +8,7 @@ import { supabase } from '@/lib/supabase/client'
 import { useToast } from '@/components/Toast/ToastProvider'
 import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 import { ArrowLeft, Truck, Shield, CreditCard, User, Phone, MapPin } from 'lucide-react'
+import { RazorpayClient, RazorpayOptions, RazorpayResponse } from '@/lib/razorpay/client'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -36,10 +37,95 @@ export default function CheckoutPage() {
   })
 
   const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod')
+  const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null)
 
   const subtotal = getTotalPrice()
   const deliveryFee = subtotal >= 500 ? 0 : 40
   const total = subtotal + deliveryFee
+
+  const processRazorpayPayment = async (orderId: string, orderNumber: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const razorpayClient = RazorpayClient.getInstance()
+      
+      const options: RazorpayOptions = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+        amount: total * 100, // Convert to paise
+        currency: 'INR',
+        name: 'CozyCat',
+        description: `Order ${orderNumber}`,
+        order_id: orderId,
+        prefill: {
+          name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+          email: customerInfo.email,
+          contact: customerInfo.phone,
+        },
+        notes: {
+          order_number: orderNumber,
+          customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+          customer_phone: customerInfo.phone,
+        },
+        theme: {
+          color: '#f97316', // Orange color
+        },
+        handler: async (response: RazorpayResponse) => {
+          try {
+            // Verify payment on server
+            const verifyResponse = await fetch('/api/razorpay/verify', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+                orderNumber: orderNumber,
+              })
+            })
+
+            const verificationData = await verifyResponse.json()
+            
+            if (verificationData.success) {
+              resolve(true)
+            } else {
+              showError(ErrorHandler.createError(
+                ErrorType.PAYMENT,
+                'Payment verification failed',
+                null,
+                400,
+                'payment verification'
+              ))
+              resolve(false)
+            }
+          } catch (error) {
+            const appError = ErrorHandler.fromError(error, 'payment verification')
+            showError(appError)
+            resolve(false)
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            resolve(false)
+          },
+        },
+      }
+
+      // Load Razorpay script and open payment modal
+      razorpayClient.loadScript().then(() => {
+        razorpayClient.openPayment(options)
+      }).catch((error) => {
+        console.error('Failed to load Razorpay:', error)
+        showError(ErrorHandler.createError(
+          ErrorType.PAYMENT,
+          'Failed to load payment gateway',
+          null,
+          500,
+          'payment gateway'
+        ))
+        resolve(false)
+      })
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -169,6 +255,43 @@ export default function CheckoutPage() {
 
       if (itemsError) {
         throw itemsError
+      }
+
+      // Handle payment based on method
+      if (paymentMethod === 'online') {
+        // Create Razorpay order first
+        const razorpayResponse = await fetch('/api/razorpay/create-order', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: total,
+            currency: 'INR',
+            receipt: orderNumber,
+            notes: {
+              order_number: orderNumber,
+              customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
+              customer_phone: customerInfo.phone,
+              customer_email: customerInfo.email,
+            }
+          })
+        })
+
+        const razorpayData = await razorpayResponse.json()
+        
+        if (!razorpayData.success) {
+          throw new Error('Failed to create payment order')
+        }
+
+        setRazorpayOrderId(razorpayData.order.id)
+
+        // Process payment with Razorpay
+        const paymentSuccess = await processRazorpayPayment(razorpayData.order.id, orderNumber)
+        
+        if (!paymentSuccess) {
+          throw new Error('Payment failed')
+        }
       }
 
       // Clear cart and redirect to success
@@ -418,7 +541,7 @@ export default function CheckoutPage() {
                 </div>
               </label>
               
-              <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 opacity-50">
+              <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
                 <input
                   type="radio"
                   name="payment"
@@ -426,11 +549,10 @@ export default function CheckoutPage() {
                   checked={paymentMethod === 'online'}
                   onChange={(e) => setPaymentMethod(e.target.value as 'online')}
                   className="mr-3"
-                  disabled
                 />
                 <div>
                   <div className="font-medium">Online Payment</div>
-                  <div className="text-sm text-gray-600">Coming soon</div>
+                  <div className="text-sm text-gray-600">Pay securely with UPI, Cards, Wallets</div>
                 </div>
               </label>
             </div>
