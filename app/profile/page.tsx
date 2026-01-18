@@ -3,10 +3,12 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
-import { User, Package, MapPin, Phone, Mail, Calendar, LogOut, Edit2, ArrowRight, AlertTriangle, X } from 'lucide-react'
+import { User, Package, MapPin, Phone, Mail, Calendar, LogOut, Edit2, ArrowRight, AlertTriangle, X, CreditCard, Home } from 'lucide-react'
 import Link from 'next/link'
 import { useToast } from '@/components/Toast/ToastProvider'
 import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
+import SimpleAddressManager from '@/components/SimpleAddressManager'
+import PaymentMethodManager from '@/components/PaymentMethodManager'
 
 interface Order {
   id: string
@@ -27,6 +29,34 @@ interface Order {
   }
 }
 
+interface Address {
+  id: string
+  address_line1: string
+  address_line2: string
+  landmark: string
+  city: string
+  state: string
+  pincode: string
+  latitude: number | null
+  longitude: number | null
+  is_default: boolean
+  delivery_notes: string
+}
+
+interface PaymentMethod {
+  id: string
+  type: 'card' | 'upi' | 'wallet'
+  provider: string
+  last_four?: string
+  brand?: string
+  expiry_month?: number
+  expiry_year?: number
+  upi_id?: string
+  wallet_name?: string
+  is_default: boolean
+  created_at: string
+}
+
 interface Profile {
   full_name: string
   phone: string | null
@@ -37,17 +67,76 @@ export default function ProfilePage() {
   const { user, signOut } = useAuth()
   const [orders, setOrders] = useState<Order[]>([])
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [addresses, setAddresses] = useState<Address[]>([])
+  const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([])
   const [loading, setLoading] = useState(true)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState<'orders' | 'addresses' | 'payments'>('orders')
   const { showError, showSuccess } = useToast()
 
   useEffect(() => {
     if (user) {
       fetchUserProfile()
       fetchUserOrders()
+      fetchUserAddresses()
+      fetchUserPaymentMethods()
     }
   }, [user])
+
+  const fetchUserAddresses = async () => {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      console.log('Profile - Addresses fetch session:', { session: !!session, userId: session?.user?.id, sessionError })
+      
+      if (!session?.access_token) {
+        console.error('No session token available')
+        return
+      }
+
+      const response = await fetch('/api/user/addresses', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      const data = await response.json()
+      
+      if (data.success) {
+        setAddresses(data.addresses || [])
+      } else {
+        console.error('Error fetching addresses:', data.error)
+      }
+    } catch (error) {
+      console.error('Error fetching addresses:', error)
+    }
+  }
+
+  const fetchUserPaymentMethods = async () => {
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      console.log('Profile - Payment methods fetch session:', { session: !!session, userId: session?.user?.id, sessionError })
+      
+      if (!session?.access_token) {
+        console.error('No session token available')
+        return
+      }
+
+      const response = await fetch('/api/user/payment-methods', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      const data = await response.json()
+      
+      if (data.success) {
+        setPaymentMethods(data.paymentMethods || [])
+      } else {
+        console.error('Error fetching payment methods:', data.error)
+      }
+    } catch (error) {
+      console.error('Error fetching payment methods:', error)
+    }
+  }
 
   const fetchUserProfile = async () => {
     try {
@@ -97,6 +186,353 @@ export default function ProfilePage() {
       console.error('Error fetching orders:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleAddAddress = async (address: Omit<Address, 'id'>) => {
+    try {
+      const session = await supabase.auth.getSession()
+      if (!session.data.session) {
+        throw new Error('No valid session')
+      }
+
+      console.log('Adding address:', address)
+
+      const response = await fetch('/api/user/addresses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.data.session.access_token}`
+        },
+        body: JSON.stringify(address)
+      })
+
+      const data = await response.json()
+      console.log('Add address response:', data)
+      console.log('Error details:', data.details)
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to add address')
+      }
+
+      await fetchUserAddresses()
+      showSuccess('Address added successfully!')
+    } catch (error) {
+      console.error('Error adding address:', error)
+      const appError = ErrorHandler.fromError(error, 'address management')
+      showError(appError)
+    }
+  }
+
+  const handleUpdateAddress = async (id: string, address: Partial<Address>) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        showError(ErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          'Authentication error. Please sign in again.',
+          null,
+          401,
+          'address management'
+        ))
+        return
+      }
+
+      const response = await fetch(`/api/user/addresses/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(address)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setAddresses(prev => prev.map(addr => 
+          addr.id === id ? { ...addr, ...address } : addr
+        ))
+        showSuccess('Address updated successfully!')
+      } else {
+        showError(ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          data.error || 'Failed to update address',
+          null,
+          400,
+          'address management'
+        ))
+      }
+    } catch (error) {
+      const appError = ErrorHandler.fromError(error, 'address management')
+      showError(appError)
+    }
+  }
+
+  const handleDeleteAddress = async (id: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        showError(ErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          'Authentication error. Please sign in again.',
+          null,
+          401,
+          'address management'
+        ))
+        return
+      }
+
+      const response = await fetch(`/api/user/addresses/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setAddresses(prev => prev.filter(addr => addr.id !== id))
+        showSuccess('Address deleted successfully!')
+      } else {
+        showError(ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          data.error || 'Failed to delete address',
+          null,
+          400,
+          'address management'
+        ))
+      }
+    } catch (error) {
+      const appError = ErrorHandler.fromError(error, 'address management')
+      showError(appError)
+    }
+  }
+
+  const handleSetDefaultAddress = async (id: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        showError(ErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          'Authentication error. Please sign in again.',
+          null,
+          401,
+          'address management'
+        ))
+        return
+      }
+
+      const response = await fetch(`/api/user/addresses/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ is_default: true })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setAddresses(prev => prev.map(addr => 
+          ({ ...addr, is_default: addr.id === id })
+        ))
+        showSuccess('Default address updated!')
+      } else {
+        showError(ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          data.error || 'Failed to set default address',
+          null,
+          400,
+          'address management'
+        ))
+      }
+    } catch (error) {
+      const appError = ErrorHandler.fromError(error, 'address management')
+      showError(appError)
+    }
+  }
+
+  const handleAddPaymentMethod = async (method: Omit<PaymentMethod, 'id' | 'created_at'>) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        showError(ErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          'Authentication error. Please sign in again.',
+          null,
+          401,
+          'payment method management'
+        ))
+        return
+      }
+
+      const response = await fetch('/api/user/payment-methods', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(method)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setPaymentMethods(prev => [...prev, data.paymentMethod])
+        showSuccess('Payment method added successfully!')
+      } else {
+        showError(ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          data.error || 'Failed to add payment method',
+          null,
+          400,
+          'payment method management'
+        ))
+      }
+    } catch (error) {
+      const appError = ErrorHandler.fromError(error, 'payment method management')
+      showError(appError)
+    }
+  }
+
+  const handleUpdatePaymentMethod = async (id: string, method: Partial<PaymentMethod>) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        showError(ErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          'Authentication error. Please sign in again.',
+          null,
+          401,
+          'payment method management'
+        ))
+        return
+      }
+
+      const response = await fetch(`/api/user/payment-methods/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify(method)
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setPaymentMethods(prev => prev.map(pm => 
+          pm.id === id ? { ...pm, ...method } : pm
+        ))
+        showSuccess('Payment method updated successfully!')
+      } else {
+        showError(ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          data.error || 'Failed to update payment method',
+          null,
+          400,
+          'payment method management'
+        ))
+      }
+    } catch (error) {
+      const appError = ErrorHandler.fromError(error, 'payment method management')
+      showError(appError)
+    }
+  }
+
+  const handleDeletePaymentMethod = async (id: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        showError(ErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          'Authentication error. Please sign in again.',
+          null,
+          401,
+          'payment method management'
+        ))
+        return
+      }
+
+      const response = await fetch(`/api/user/payment-methods/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setPaymentMethods(prev => prev.filter(pm => pm.id !== id))
+        showSuccess('Payment method deleted successfully!')
+      } else {
+        showError(ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          data.error || 'Failed to delete payment method',
+          null,
+          400,
+          'payment method management'
+        ))
+      }
+    } catch (error) {
+      const appError = ErrorHandler.fromError(error, 'payment method management')
+      showError(appError)
+    }
+  }
+
+  const handleSetDefaultPaymentMethod = async (id: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session?.access_token) {
+        showError(ErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          'Authentication error. Please sign in again.',
+          null,
+          401,
+          'payment method management'
+        ))
+        return
+      }
+
+      const response = await fetch(`/api/user/payment-methods/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ is_default: true })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setPaymentMethods(prev => prev.map(pm => 
+          ({ ...pm, is_default: pm.id === id })
+        ))
+        showSuccess('Default payment method updated!')
+      } else {
+        showError(ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          data.error || 'Failed to set default payment method',
+          null,
+          400,
+          'payment method management'
+        ))
+      }
+    } catch (error) {
+      const appError = ErrorHandler.fromError(error, 'payment method management')
+      showError(appError)
     }
   }
 
@@ -164,9 +600,6 @@ export default function ProfilePage() {
         const appError = ErrorHandler.fromError(error, 'account deletion')
         showError(appError)
       }
-    } catch (error) {
-      const appError = ErrorHandler.fromError(error, 'account deletion')
-      showError(appError)
     } finally {
       setDeleteLoading(false)
     }
@@ -305,96 +738,157 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Orders Section */}
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
-            <span className="mr-3">📦</span>
-            My Orders
-          </h2>
-          
-          {loading ? (
-            <div className="text-center py-8">
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full animate-spin">
-                <span className="text-2xl">🔄</span>
-              </div>
-              <p className="text-gray-600">Loading your orders...</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {orders.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4">😺</div>
-                  <h3 className="text-xl font-bold text-gray-800 mb-2">No orders yet</h3>
-                  <p className="text-gray-600">
-                    Your cat is waiting for delicious meals! Start shopping now!
-                  </p>
-                  <Link
-                    href="/products"
-                    className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-full hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-bold"
-                  >
-                    <span className="mr-2">🍽️</span>
-                    Start Shopping
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {orders.map((order) => (
-                    <Link 
-                      key={order.id} 
-                      href={`/orders/${order.id}?from=profile`}
-                      className="block bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
-                    >
-                      <div className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center">
-                            <span className="text-2xl mr-3">📦</span>
-                            <div>
-                              <h3 className="font-bold text-gray-800">#{order.order_number}</h3>
-                              <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
-                                {order.status}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="text-sm text-gray-500">
-                              {formatDate(order.created_at)}
-                            </p>
-                            <p className="text-xs text-orange-600 font-medium mt-1">View Details →</p>
-                          </div>
-                        </div>
-
-                        <div className="border-t pt-4">
-                          <div className="mb-4">
-                            <div className="flex items-center mb-2">
-                              <User className="w-4 h-4 mr-2 text-gray-500" />
-                              <span className="text-sm text-gray-600">Customer</span>
-                            </div>
-                            <p className="font-medium text-gray-800">{profile?.full_name || 'Customer'}</p>
-                            <p className="text-sm text-gray-500">{user?.email}</p>
-                            {profile?.phone && (
-                              <p className="text-sm text-gray-500">{profile.phone}</p>
-                            )}
-                          </div>
-                          
-                          <div className="flex justify-between items-center mb-2">
-                            <span className="text-gray-600">Total Amount</span>
-                            <span className="font-bold text-orange-600">₹{order.total_amount}</span>
-                          </div>
-                          
-                          <div className="text-right text-sm text-gray-500">
-                            {order.delivery_notes && !order.delivery_notes.includes("customer_name") && (
-                              <p className="italic">"{order.delivery_notes}"</p>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+        {/* Tab Navigation */}
+        <div className="bg-white rounded-2xl shadow-lg p-2 mb-8">
+          <div className="flex space-x-1 border-b">
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeTab === 'orders' 
+                  ? 'text-orange-600 border-orange-600' 
+                  : 'text-gray-600 hover:text-orange-600 border-transparent'
+              }`}
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Orders
+            </button>
+            <button
+              onClick={() => setActiveTab('addresses')}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeTab === 'addresses' 
+                  ? 'text-orange-600 border-orange-600' 
+                  : 'text-gray-600 hover:text-orange-600 border-transparent'
+              }`}
+            >
+              <MapPin className="w-4 h-4 mr-2" />
+              Addresses
+            </button>
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={`px-6 py-3 font-medium transition-colors ${
+                activeTab === 'payments' 
+                  ? 'text-orange-600 border-orange-600' 
+                  : 'text-gray-600 hover:text-orange-600 border-transparent'
+              }`}
+            >
+              <CreditCard className="w-4 h-4 mr-2" />
+              Payment Methods
+            </button>
+          </div>
         </div>
+
+        {/* Tab Content */}
+        {activeTab === 'orders' && (
+          <div className="bg-white rounded-2xl shadow-lg p-8">
+            <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+              <span className="mr-3">📦</span>
+              My Orders
+            </h2>
+            
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-orange-100 rounded-full animate-spin">
+                  <span className="text-2xl">🔄</span>
+                </div>
+                <p className="text-gray-600">Loading your orders...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">😺</div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-2">No orders yet</h3>
+                    <p className="text-gray-600">
+                      Your cat is waiting for delicious meals! Start shopping now!
+                    </p>
+                    <Link
+                      href="/products"
+                      className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-pink-500 text-white rounded-full hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-bold"
+                    >
+                      <span className="mr-2">🍽️</span>
+                      Start Shopping
+                    </Link>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {orders.map((order) => (
+                      <Link 
+                        key={order.id} 
+                        href={`/orders/${order.id}?from=profile`}
+                        className="block bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 transform hover:scale-105 cursor-pointer"
+                      >
+                        <div className="p-6">
+                          <div className="flex items-center justify-between mb-4">
+                            <div className="flex items-center">
+                              <span className="text-2xl mr-3">📦</span>
+                              <div>
+                                <h3 className="font-bold text-gray-800">#{order.order_number}</h3>
+                                <span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
+                                  {order.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm text-gray-500">
+                                {formatDate(order.created_at)}
+                              </p>
+                              <p className="text-xs text-orange-600 font-medium mt-1">View Details →</p>
+                            </div>
+                          </div>
+
+                          <div className="border-t pt-4">
+                            <div className="mb-4">
+                              <div className="flex items-center mb-2">
+                                <User className="w-4 h-4 mr-2 text-gray-500" />
+                                <span className="text-sm text-gray-600">Customer</span>
+                              </div>
+                              <p className="font-medium text-gray-800">{profile?.full_name || 'Customer'}</p>
+                              <p className="text-sm text-gray-500">{user?.email}</p>
+                              {profile?.phone && (
+                                <p className="text-sm text-gray-500">{profile.phone}</p>
+                              )}
+                            </div>
+                            
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-gray-600">Total Amount</span>
+                              <span className="font-bold text-orange-600">₹{order.total_amount}</span>
+                            </div>
+                            
+                            <div className="text-right text-sm text-gray-500">
+                              {order.delivery_notes && !order.delivery_notes.includes("customer_name") && (
+                                <p className="italic">"{order.delivery_notes}"</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'addresses' && (
+          <SimpleAddressManager
+            addresses={addresses}
+            onAddAddress={handleAddAddress}
+            onUpdateAddress={handleUpdateAddress}
+            onDeleteAddress={handleDeleteAddress}
+            onSetDefault={handleSetDefaultAddress}
+          />
+        )}
+
+        {activeTab === 'payments' && (
+          <PaymentMethodManager
+            paymentMethods={paymentMethods}
+            onAddPaymentMethod={handleAddPaymentMethod}
+            onUpdatePaymentMethod={handleUpdatePaymentMethod}
+            onDeletePaymentMethod={handleDeletePaymentMethod}
+            onSetDefault={handleSetDefaultPaymentMethod}
+          />
+        )}
 
         {/* Account Actions */}
         <div className="bg-white rounded-2xl shadow-lg p-8">

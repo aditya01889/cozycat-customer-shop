@@ -4,11 +4,15 @@ import { createClient } from '@/lib/supabase/server';
 
 export async function POST(request: NextRequest) {
   try {
+    console.log('Starting payment verification...');
     const body = await request.json();
     const { orderId, paymentId, signature, orderNumber } = body;
+    
+    console.log('Verification request:', { orderId, paymentId, signature: signature?.substring(0, 20) + '...', orderNumber });
 
     // Validate required fields
     if (!orderId || !paymentId || !signature) {
+      console.error('Missing required fields:', { hasOrderId: !!orderId, hasPaymentId: !!paymentId, hasSignature: !!signature });
       return NextResponse.json(
         { error: 'Missing required payment details' },
         { status: 400 }
@@ -16,8 +20,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify payment signature
+    console.log('Verifying payment signature...');
     const razorpayServer = RazorpayServer.getInstance();
     const isValid = await razorpayServer.verifyPayment(orderId, paymentId, signature);
+    
+    console.log('Signature verification result:', isValid);
 
     if (!isValid) {
       return NextResponse.json(
@@ -27,7 +34,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch payment details to confirm status
+    console.log('Fetching payment details...');
     const payment = await razorpayServer.fetchPayment(paymentId);
+    console.log('Payment details:', { id: payment.id, status: payment.status, amount: payment.amount });
     
     if (payment.status !== 'captured') {
       return NextResponse.json(
@@ -38,17 +47,18 @@ export async function POST(request: NextRequest) {
 
     // Update order in database
     if (orderNumber) {
+      console.log('Updating order in database...');
       const supabase = await createClient();
-      const { error: updateError } = await supabase
+      const { data, error: updateError } = await supabase
         .from('orders')
         .update({
           payment_status: 'paid',
-          payment_id: paymentId,
           payment_method: 'online',
           status: 'confirmed',
           updated_at: new Date().toISOString()
         })
-        .eq('order_number', orderNumber);
+        .eq('order_number', orderNumber)
+        .select();
 
       if (updateError) {
         console.error('Database update error:', updateError);
@@ -57,6 +67,8 @@ export async function POST(request: NextRequest) {
           { status: 500 }
         );
       }
+      
+      console.log('Order updated successfully:', data);
     }
 
     return NextResponse.json({
