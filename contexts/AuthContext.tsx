@@ -3,8 +3,9 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 import { User } from '@supabase/supabase-js'
-import toast from 'react-hot-toast'
+import { useToast } from '@/components/Toast/ToastProvider'
 import { useCartStore } from '@/lib/store/cart'
+import { ErrorHandler, ErrorType, withErrorHandling } from '@/lib/errors/error-handler'
 
 interface AuthContextType {
   user: User | null
@@ -20,6 +21,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const { showSuccess, showError } = useToast()
 
   const ensureCustomerRecord = async (user: User, name?: string) => {
     try {
@@ -161,10 +163,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         await ensureCustomerRecord(data.user, name)
       }
 
-      toast.success('Account created successfully! Please check your email to verify.')
+      showSuccess('Account created successfully! Please check your email to verify.')
     } catch (error: any) {
       console.error('❌ Sign up error:', error)
-      toast.error(error.message || 'Failed to create account')
+      showError(error)
       throw error
     } finally {
       setLoading(false)
@@ -246,7 +248,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       
       if (signInSuccess && userData) {
         console.log('🎉 Sign in successful overall')
-        toast.success('Welcome back!')
+        showSuccess('Welcome back!')
         return
       }
       
@@ -265,12 +267,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         errorMessage = 'Authentication service is temporarily unavailable. Please try again later.'
       }
       
-      toast.error(errorMessage)
+      const appError = ErrorHandler.fromError(lastError)
+      showError(appError)
       throw new Error(errorMessage)
       
     } catch (error: any) {
       console.error('💥 Sign in catch error:', error)
-      toast.error(error.message || 'Failed to sign in')
+      const appError = ErrorHandler.fromError(error)
+      showError(appError)
       throw error
     } finally {
       setLoading(false)
@@ -321,7 +325,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         console.log('⚠️ Supabase client clear failed (non-critical):', clearError)
       }
       
-      toast.success('Signed out successfully!')
+      showSuccess('Signed out successfully!')
       console.log('🎉 Sign out process completed successfully')
       
       // Add delay before redirect to see console logs
@@ -343,7 +347,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         sessionStorage.removeItem('supabase.auth.token')
       }
       
-      toast.success('Signed out (emergency fallback)')
+      showSuccess('Signed out (emergency fallback)')
       console.log('🚨 Emergency sign out completed')
       
       // Force redirect after delay
@@ -364,9 +368,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         redirectTo: `${window.location.origin}/reset-password`,
       })
       if (error) throw error
-      toast.success('Password reset link sent to your email')
+      showSuccess('Password reset link sent to your email')
     } catch (error: any) {
-      toast.error(error.message || 'Failed to send reset link')
+      const appError = ErrorHandler.fromError(error)
+      showError(appError)
       throw error
     }
   }
