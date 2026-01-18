@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase/client'
+import { supabase, createClient } from '@/lib/supabase/client'
 import { Database } from '@/types/database'
 import AdminAuth from '@/components/AdminAuth'
 import { Users, Search, Filter, ArrowUpDown, Eye, Edit, Trash2, Mail, Phone, Calendar, User as UserIcon } from 'lucide-react'
@@ -103,7 +103,7 @@ function AdminUsersContent() {
       let { data: customersData, error: customersError } = await supabase
         .from('customers')
         .select('*')
-        .order(sortBy, { ascending: sortOrder === 'asc' })
+        .order('created_at', { ascending: sortOrder === 'asc' })
 
       // If customers table is empty, try profiles table
       if (!customersData || customersData.length === 0) {
@@ -111,7 +111,7 @@ function AdminUsersContent() {
         const { data: profilesData, error: profilesError } = await supabase
           .from('profiles')
             .select('id, role, full_name, email, phone, created_at')
-            .order(sortBy, { ascending: sortOrder === 'asc' })
+            .order('created_at', { ascending: sortOrder === 'asc' })
 
         console.log('Profiles data:', profilesData)
         console.log('Sample profile:', profilesData?.[0])
@@ -119,15 +119,52 @@ function AdminUsersContent() {
         if (profilesData && profilesData.length > 0) {
           let data = profilesData
           if (searchTerm) {
-            data = profilesData.filter(profile => 
-              profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              profile.email?.toLowerCase().includes(searchTerm.toLowerCase())
-            )
+            data = profilesData.filter(profile => {
+              const fullName = profile.full_name || ''
+              const email = profile.email || ''
+              return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     email.toLowerCase().includes(searchTerm.toLowerCase())
+            })
           }
 
           const filteredData = data.filter((user: any) => !isAdminUser(user))
-          console.log('Using profiles data:', filteredData)
-          setUsers(filteredData as User[])
+          
+          // Apply client-side sorting for profiles data
+          const sortedData = [...filteredData].sort((a: any, b: any) => {
+            let aValue: any
+            let bValue: any
+            
+            switch (sortBy) {
+              case 'full_name':
+                aValue = (a.full_name || '').toLowerCase()
+                bValue = (b.full_name || '').toLowerCase()
+                break
+              case 'email':
+                aValue = (a.email || '').toLowerCase()
+                bValue = (b.email || '').toLowerCase()
+                break
+              case 'total_orders':
+              case 'total_spent':
+                // These don't exist in profiles data, use created_at as fallback
+                aValue = new Date(a.created_at || 0)
+                bValue = new Date(b.created_at || 0)
+                break
+              case 'created_at':
+              default:
+                aValue = new Date(a.created_at || 0)
+                bValue = new Date(b.created_at || 0)
+                break
+            }
+            
+            if (sortOrder === 'asc') {
+              return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+            } else {
+              return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+            }
+          })
+          
+          console.log('Using profiles data:', sortedData)
+          setUsers(sortedData as User[])
         } else {
           console.log('No user data found in either table')
           setUsers([])
@@ -137,14 +174,9 @@ function AdminUsersContent() {
         let data = customersData
         let error = customersError
 
-        // Apply search filter
-        if (searchTerm) {
-          data = customersData.filter((customer: any) => 
-            customer.id?.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-        }
-
-        console.log('Customers data count:', data?.length)
+        // Apply search filter AFTER processing and joining with profiles
+        // We need to process the data first to get the profile information, then apply search
+        console.log('Customers data count:', customersData?.length)
         
         // Filter out admin users from the display
         const filteredData = (data || []).filter((user: any) => {
@@ -240,7 +272,57 @@ function AdminUsersContent() {
           
           console.log('Sample processed user:', processedData[0])
           
-          setUsers(processedData)
+          // Apply search filter AFTER processing and joining with profiles
+          let finalData = processedData
+          if (searchTerm) {
+            finalData = processedData.filter((user: any) => {
+              const fullName = user.full_name || ''
+              const email = user.email || ''
+              const customerId = user.id || ''
+              
+              return fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                     customerId.toLowerCase().includes(searchTerm.toLowerCase())
+            })
+          }
+          
+          // Apply client-side sorting for all fields
+          const sortedData = [...finalData].sort((a: any, b: any) => {
+            let aValue: any
+            let bValue: any
+            
+            switch (sortBy) {
+              case 'full_name':
+                aValue = (a.full_name || '').toLowerCase()
+                bValue = (b.full_name || '').toLowerCase()
+                break
+              case 'email':
+                aValue = (a.email || '').toLowerCase()
+                bValue = (b.email || '').toLowerCase()
+                break
+              case 'total_orders':
+                aValue = a.total_orders || 0
+                bValue = b.total_orders || 0
+                break
+              case 'total_spent':
+                aValue = a.total_spent || 0
+                bValue = b.total_spent || 0
+                break
+              case 'created_at':
+              default:
+                aValue = new Date(a.created_at || 0)
+                bValue = new Date(b.created_at || 0)
+                break
+            }
+            
+            if (sortOrder === 'asc') {
+              return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+            } else {
+              return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+            }
+          })
+          
+          setUsers(sortedData)
         } else {
           setUsers(filteredData as User[])
         }
@@ -335,8 +417,7 @@ function AdminUsersContent() {
                   className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                 >
                   <option value="created_at">Join Date</option>
-                  <option value="first_name">First Name</option>
-                  <option value="last_name">Last Name</option>
+                  <option value="full_name">Name</option>
                   <option value="email">Email</option>
                   <option value="total_orders">Total Orders</option>
                   <option value="total_spent">Total Spent</option>
@@ -518,7 +599,13 @@ function AdminUsersContent() {
                   <h5 className="font-semibold text-gray-900 mb-4">Admin Actions</h5>
                   <div className="grid grid-cols-2 gap-3">
                     <button 
-                      onClick={() => setShowEditModal(true)}
+                      onClick={() => {
+                        // Initialize form fields with current user data
+                        setEditName((selectedUser as any).full_name || (selectedUser as any).profiles?.full_name || '')
+                        setEditEmail((selectedUser as any).email || (selectedUser as any).profiles?.email || '')
+                        setEditPhone((selectedUser as any).phone || (selectedUser as any).profiles?.phone || '')
+                        setShowEditModal(true)
+                      }}
                       className="flex items-center justify-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors font-medium"
                     >
                       <Edit className="w-4 h-4 mr-2" />
@@ -659,12 +746,7 @@ function AdminUsersContent() {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-900">Edit User</h3>
             <button
-              onClick={() => {
-                setEditName((selectedUser as any).profiles?.full_name || '')
-                setEditEmail((selectedUser as any).profiles?.email || (selectedUser as any).email || '')
-                setEditPhone((selectedUser as any).profiles?.phone || (selectedUser as any).phone || '')
-                setShowEditModal(false)
-              }}
+              onClick={() => setShowEditModal(false)}
               className="text-gray-400 hover:text-gray-600"
             >
               <span className="text-2xl">✕</span>
@@ -709,109 +791,133 @@ function AdminUsersContent() {
               Cancel
             </button>
             <button
-              onClick={async () => {
-                console.log('Save button clicked')
-                console.log('Edit data:', { editName, editEmail, editPhone })
-                console.log('Selected user:', selectedUser)
-                
-                try {
-                  // Update profiles table
-                  const { error: profileError, data: profileData } = await supabase
-                    .from('profiles')
-                    .update({
-                      full_name: editName,
-                      email: editEmail,
-                      phone: editPhone
-                    })
-                    .eq('id', (selectedUser as any).profiles?.id)
-
-                  console.log('Profile update result:', { error: profileError, data: profileData })
-
-                  if (profileError) {
-                    console.error('Error updating profile:', profileError)
-                    alert(`Error updating profile: ${profileError.message}`)
+                type="button" // Prevent form submission
+                onClick={async (e) => {
+                  e.preventDefault() // Prevent any form behavior
+                  e.stopPropagation() // Stop event bubbling
+                  console.log('Save button clicked - event triggered!')
+                  console.log('Edit data:', { editName, editEmail, editPhone })
+                  console.log('Selected user:', selectedUser)
+                  
+                  // Validate form fields
+                  if (!editName.trim()) {
+                    alert('Please enter a name')
                     return
                   }
-
-                  // Update customers table - handle phone number changes
-                  console.log('Handling customer phone update...')
                   
-                  // First check if customer record exists
-                  const { data: existingCustomer, error: checkError } = await supabase
-                    .from('customers')
-                    .select('id')
-                    .eq('profile_id', selectedUser.id)
-                    .single()
-                  
-                  if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" error
-                    console.error('Error checking customer record:', checkError)
+                  if (!editEmail.trim()) {
+                    alert('Please enter an email')
+                    return
                   }
                   
-                  if (existingCustomer) {
-                    // Update existing customer record
-                    const { error: customerError, data: customerData } = await supabase
-                      .from('customers')
-                      .update({
-                        phone: editPhone || null
-                      })
-                      .eq('profile_id', selectedUser.id)
-
-                    console.log('Customer update result:', { error: customerError, data: customerData })
-
-                    if (customerError) {
-                      console.error('Error updating customer phone:', customerError)
-                      alert(`Warning: Failed to update customer phone: ${customerError.message}`)
+                  if (!editEmail.includes('@')) {
+                    alert('Please enter a valid email address')
+                    return
+                  }
+                  
+                  try {
+                    // Check environment variables first
+                    console.log('Environment check:', {
+                      supabaseUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+                      serviceRoleKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+                    })
+                    
+                    // Update profiles table using API route with service role key
+                    console.log('Starting profile update with data:', { full_name: editName, email: editEmail, phone: editPhone })
+                    
+                    const profileId = (selectedUser as any).profiles?.id || (selectedUser as any).id
+                    console.log('Target profile ID:', profileId)
+                    
+                    if (!profileId) {
+                      throw new Error('Profile ID not found')
                     }
-                  } else if (editPhone) {
-                    // Create new customer record if phone is provided
-                    const { error: createCustomerError, data: newCustomerData } = await supabase
-                      .from('customers')
-                      .insert({
-                        profile_id: selectedUser.id,
+                    
+                    // Call API route instead of using service role client directly
+                    const response = await fetch('/api/admin/update-profile', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        profileId,
+                        full_name: editName,
+                        email: editEmail,
                         phone: editPhone
                       })
+                    })
 
-                    console.log('Customer creation result:', { error: createCustomerError, data: newCustomerData })
+                    const result = await response.json()
+                    console.log('Profile update API result:', result)
 
-                    if (createCustomerError) {
-                      console.error('Error creating customer record:', createCustomerError)
-                      alert(`Warning: Failed to create customer record: ${createCustomerError.message}`)
+                    if (!response.ok) {
+                      throw new Error(result.error || 'Failed to update profile')
                     }
+
+                    // Update customers table - handle phone number changes
+                    console.log('Handling customer phone update...')
+                    console.log('Edit phone value:', editPhone)
+                    console.log('Edit phone type:', typeof editPhone, 'length:', editPhone?.length)
+                    
+                    // Only update customer phone if there's actually a phone value
+                    if (editPhone && editPhone.trim() !== '') {
+                      console.log('Updating customer phone to:', editPhone)
+                      
+                      // First check if customer record exists
+                      const { data: existingCustomer, error: checkError } = await supabase
+                        .from('customers')
+                          .select('id')
+                          .eq('profile_id', selectedUser.id)
+                          .single()
+                      
+                      if (checkError && checkError.code !== 'PGRST116') { // PGRST116 is "not found" error
+                        console.error('Error checking customer record:', checkError)
+                      }
+                      
+                      if (existingCustomer) {
+                        // Update existing customer record
+                        const { error: customerError, data: customerData } = await supabase
+                          .from('customers')
+                            .update({
+                                phone: editPhone
+                              })
+                            .eq('profile_id', selectedUser.id)
+                             
+                        console.log('Customer update result:', { error: customerError, data: customerData })
+                      } else {
+                        // Create new customer record
+                        const { error: createCustomerError, data: newCustomerData } = await supabase
+                          .from('customers')
+                            .insert({
+                              profile_id: selectedUser.id,
+                              phone: editPhone
+                            })
+                        console.log('Customer creation result:', { error: createCustomerError, data: newCustomerData })
+                      }
+                    } else {
+                      console.log('Phone is empty, skipping customer update')
+                    }
+                    
+                    // Update local state with the new data from API response
+                    setSelectedUser({
+                      ...(selectedUser as any),
+                      profiles: {
+                        ...(selectedUser as any).profiles,
+                        id: profileId,
+                        full_name: editName,
+                        email: editEmail,
+                        phone: editPhone
+                      }
+                    })
+                    
+                    alert('User information updated successfully!')
+                    setShowEditModal(false)
+                    // Refresh user data to reflect changes
+                    fetchUsers()
+                  } catch (error: any) {
+                    console.error('Error updating user:', error)
+                    alert(`Failed to update user: ${error?.message || 'Unknown error'}`)
                   }
-
-                  // Update selectedUser state
-                  setSelectedUser({
-                    ...(selectedUser as any),
-                    profiles: {
-                      ...(selectedUser as any).profiles,
-                      full_name: editName,
-                      email: editEmail,
-                      phone: editPhone
-                    }
-                  })
-
-                  // Update users array
-                  setUsers(users.map(user => 
-                    user.id === selectedUser.id 
-                      ? {
-                          ...user,
-                          profiles: {
-                            ...(user as any).profiles,
-                            full_name: editName,
-                            email: editEmail,
-                            phone: editPhone
-                          }
-                        }
-                      : user
-                  ))
-
-                  alert('User information updated successfully!')
-                  setShowEditModal(false)
-                } catch (error: any) {
-                  console.error('Error updating user:', error)
-                  alert(`Failed to update user: ${error?.message || 'Unknown error'}`)
-                }
-              }}
+                }}
               className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"
             >
               Save Changes
