@@ -85,27 +85,24 @@ function AdminUsersContent() {
   }
 
   const isAdminUser = (user: any) => {
-    const email = (user as any).profiles?.email || (user as any).email || ''
-    return email.includes('aditya01889@gmail.com') || email.includes('admin')
+  // Check if user has admin role in profiles
+  if (user.profiles?.role === 'admin') {
+    return true
   }
+  
+  // Check if email contains admin keywords
+  const email = user.profiles?.email || user.email || ''
+  return email.includes('aditya01889@gmail.com') || email.includes('admin')
+}
 
   const fetchUsers = async () => {
     try {
       console.log('Fetching admin users...')
       
-      // Try customers table first with profile join
+      // Try customers table first
       let { data: customersData, error: customersError } = await supabase
         .from('customers')
-        .select(`
-          *,
-          profiles:profile_id (
-            id,
-            full_name,
-            email,
-            phone,
-            created_at
-          )
-        `)
+        .select('*')
         .order(sortBy, { ascending: sortOrder === 'asc' })
 
       // If customers table is empty, try profiles table
@@ -118,23 +115,9 @@ function AdminUsersContent() {
 
         console.log('Profiles data:', profilesData)
         console.log('Sample profile:', profilesData?.[0])
-        console.log('Profile fields:', profilesData?.[0] ? Object.keys(profilesData[0]) : 'none')
-        console.log('Profile values:', profilesData?.[0] ? {
-          id: profilesData[0].id,
-          role: profilesData[0].role,
-          full_name: profilesData[0].full_name,
-          email: profilesData[0].email,
-          phone: profilesData[0].phone,
-          created_at: profilesData[0].created_at
-        } : 'none')
-        console.log('Profiles error:', profilesError)
 
         if (profilesData && profilesData.length > 0) {
-          // Use profiles data
           let data = profilesData
-          let error = profilesError
-          
-          // Apply search filter
           if (searchTerm) {
             data = profilesData.filter(profile => 
               profile.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -142,51 +125,40 @@ function AdminUsersContent() {
             )
           }
 
-          console.log('Using profiles data:', data)
-          
-          // Filter out admin users from the display
           const filteredData = data.filter((user: any) => !isAdminUser(user))
-          console.log('Filtered data (excluding admins):', filteredData)
-          
+          console.log('Using profiles data:', filteredData)
           setUsers(filteredData as User[])
         } else {
           console.log('No user data found in either table')
           setUsers([])
         }
       } else {
-        // Use customers data
+        // Use customers data with manual profile join
         let data = customersData
         let error = customersError
 
         // Apply search filter
         if (searchTerm) {
-          const query = supabase
-            .from('customers')
-            .select(`
-              *,
-              profiles:profile_id (
-                id,
-                full_name,
-                email,
-                phone,
-                created_at
-              )
-            `)
-            .or(`profiles.full_name.ilike.%${searchTerm}%,profiles.email.ilike.%${searchTerm}%`)
-            .order(sortBy, { ascending: sortOrder === 'asc' })
-
-          const { data: searchData, error: searchError } = await query
-          data = searchData
-          error = searchError
+          data = customersData.filter((customer: any) => 
+            customer.id?.toLowerCase().includes(searchTerm.toLowerCase())
+          )
         }
 
-        console.log('Admin users data:', data)
-        console.log('Admin users error:', error)
-        console.log('Users count:', data?.length)
+        console.log('Customers data count:', data?.length)
         
         // Filter out admin users from the display
-        const filteredData = (data || []).filter((user: any) => !isAdminUser(user))
-        console.log('Filtered data (excluding admins):', filteredData)
+        const filteredData = (data || []).filter((user: any) => {
+          const isAdmin = isAdminUser(user)
+          console.log('Checking user for admin:', {
+            userId: user.id,
+            isAdmin,
+            email: user.email,
+            profileEmail: user.profiles?.email,
+            profileRole: user.profiles?.role
+          })
+          return !isAdmin
+        })
+        console.log('Filtered data (excluding admins):', filteredData.length, 'users')
         
         // Process orders data to calculate totals
         if (filteredData && filteredData.length > 0) {
@@ -197,8 +169,37 @@ function AdminUsersContent() {
             .select('id, customer_id, total_amount, status, created_at')
             .in('customer_id', userIds)
 
-          console.log('Orders data:', ordersData)
-          console.log('Orders error:', ordersError)
+          console.log('Orders data:', ordersData?.length || 0, 'orders found')
+
+          // Manual profile join - fetch profiles separately using service role API
+          const profileIds = filteredData.map((user: any) => user.profile_id)
+          console.log('Looking for profile IDs:', profileIds)
+          
+          // Use service role API to bypass RLS restrictions
+          const response = await fetch('/api/admin/get-profiles', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ profileIds })
+          })
+          
+          console.log('Fetch response status:', response.status)
+          const profilesData = await response.json()
+          
+          console.log('Raw profiles response:', profilesData)
+
+          console.log('Profiles data:', profilesData?.profiles?.length || 0, 'profiles found')
+          console.log('Profiles error:', profilesData?.error)
+          console.log('Sample profile:', profilesData?.profiles?.[0])
+
+          // Create profile map for easy lookup
+          const profileMap = new Map()
+          if (profilesData?.profiles) {
+            profilesData.profiles.forEach((profile: any) => {
+              profileMap.set(profile.id, profile)
+            })
+          }
 
           const processedData = filteredData.map((user: any) => {
             const userOrders = ordersData?.filter((order: any) => order.customer_id === user.id) || []
@@ -207,29 +208,37 @@ function AdminUsersContent() {
             const firstOrderDate = userOrders.length > 0 ? userOrders[0].created_at : null
             const lastOrderDate = userOrders.length > 0 ? userOrders[userOrders.length - 1].created_at : null
             
-            console.log('User orders:', {
-              userId: user.id,
-              totalOrders,
-              totalSpent,
-              ordersCount: userOrders.length
-            })
+            // Get profile data from manual join
+            const profileData = profileMap.get(user.profile_id)
             
-            return {
+            // Merge profile data into user object for display
+            const mergedUser = {
               ...user,
+              // Add profile data directly to user object
+              profiles: profileData,
+              full_name: profileData?.full_name || `Customer ${user.id.slice(0, 8)}`,
+              email: profileData?.email || 'No email',
+              profile_phone: profileData?.phone || user.phone || null,
               total_orders: totalOrders,
               total_spent: totalSpent,
               first_order_date: firstOrderDate,
               last_order_date: lastOrderDate
             }
+            
+            console.log('User data (merged):', {
+              userId: user.id,
+              profileId: user.profile_id,
+              profileData: profileData ? 'found' : 'missing',
+              profileName: profileData?.full_name,
+              customerPhone: user.phone,
+              profilePhone: profileData?.phone,
+              isAdmin: isAdminUser(mergedUser)
+            })
+            
+            return mergedUser
           })
           
-          console.log('Customer fields available:', Object.keys(processedData[0]))
-          console.log('Order/spending data:', {
-            total_orders: processedData[0].total_orders,
-            total_spent: processedData[0].total_spent,
-            first_order_date: processedData[0].first_order_date,
-            last_order_date: processedData[0].last_order_date
-          })
+          console.log('Sample processed user:', processedData[0])
           
           setUsers(processedData)
         } else {
@@ -368,16 +377,16 @@ function AdminUsersContent() {
               </div>
               <div>
                 <h3 className="font-semibold text-gray-900">
-                  {(user as any).profiles?.full_name || 'Customer'}
+                  {(user as any).full_name || (user as any).profiles?.full_name || 'Customer'}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  {(user as any).profiles?.email || (user as any).email || 'No email'}
+                  {(user as any).email || (user as any).profiles?.email || 'No email'}
                 </p>
-                {(user as any).profiles?.phone && (
+                {(user as any).phone || (user as any).profile_phone || (user as any).profiles?.phone ? (
                   <p className="text-sm text-gray-500">
-                    Phone: {(user as any).profiles?.phone}
+                    Phone: {(user as any).phone || (user as any).profile_phone || (user as any).profiles?.phone}
                   </p>
-                )}
+                ) : null}
               </div>
             </div>
             
@@ -438,18 +447,11 @@ function AdminUsersContent() {
                     </span>
                   </div>
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-gray-900">
-                        {(selectedUser as any).profiles?.full_name || 'Unknown User'}
-                      </h3>
-                      {isAdminUser(selectedUser) && (
-                        <span className="px-2 py-1 bg-purple-100 text-purple-700 text-xs font-medium rounded-full">
-                          ADMIN
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-500">{(selectedUser as any).profiles?.email || 'No email'}</p>
-                    <p className="text-sm text-gray-500">{(selectedUser as any).profiles?.phone || 'No phone'}</p>
+                    <h3 className="font-semibold text-gray-900">
+                      {(selectedUser as any).full_name || (selectedUser as any).profiles?.full_name || 'Unknown User'}
+                    </h3>
+                    <p className="text-sm text-gray-500">{(selectedUser as any).email || (selectedUser as any).profiles?.email || 'No email'}</p>
+                    <p className="text-sm text-gray-500">{(selectedUser as any).phone || (selectedUser as any).profiles?.phone || 'No phone'}</p>
                   </div>
                 </div>
                 
@@ -457,22 +459,19 @@ function AdminUsersContent() {
                   <div>
                     <h5 className="font-semibold text-gray-900 mb-3">Contact Information</h5>
                     <div className="space-y-2">
-                      {(selectedUser as any).profiles?.phone && (
+                      {(selectedUser as any).phone || (selectedUser as any).profiles?.phone ? (
                         <div className="flex items-center text-gray-600">
                           <Phone className="w-4 h-4 mr-2" />
-                          {(selectedUser as any).profiles?.phone}
+                          <span>{(selectedUser as any).phone || (selectedUser as any).profiles?.phone}</span>
                         </div>
-                      )}
-                      {(selectedUser as any).whatsapp_number && (
+                      ) : null}
+                      
+                      {(selectedUser as any).email || (selectedUser as any).profiles?.email ? (
                         <div className="flex items-center text-gray-600">
-                          <span className="w-4 h-4 mr-2">📱</span>
-                          {(selectedUser as any).whatsapp_number}
+                          <Mail className="w-4 h-4 mr-2" />
+                          <span>{(selectedUser as any).email || (selectedUser as any).profiles?.email}</span>
                         </div>
-                      )}
-                      <div className="flex items-center text-gray-600">
-                        <Mail className="w-4 h-4 mr-2" />
-                        {(selectedUser as any).profiles?.email || 'No email'}
-                      </div>
+                      ) : null}
                     </div>
                   </div>
                   

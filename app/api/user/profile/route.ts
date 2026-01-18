@@ -73,6 +73,22 @@ export async function PUT(request: Request) {
       )
     }
 
+    // Also update the customer table phone to maintain consistency
+    const { error: customerError } = await (supabaseForWrite as any)
+      .from('customers')
+      .update({
+        phone: phone || '' // Use empty string if phone is null/undefined
+      })
+      .eq('id', user.id)
+
+    if (customerError) {
+      console.error('Customer database update error:', customerError)
+      // Don't fail the request, but log the error for debugging
+      console.warn('Profile updated but customer phone update failed:', customerError)
+    } else {
+      console.log('✅ Customer phone updated successfully')
+    }
+
     return NextResponse.json({
       message: 'Profile updated successfully',
       ...(authUpdateWarning ? { warning: authUpdateWarning } : {}),

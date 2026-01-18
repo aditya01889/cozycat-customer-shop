@@ -21,34 +21,50 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const ensureCustomerRecord = async (user: User) => {
+  const ensureCustomerRecord = async (user: User, name?: string) => {
     try {
+      console.log('🔍 Ensuring customer record for user:', user.id)
+      console.log('👤 User metadata:', user.user_metadata)
+      console.log('📧 User email:', user.email)
+      console.log('📝 Provided name:', name)
+      
       // First, check if profile already exists with role
       const { data: existingProfile } = await supabase
         .from('profiles')
-        .select('role, phone, full_name')
+        .select('role, phone, full_name, email')
         .eq('id', user.id)
         .single()
 
+      console.log('📋 Existing profile:', existingProfile)
+
       // Only create/update profile if it doesn't exist or needs updating
       const profileRole = existingProfile?.role || 'customer' // Preserve existing role
+      
+      // Use the provided name from signup, or fallback to metadata, or existing profile name
+      const fullName = name || user.user_metadata?.name || existingProfile?.full_name || 'User'
+      
+      console.log('🏷️ Creating/updating profile with name:', fullName)
       
       const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
           role: profileRole, // Use existing role, don't override
-          full_name: existingProfile?.full_name || user.user_metadata?.name || 'User',
+          full_name: fullName,
           email: user.email,
           phone: existingProfile?.phone || null, // Preserve existing phone
           updated_at: new Date().toISOString()
         })
 
       if (profileError) {
-        console.error('Error creating/updating profile record:', profileError)
+        console.error('❌ Error creating/updating profile record:', profileError)
+        throw profileError
+      } else {
+        console.log('✅ Profile record created/updated successfully')
       }
 
       if (existingProfile?.role && existingProfile.role !== 'customer') {
+        console.log('👤 User is not a customer, skipping customer record creation')
         return
       }
 
@@ -59,34 +75,33 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq('id', user.id)
         .single()
 
-    if (!existingCustomer) {
-      // Get the profile ID first
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .single()
+      console.log('📋 Existing customer:', existingCustomer)
 
-      if (profile) {
+      if (!existingCustomer) {
+        console.log('🆕 Creating new customer record...')
+        
         const { error: customerError } = await supabase
           .from('customers')
           .insert({
             id: user.id,
-            profile_id: profile.id,
-            phone: '' // Use empty string instead of null for NOT NULL constraint
+            profile_id: user.id,
+            phone: existingProfile?.phone || '' // Use profile phone or empty string
           })
 
         if (customerError) {
-          console.error('Error creating customer record:', customerError)
+          console.error('❌ Error creating customer record:', customerError)
+          throw customerError
         } else {
-          console.log('Customer record created successfully')
+          console.log('✅ Customer record created successfully')
         }
+      } else {
+        console.log('✅ Customer record already exists')
       }
+    } catch (error) {
+      console.error('❌ Error ensuring customer record:', error)
+      throw error
     }
-  } catch (error) {
-    console.error('Error ensuring customer record:', error)
   }
-}
 
   useEffect(() => {
     // Get initial session
@@ -124,6 +139,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signUp = async (email: string, password: string, name: string) => {
     try {
       setLoading(true)
+      console.log('🔐 Starting sign up process for:', email)
+      console.log('👤 Name provided:', name)
+      
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -136,8 +154,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
+      console.log('✅ Sign up successful, user created:', data.user?.id)
+      
+      // Ensure customer record is created with the provided name
+      if (data.user) {
+        await ensureCustomerRecord(data.user, name)
+      }
+
       toast.success('Account created successfully! Please check your email to verify.')
     } catch (error: any) {
+      console.error('❌ Sign up error:', error)
       toast.error(error.message || 'Failed to create account')
       throw error
     } finally {
