@@ -5,7 +5,8 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import { User, Package, MapPin, Phone, Mail, Calendar, LogOut, Edit2, ArrowRight, AlertTriangle, X } from 'lucide-react'
 import Link from 'next/link'
-import toast from 'react-hot-toast'
+import { useToast } from '@/components/Toast/ToastProvider'
+import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 
 interface Order {
   id: string
@@ -39,6 +40,7 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deleteLoading, setDeleteLoading] = useState(false)
+  const { showError, showSuccess } = useToast()
 
   useEffect(() => {
     if (user) {
@@ -132,7 +134,14 @@ export default function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession()
       
       if (!session?.access_token) {
-        toast.error('Authentication error. Please sign in again.')
+        const error = ErrorHandler.createError(
+          ErrorType.AUTHENTICATION,
+          'Authentication error. Please sign in again.',
+          null,
+          401,
+          'profile authentication'
+        )
+        showError(error)
         return
       }
 
@@ -145,17 +154,19 @@ export default function ProfilePage() {
       })
 
       if (response.ok) {
-        toast.success('Account deleted successfully')
+        showSuccess('Account deleted successfully')
         setShowDeleteModal(false)
         // Sign out and redirect to home
         await signOut()
         window.location.href = '/'
       } else {
         const error = await response.json()
-        toast.error(error.message || 'Failed to delete account')
+        const appError = ErrorHandler.fromError(error, 'account deletion')
+        showError(appError)
       }
     } catch (error) {
-      toast.error('An error occurred while deleting your account')
+      const appError = ErrorHandler.fromError(error, 'account deletion')
+      showError(appError)
     } finally {
       setDeleteLoading(false)
     }

@@ -6,6 +6,8 @@ import { Database } from '@/types/database'
 import AdminAuth from '@/components/AdminAuth'
 import { Users, Search, Filter, ArrowUpDown, Eye, Edit, Trash2, Mail, Phone, Calendar, User as UserIcon } from 'lucide-react'
 import Link from 'next/link'
+import { useToast } from '@/components/Toast/ToastProvider'
+import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 
 type User = Database['public']['Tables']['customers']['Row'] | Database['public']['Tables']['profiles']['Row']
 
@@ -38,6 +40,7 @@ function AdminUsersContent() {
   const [editEmail, setEditEmail] = useState('')
   const [editPhone, setEditPhone] = useState('')
   const [userNote, setUserNote] = useState('')
+  const { showSuccess, showError, showWarning } = useToast()
 
   useEffect(() => {
     fetchUsers()
@@ -619,7 +622,14 @@ function AdminUsersContent() {
                           setEmailBody(`Dear ${(selectedUser as any).profiles?.full_name || 'Customer'},\n\nWe hope you're enjoying your experience with CozyCatKitchen!\n\n`)
                           setShowEmailModal(true)
                         } else {
-                          alert('No email address available for this user')
+                          const error = ErrorHandler.createError(
+                            ErrorType.VALIDATION,
+                            'No email address available for this user',
+                            null,
+                            400,
+                            'send email'
+                          )
+                          showError(error)
                         }
                       }}
                       className="flex items-center justify-center px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors font-medium"
@@ -652,24 +662,39 @@ function AdminUsersContent() {
                         const customerName = (selectedUser as any).profiles?.full_name || 'Unknown'
                         
                         if (!email) {
-                          alert('No email address available for this user')
+                          const error = ErrorHandler.createError(
+                            ErrorType.VALIDATION,
+                            'No email address available for this user',
+                            null,
+                            400,
+                            'password reset'
+                          )
+                          showError(error)
                           return
                         }
                         
-                        if (confirm(`Reset password for ${customerName}?\n\nThis will send a password reset email to: ${email}\n\nContinue?`)) {
+                        showWarning(
+                          `Reset password for ${customerName}?\n\nThis will send a password reset email to: ${email}\n\nContinue?`,
+                          'Confirm Password Reset'
+                        )
+                        
+                        // Then handle the actual reset in a separate confirmation
+                        const handlePasswordReset = async () => {
                           try {
                             const { error } = await supabase.auth.resetPasswordForEmail(email, {
                               redirectTo: `${window.location.origin}/reset-password`
                             })
                             
                             if (error) {
-                              alert(`Error sending reset email: ${error.message}`)
+                              const appError = ErrorHandler.fromError(error, 'password reset')
+                              showError(appError)
                             } else {
-                              alert(`Password reset email sent successfully to ${email}!\n\nThe user will receive an email with instructions to reset their password.`)
+                              showSuccess(`Password reset email sent successfully to ${email}!\n\nThe user will receive an email with instructions to reset their password.`)
                               setShowPasswordModal(false)
                             }
                           } catch (error: any) {
-                            alert(`Failed to send reset email: ${error?.message || 'Unknown error'}`)
+                            const appError = ErrorHandler.fromError(error, 'password reset')
+                            showError(appError)
                           }
                         }
                       }}
@@ -725,7 +750,7 @@ function AdminUsersContent() {
                         a.click()
                         window.URL.revokeObjectURL(url)
                         
-                        alert('User data exported successfully!')
+                        showSuccess('User data exported successfully!')
                       }}
                       className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                     >
@@ -801,17 +826,38 @@ function AdminUsersContent() {
                   
                   // Validate form fields
                   if (!editName.trim()) {
-                    alert('Please enter a name')
+                    const error = ErrorHandler.createError(
+                      ErrorType.VALIDATION,
+                      'Please enter a name',
+                      null,
+                      400,
+                      'user edit'
+                    )
+                    showError(error)
                     return
                   }
                   
                   if (!editEmail.trim()) {
-                    alert('Please enter an email')
+                    const error = ErrorHandler.createError(
+                      ErrorType.VALIDATION,
+                      'Please enter an email',
+                      null,
+                      400,
+                      'user edit'
+                    )
+                    showError(error)
                     return
                   }
                   
                   if (!editEmail.includes('@')) {
-                    alert('Please enter a valid email address')
+                    const error = ErrorHandler.createError(
+                      ErrorType.VALIDATION,
+                      'Please enter a valid email address',
+                      null,
+                      400,
+                      'user edit'
+                    )
+                    showError(error)
                     return
                   }
                   
@@ -908,14 +954,15 @@ function AdminUsersContent() {
                         phone: editPhone
                       }
                     })
-                    
-                    alert('User information updated successfully!')
+
+                    showSuccess('User information updated successfully!')
                     setShowEditModal(false)
                     // Refresh user data to reflect changes
                     fetchUsers()
                   } catch (error: any) {
                     console.error('Error updating user:', error)
-                    alert(`Failed to update user: ${error?.message || 'Unknown error'}`)
+                    const appError = ErrorHandler.fromError(error, 'user update')
+                    showError(appError)
                   }
                 }}
               className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"
@@ -1021,11 +1068,18 @@ function AdminUsersContent() {
             <button
               onClick={() => {
                 if (userNote.trim()) {
-                  alert(`Note added for ${(selectedUser as any).profiles?.full_name}: "${userNote}"`)
+                  showSuccess(`Note added for ${(selectedUser as any).profiles?.full_name}: "${userNote}"`)
                   setUserNote('')
                   setShowAddNoteModal(false)
                 } else {
-                  alert('Please enter a note')
+                  const error = ErrorHandler.createError(
+                    ErrorType.VALIDATION,
+                    'Please enter a note',
+                    null,
+                    400,
+                    'add note'
+                  )
+                  showError(error)
                 }
               }}
               className="flex-1 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 font-medium"
@@ -1074,8 +1128,16 @@ function AdminUsersContent() {
             </button>
             <button
               onClick={() => {
-                alert(`User ${(selectedUser as any).profiles?.full_name} would be deleted from the system.\n\nThis would:\n- Delete user account\n- Cancel all pending orders\n- Remove user data from database\n- Send confirmation email\n\n(Implementation would require backend API)`)
-                setShowDeleteModal(false)
+                showWarning(
+                  `User ${(selectedUser as any).profiles?.full_name} would be deleted from the system.\n\nThis would:\n- Delete user account\n- Cancel all pending orders\n- Remove user data from database\n- Send confirmation email\n\n(Implementation would require backend API)`,
+                  'Delete User Confirmation',
+                  {
+                    action: {
+                      label: 'Understood',
+                      onClick: () => setShowDeleteModal(false)
+                    }
+                  }
+                )
               }}
               className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium"
             >
@@ -1146,7 +1208,14 @@ function AdminUsersContent() {
                 const customerName = (selectedUser as any).profiles?.full_name || 'Customer'
                 
                 if (!emailSubject.trim() || !emailBody.trim()) {
-                  alert('Please fill in both subject and message')
+                  const error = ErrorHandler.createError(
+                    ErrorType.VALIDATION,
+                    'Please fill in both subject and message',
+                    null,
+                    400,
+                    'send email'
+                  )
+                  showError(error)
                   return
                 }
                 
@@ -1171,14 +1240,15 @@ function AdminUsersContent() {
                     throw new Error(data.error || 'Failed to send email')
                   }
 
-                  alert(`Email sent successfully to ${email}!\n\nSubject: ${emailSubject}\n\nMessage:\n${emailBody}`)
+                  showSuccess(`Email sent successfully to ${email}!\n\nSubject: ${emailSubject}\n\nMessage:\n${emailBody}`)
                   
                   // Reset form and close modal
                   setEmailSubject('')
                   setEmailBody('')
                   setShowEmailModal(false)
                 } catch (error: any) {
-                  alert(`Failed to send email: ${error?.message || 'Unknown error'}`)
+                  const appError = ErrorHandler.fromError(error, 'send email')
+                  showError(appError)
                 }
               }}
               className="flex-1 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium"
@@ -1295,7 +1365,7 @@ function AdminUsersContent() {
             </button>
             <button
               onClick={() => {
-                alert(`Password reset email sent to ${(selectedUser as any).profiles?.email}!\n\n(This would integrate with your auth provider to send an actual reset link)`)
+                showSuccess(`Password reset email sent to ${(selectedUser as any).profiles?.email}!\n\n(This would integrate with your auth provider to send an actual reset link)`)
                 setShowPasswordModal(false)
               }}
               className="flex-1 px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 font-medium"

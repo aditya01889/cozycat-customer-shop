@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store/cart'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
-import toast from 'react-hot-toast'
+import { useToast } from '@/components/Toast/ToastProvider'
+import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 import { ArrowLeft, Truck, Shield, CreditCard, User, Phone, MapPin } from 'lucide-react'
 
 export default function CheckoutPage() {
@@ -13,6 +14,7 @@ export default function CheckoutPage() {
   const { items, getTotalPrice, clearCart } = useCartStore()
   const { user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const { showError, showSuccess } = useToast()
 
   // Form state
   const [customerInfo, setCustomerInfo] = useState({
@@ -46,21 +48,42 @@ export default function CheckoutPage() {
     try {
       // Validate form
       if (!customerInfo.firstName || !customerInfo.phone || !address.addressLine1 || !address.city || !address.pincode) {
-        toast.error('Please fill all required fields')
+        const error = ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          'Please fill all required fields',
+          null,
+          400,
+          'checkout validation'
+        )
+        showError(error)
         return
       }
 
       // Phone number validation
       const phoneRegex = /^[+]?[0-9]{10,15}$/
       if (!phoneRegex.test(customerInfo.phone.replace(/[-\s]/g, ''))) {
-        toast.error('Please enter a valid phone number')
+        const error = ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          'Please enter a valid phone number',
+          null,
+          400,
+          'checkout validation'
+        )
+        showError(error)
         return
       }
 
       // Pincode validation
       const pincodeRegex = /^[0-9]{6}$/
       if (!pincodeRegex.test(address.pincode)) {
-        toast.error('Please enter a valid 6-digit pincode')
+        const error = ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          'Please enter a valid 6-digit pincode',
+          null,
+          400,
+          'checkout validation'
+        )
+        showError(error)
         return
       }
 
@@ -150,12 +173,13 @@ export default function CheckoutPage() {
 
       // Clear cart and redirect to success
       clearCart()
-      toast.success('Order placed successfully!')
+      showSuccess('Order placed successfully!')
       router.push(`/order-success?order=${orderNumber}`)
       
     } catch (error) {
       console.error('Order placement error:', error)
-      toast.error(`Failed to place order: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      const appError = ErrorHandler.fromError(error, 'order placement')
+      showError(appError)
     } finally {
       setIsSubmitting(false)
     }

@@ -7,6 +7,8 @@ import ImageUpload from '@/components/ImageUpload'
 import AdminAuth from '@/components/AdminAuth'
 import { Save, Plus, Trash2, Package, Search, Filter, ArrowUpDown } from 'lucide-react'
 import Link from 'next/link'
+import { useToast } from '@/components/Toast/ToastProvider'
+import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 
 type Product = Database['public']['Tables']['products']['Row']
 type Category = Database['public']['Tables']['categories']['Row']
@@ -42,6 +44,8 @@ function AdminProductsContent() {
     category_id: '',
     is_active: true
   })
+
+  const { showError, showWarning, showSuccess } = useToast()
 
   useEffect(() => {
     fetchProducts()
@@ -129,25 +133,37 @@ function AdminProductsContent() {
       fetchProducts()
     } catch (error: any) {
       console.error('Error saving product:', error)
-      alert(error.message || 'Failed to save product')
+      const appError = ErrorHandler.fromError(error, 'product save')
+      showError(appError)
     }
   }
 
   const handleDelete = async (productId: string) => {
-    if (!confirm('Are you sure you want to delete this product?')) return
+    showWarning(
+      'Are you sure you want to delete this product?',
+      'Delete Product Confirmation'
+    )
+    
+    // Then handle the actual deletion
+    const performDelete = async () => {
+      try {
+        const { error } = await supabase
+          .from('products')
+          .delete()
+          .eq('id', productId)
 
-    try {
-      const { error } = await supabase
-        .from('products')
-        .delete()
-        .eq('id', productId)
-
-      if (error) throw error
-      fetchProducts()
-    } catch (error: any) {
-      console.error('Error deleting product:', error)
-      alert(error.message || 'Failed to delete product')
+        if (error) throw error
+        fetchProducts()
+        showSuccess('Product deleted successfully!')
+      } catch (error: any) {
+        console.error('Error deleting product:', error)
+        const appError = ErrorHandler.fromError(error, 'product deletion')
+        showError(appError)
+      }
     }
+
+    // Store the performDelete function for the action button
+    (window as any).performDelete = performDelete
   }
 
   const resetForm = () => {

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useToast } from '@/components/Toast/ToastProvider'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -8,12 +9,13 @@ export default function ContactPage() {
     email: '',
     message: ''
   })
+  const { showSuccess } = useToast()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     console.log('Contact form submitted:', formData)
     // TODO: Implement actual contact form submission
-    alert('Thank you for your message! We\'ll get back to you soon. 🐾')
+    showSuccess('Thank you for your message! We\'ll get back to you soon. 🐾')
   }
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

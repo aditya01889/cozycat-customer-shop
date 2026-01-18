@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import { User, ArrowLeft, Save, X } from 'lucide-react'
-import toast from 'react-hot-toast'
+import { useToast } from '@/components/Toast/ToastProvider'
+import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 
 export default function EditProfilePage() {
   const { user, loading } = useAuth()
@@ -16,6 +17,7 @@ export default function EditProfilePage() {
     email: ''
   })
   const [isLoading, setIsLoading] = useState(false)
+  const { showError, showSuccess } = useToast()
 
   useEffect(() => {
     if (!loading && !user) {
@@ -67,15 +69,17 @@ export default function EditProfilePage() {
       })
 
       if (response.ok) {
-        toast.success('Profile updated successfully!')
+        showSuccess('Profile updated successfully!')
         router.refresh()
         router.push('/profile')
       } else {
         const error = await response.json()
-        toast.error(error.details || error.message || error.error || 'Failed to update profile')
+        const appError = ErrorHandler.fromError(error, 'profile update')
+        showError(appError)
       }
     } catch (error) {
-      toast.error('An error occurred while updating your profile')
+      const appError = ErrorHandler.fromError(error, 'profile update')
+      showError(appError)
     } finally {
       setIsLoading(false)
     }
