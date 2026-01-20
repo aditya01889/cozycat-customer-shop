@@ -16,7 +16,8 @@ import {
   Trash2,
   ArrowLeft,
   Package,
-  Clock
+  Clock,
+  X
 } from 'lucide-react'
 
 interface Vendor {
@@ -26,15 +27,10 @@ interface Vendor {
   phone: string | null
   email: string | null
   address: string | null
-  city: string | null
-  state: string | null
-  pincode: string | null
   is_active: boolean
   payment_terms: string | null
-  notes: string | null
   created_at: string
   last_order_date: string | null
-  total_orders: number
 }
 
 export default function VendorManagement() {
@@ -44,6 +40,18 @@ export default function VendorManagement() {
   const [searchTerm, setSearchTerm] = useState('')
   const [showInactive, setShowInactive] = useState(false)
   const [operationsUser, setOperationsUser] = useState<any>(null)
+  const [showAddModal, setShowAddModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null)
+  const [formData, setFormData] = useState({
+    name: '',
+    contact_person: '',
+    phone: '',
+    email: '',
+    address: '',
+    payment_terms: ''
+  })
 
   useEffect(() => {
     checkOperationsAccess()
@@ -67,6 +75,8 @@ export default function VendorManagement() {
         .order('name')
 
       if (error) throw error
+      
+      console.log('Fetched vendors data structure:', data?.[0])
       setVendors(data || [])
     } catch (error) {
       console.error('Error fetching vendors:', error)
@@ -90,6 +100,155 @@ export default function VendorManagement() {
       console.error('Error updating vendor status:', error)
       alert('Failed to update vendor status')
     }
+  }
+
+  const handleAddVendor = async () => {
+    try {
+      // Validate required fields
+      if (!formData.name.trim()) {
+        alert('Vendor name is required')
+        return
+      }
+
+      // Filter out empty strings for optional fields - only include fields that exist in database
+      const vendorData = {
+        name: formData.name.trim(),
+        contact_person: formData.contact_person.trim() || null,
+        phone: formData.phone.trim() || null,
+        email: formData.email.trim() || null,
+        address: formData.address.trim() || null,
+        payment_terms: formData.payment_terms.trim() || null,
+        is_active: true
+      }
+
+      console.log('Inserting vendor data:', vendorData)
+      
+      // Validate the data object before sending
+      if (!vendorData.name) {
+        throw new Error('Vendor name is required')
+      }
+
+      const { data, error } = await supabase
+        .from('vendors')
+        .insert(vendorData)
+        .select()
+
+      if (error) {
+        console.error('Supabase error details:', JSON.stringify(error, null, 2))
+        console.error('Error code:', error.code)
+        console.error('Error message:', error.message)
+        console.error('Error details:', error.details)
+        throw new Error(error.message || 'Unknown database error')
+      }
+      
+      console.log('Vendor added successfully:', data)
+      setShowAddModal(false)
+      resetForm()
+      await fetchVendors()
+    } catch (error) {
+      console.error('Error adding vendor:', error)
+      alert(`Failed to add vendor: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const handleEditVendor = async () => {
+    if (!selectedVendor) return
+
+    try {
+      // Validate required fields
+      if (!formData.name.trim()) {
+        alert('Vendor name is required')
+        return
+      }
+
+      // Filter out empty strings for optional fields - only include fields that exist in database
+      const vendorData = {
+        name: formData.name.trim(),
+        contact_person: formData.contact_person.trim() || null,
+        phone: formData.phone.trim() || null,
+        email: formData.email.trim() || null,
+        address: formData.address.trim() || null,
+        payment_terms: formData.payment_terms.trim() || null
+      }
+
+      console.log('Updating vendor data:', vendorData)
+
+      const { data, error } = await supabase
+        .from('vendors')
+        .update(vendorData)
+        .eq('id', selectedVendor.id)
+        .select()
+
+      if (error) {
+        console.error('Supabase error details:', error)
+        throw error
+      }
+      
+      console.log('Vendor updated successfully:', data)
+      setShowEditModal(false)
+      resetForm()
+      setSelectedVendor(null)
+      await fetchVendors()
+    } catch (error) {
+      console.error('Error updating vendor:', error)
+      alert(`Failed to update vendor: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const handleDeleteVendor = async () => {
+    if (!selectedVendor) return
+
+    try {
+      console.log('Deleting vendor:', selectedVendor.id, selectedVendor.name)
+      
+      const { data, error } = await supabase
+        .from('vendors')
+        .delete()
+        .eq('id', selectedVendor.id)
+        .select()
+
+      if (error) {
+        console.error('Supabase error details:', error)
+        throw error
+      }
+      
+      console.log('Vendor deleted successfully:', data)
+      setShowDeleteModal(false)
+      setSelectedVendor(null)
+      await fetchVendors()
+    } catch (error) {
+      console.error('Error deleting vendor:', error)
+      alert(`Failed to delete vendor: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
+  const openEditModal = (vendor: Vendor) => {
+    setSelectedVendor(vendor)
+    setFormData({
+      name: vendor.name,
+      contact_person: vendor.contact_person || '',
+      phone: vendor.phone || '',
+      email: vendor.email || '',
+      address: vendor.address || '',
+      payment_terms: vendor.payment_terms || ''
+    })
+    setShowEditModal(true)
+  }
+
+  const openDeleteModal = (vendor: Vendor) => {
+    setSelectedVendor(vendor)
+    setShowDeleteModal(true)
+  }
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      contact_person: '',
+      phone: '',
+      email: '',
+      address: '',
+      payment_terms: ''
+    })
   }
 
   const filteredVendors = vendors.filter(vendor => {
@@ -181,7 +340,7 @@ export default function VendorManagement() {
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Orders</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {vendors.reduce((sum, v) => sum + v.total_orders, 0)}
+                  {vendors.length}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -237,7 +396,10 @@ export default function VendorManagement() {
               </label>
             </div>
 
-            <button className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center">
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center"
+            >
               <Plus className="w-5 h-5 mr-2" />
               Add Vendor
             </button>
@@ -289,12 +451,10 @@ export default function VendorManagement() {
                     </div>
                   )}
                   
-                  {(vendor.city || vendor.state) && (
+                  {vendor.address && (
                     <div className="flex items-center text-sm">
                       <MapPin className="w-4 h-4 text-gray-400 mr-3" />
-                      <span className="text-gray-900">
-                        {[vendor.city, vendor.state].filter(Boolean).join(', ')}
-                      </span>
+                      <span className="text-gray-900">{vendor.address}</span>
                     </div>
                   )}
 
@@ -310,8 +470,8 @@ export default function VendorManagement() {
                 <div className="px-6 pb-6">
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-gray-600">Total Orders:</span>
-                      <span className="ml-2 font-medium text-gray-900">{vendor.total_orders}</span>
+                      <span className="text-gray-600">Status:</span>
+                      <span className="ml-2 font-medium text-gray-900">{vendor.is_active ? 'Active' : 'Inactive'}</span>
                     </div>
                     <div>
                       <span className="text-gray-600">Last Order:</span>
@@ -324,10 +484,16 @@ export default function VendorManagement() {
                 <div className="px-6 pb-6 border-t bg-gray-50">
                   <div className="flex items-center justify-between pt-4">
                     <div className="flex items-center space-x-2">
-                      <button className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => openEditModal(vendor)}
+                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                      >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                      <button 
+                        onClick={() => openDeleteModal(vendor)}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
@@ -349,6 +515,283 @@ export default function VendorManagement() {
           )}
         </div>
       </div>
+
+      {/* Add Vendor Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Add New Vendor</h2>
+                <button
+                  onClick={() => {
+                    setShowAddModal(false)
+                    resetForm()
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Name *</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
+                  <input
+                    type="text"
+                    value={formData.contact_person}
+                    onChange={(e) => setFormData({...formData, contact_person: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+                  <input
+                    type="text"
+                    value={formData.payment_terms}
+                    onChange={(e) => setFormData({...formData, payment_terms: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., Net 30, 50% Advance"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <textarea
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={3}
+                />
+              </div>
+              
+                          </div>
+            
+            <div className="p-6 border-t bg-gray-50 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowAddModal(false)
+                  resetForm()
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddVendor}
+                disabled={!formData.name}
+                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Add Vendor
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Vendor Modal */}
+      {showEditModal && selectedVendor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Edit Vendor</h2>
+                <button
+                  onClick={() => {
+                    setShowEditModal(false)
+                    resetForm()
+                    setSelectedVendor(null)
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Name *</label>
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
+                  <input
+                    type="text"
+                    value={formData.contact_person}
+                    onChange={(e) => setFormData({...formData, contact_person: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={formData.email}
+                    onChange={(e) => setFormData({...formData, email: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+                
+                                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+                  <input
+                    type="text"
+                    value={formData.payment_terms}
+                    onChange={(e) => setFormData({...formData, payment_terms: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    placeholder="e.g., Net 30, 50% Advance"
+                  />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                <textarea
+                  value={formData.address}
+                  onChange={(e) => setFormData({...formData, address: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  rows={3}
+                />
+              </div>
+              
+                          </div>
+            
+            <div className="p-6 border-t bg-gray-50 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowEditModal(false)
+                  resetForm()
+                  setSelectedVendor(null)
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEditVendor}
+                disabled={!formData.name}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Update Vendor
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Vendor Modal */}
+      {showDeleteModal && selectedVendor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="p-6 border-b">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Delete Vendor</h2>
+                <button
+                  onClick={() => {
+                    setShowDeleteModal(false)
+                    setSelectedVendor(null)
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Trash2 className="w-8 h-8 text-red-600" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Delete {selectedVendor.name}?
+                </h3>
+                <p className="text-gray-600 mb-4">
+                  This action cannot be undone. All vendor data will be permanently deleted.
+                </p>
+                <div className="bg-gray-50 rounded-lg p-3 text-sm text-gray-700">
+                  <strong>Warning:</strong> If this vendor has existing orders, deleting them may cause data integrity issues.
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t bg-gray-50 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowDeleteModal(false)
+                  setSelectedVendor(null)
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteVendor}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                Delete Vendor
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
