@@ -85,12 +85,14 @@ export default function OperationsDashboard() {
       }, 0) || 0
 
       // Fetch low stock ingredients (below 50% of reorder level)
-      const { data: ingredients } = await supabase
+      const { data: allIngredients } = await supabase
         .from('ingredients')
         .select('current_stock, reorder_level')
-        .lt('current_stock', supabase.rpc('multiply', { a: 'reorder_level', b: 0.5 }))
 
-      const lowStockIngredients = ingredients?.length || 0
+      // Filter in JavaScript for ingredients below 50% of reorder level
+      const lowStockIngredients = allIngredients?.filter(ingredient => 
+        ingredient.current_stock < (ingredient.reorder_level * 0.5)
+      ).length || 0
 
       // Fetch active vendors
       const { count: vendorsCount } = await supabase
