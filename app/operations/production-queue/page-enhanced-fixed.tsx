@@ -149,13 +149,30 @@ export default function ProductionQueue() {
 
           if (reqError) throw reqError
 
-          // Vendor data is now included in the main function result
-          const requirementsWithVendors = (requirements || []).map((req: any) => ({
-            ...req,
-            supplier_name: req.supplier_name,
-            supplier_phone: req.supplier_phone,
-            supplier_email: req.supplier_email
-          }))
+          // Get vendor information for insufficient ingredients
+          const requirementsWithVendors = await Promise.all(
+            (requirements || []).map(async (req: any) => {
+              if (req.stock_status !== 'sufficient') {
+                const { data: vendor } = await supabase
+                  .from('ingredients_with_vendors')
+                  .select(`
+                    vendor_name,
+                    vendor_phone,
+                    vendor_email
+                  `)
+                  .eq('id', req.ingredient_id)
+                  .single()
+
+                return {
+                  ...req,
+                  supplier_name: vendor?.vendor_name,
+                  supplier_phone: vendor?.vendor_phone,
+                  supplier_email: vendor?.vendor_email
+                }
+              }
+              return req
+            })
+          )
 
           // Find matching queue data
           const queueInfo = queueData?.find((q: any) => q.order_id === order.id)
@@ -214,17 +231,29 @@ export default function ProductionQueue() {
         for (const req of requirements || []) {
           const key = req.ingredient_id
           if (!allRequirements[key]) {
-            // Use the real data from the function result for cumulative requirements
+            // Get current stock and vendor info
+            const { data: ingredient } = await supabase
+              .from('ingredients_with_vendors')
+              .select(`
+                current_stock,
+                vendor_name,
+                vendor_phone,
+                vendor_email
+              `)
+              .eq('id', req.ingredient_id)
+              .single()
+
+            const ingredientData = ingredient as any
             allRequirements[key] = {
               ingredient_id: req.ingredient_id,
               ingredient_name: req.ingredient_name,
               total_required: 0,
-              current_stock: req.current_stock || 0,
+              current_stock: ingredientData?.current_stock || 0,
               shortage: 0,
               affected_orders: [],
-              supplier_name: req.supplier_name || 'No Vendor',
-              supplier_phone: req.supplier_phone || 'N/A',
-              supplier_email: req.supplier_email || 'N/A'
+              supplier_name: ingredientData?.vendor_name,
+              supplier_phone: ingredientData?.vendor_phone,
+              supplier_email: ingredientData?.vendor_email
             }
           }
 
@@ -585,36 +614,17 @@ export default function ProductionQueue() {
                           {req.shortage > 0 ? 'Short' : 'Sufficient'}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        {req.supplier_name ? (
-                          <button
-                            onClick={() => generatePurchaseOrder(req.ingredient_id)}
-                            className="text-blue-600 hover:text-blue-800 underline"
-                            title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
-                          >
-                            {req.supplier_name}
-                          </button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                      <td className="px-6 py-4 text-gray-600">
+                        {req.supplier_name || '-'}
                       </td>
                       <td className="px-6 py-4">
-                        {req.shortage > 0 && req.supplier_name ? (
+                        {req.shortage > 0 && req.supplier_name && (
                           <button
                             onClick={() => generatePurchaseOrder(req.ingredient_id)}
                             className="text-blue-600 hover:text-blue-800 text-sm"
                           >
                             Create PO
                           </button>
-                        ) : req.supplier_name ? (
-                          <button
-                            disabled
-                            className="text-gray-400 text-sm cursor-not-allowed"
-                          >
-                            Stock OK
-                          </button>
-                        ) : (
-                          <span className="text-gray-400 text-sm">No Supplier</span>
                         )}
                       </td>
                     </tr>
@@ -753,15 +763,6 @@ export default function ProductionQueue() {
                                 <span className="text-gray-600">
                                   Stock: {formatWeight(req.current_stock)}
                                 </span>
-                                {req.supplier_name && (
-                                  <button
-                                    onClick={() => generatePurchaseOrder(req.ingredient_id)}
-                                    className="text-blue-600 hover:text-blue-800 text-xs underline"
-                                    title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
-                                  >
-                                    Supplier: {req.supplier_name}
-                                  </button>
-                                )}
                                 {req.stock_status !== 'sufficient' && req.supplier_name && (
                                   <button
                                     onClick={() => generatePurchaseOrder(req.ingredient_id)}

@@ -200,46 +200,46 @@ export default function ProductionQueue() {
         return
       }
 
-      // For now, create a simple cumulative calculation
+      // Calculate cumulative requirements
       const orderIds = pendingOrders.map(o => o.id)
-      const allRequirements: { [key: string]: CumulativeRequirements } = {}
+      const { data: cumulative, error: cumulativeError } = await supabase
+        .rpc('check_production_feasibility', { p_order_ids: orderIds })
 
-      // Get requirements for each pending order
-      for (const orderId of orderIds) {
-        const { data: requirements, error } = await supabase
-          .rpc('calculate_order_ingredient_requirements', { p_order_id: orderId })
+      if (cumulativeError) throw cumulativeError
 
-        if (error) continue
+      // Get detailed cumulative requirements with vendor info
+      const { data: detailedCumulative, error: detailedError } = await supabase
+        .from('orders')
+        .rpc('calculate_cumulative_ingredient_requirements')
 
-        for (const req of requirements || []) {
-          const key = req.ingredient_id
-          if (!allRequirements[key]) {
-            // Use the real data from the function result for cumulative requirements
-            allRequirements[key] = {
-              ingredient_id: req.ingredient_id,
-              ingredient_name: req.ingredient_name,
-              total_required: 0,
-              current_stock: req.current_stock || 0,
-              shortage: 0,
-              affected_orders: [],
-              supplier_name: req.supplier_name || 'No Vendor',
-              supplier_phone: req.supplier_phone || 'N/A',
-              supplier_email: req.supplier_email || 'N/A'
+      if (detailedError) throw detailedError
+
+      // Add vendor information to cumulative requirements
+      const cumulativeWithVendors = await Promise.all(
+        (detailedCumulative || []).map(async (req: any) => {
+          if (req.shortage > 0) {
+            const { data: vendor } = await supabase
+              .from('ingredients_with_vendors')
+              .select(`
+                vendor_name,
+                vendor_phone,
+                vendor_email
+              `)
+              .eq('id', req.ingredient_id)
+              .single()
+
+            return {
+              ...req,
+              supplier_name: vendor?.vendor_name,
+              supplier_phone: vendor?.vendor_phone,
+              supplier_email: vendor?.vendor_email
             }
           }
+          return req
+        })
+      )
 
-          allRequirements[key].total_required += req.total_quantity
-          allRequirements[key].affected_orders.push(orderId)
-        }
-      }
-
-      // Calculate shortages
-      const cumulativeArray = Object.values(allRequirements).map(req => ({
-        ...req,
-        shortage: Math.max(0, req.total_required - req.current_stock)
-      }))
-
-      setCumulativeRequirements(cumulativeArray)
+      setCumulativeRequirements(cumulativeWithVendors)
     } catch (error) {
       console.error('Error fetching cumulative requirements:', error)
     }
@@ -298,38 +298,6 @@ export default function ProductionQueue() {
     } catch (error: any) {
       console.error('Error sending low stock email:', error)
       alert(`Failed to send email: ${error.message}`)
-    }
-  }
-
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    setUpdatingOrder(orderId)
-    try {
-      const updateData: any = {
-        status: newStatus,
-        updated_at: new Date().toISOString()
-      }
-
-      // Add timestamps for specific status changes
-      if (newStatus === 'confirmed') {
-        updateData.confirmed_at = new Date().toISOString()
-        updateData.confirmed_by = user?.id
-      }
-
-      const { error } = await supabase
-        .from('orders')
-        .update(updateData)
-        .eq('id', orderId)
-
-      if (error) throw error
-
-      // Refresh the queue
-      await fetchProductionQueue()
-      await fetchCumulativeRequirements()
-    } catch (error) {
-      console.error('Error updating order status:', error)
-      alert('Failed to update order status')
-    } finally {
-      setUpdatingOrder(null)
     }
   }
 
@@ -585,36 +553,17 @@ export default function ProductionQueue() {
                           {req.shortage > 0 ? 'Short' : 'Sufficient'}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        {req.supplier_name ? (
-                          <button
-                            onClick={() => generatePurchaseOrder(req.ingredient_id)}
-                            className="text-blue-600 hover:text-blue-800 underline"
-                            title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
-                          >
-                            {req.supplier_name}
-                          </button>
-                        ) : (
-                          <span className="text-gray-400">-</span>
-                        )}
+                      <td className="px-6 py-4 text-gray-600">
+                        {req.supplier_name || '-'}
                       </td>
                       <td className="px-6 py-4">
-                        {req.shortage > 0 && req.supplier_name ? (
+                        {req.shortage > 0 && req.supplier_name && (
                           <button
                             onClick={() => generatePurchaseOrder(req.ingredient_id)}
                             className="text-blue-600 hover:text-blue-800 text-sm"
                           >
                             Create PO
                           </button>
-                        ) : req.supplier_name ? (
-                          <button
-                            disabled
-                            className="text-gray-400 text-sm cursor-not-allowed"
-                          >
-                            Stock OK
-                          </button>
-                        ) : (
-                          <span className="text-gray-400 text-sm">No Supplier</span>
                         )}
                       </td>
                     </tr>
@@ -753,15 +702,6 @@ export default function ProductionQueue() {
                                 <span className="text-gray-600">
                                   Stock: {formatWeight(req.current_stock)}
                                 </span>
-                                {req.supplier_name && (
-                                  <button
-                                    onClick={() => generatePurchaseOrder(req.ingredient_id)}
-                                    className="text-blue-600 hover:text-blue-800 text-xs underline"
-                                    title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
-                                  >
-                                    Supplier: {req.supplier_name}
-                                  </button>
-                                )}
                                 {req.stock_status !== 'sufficient' && req.supplier_name && (
                                   <button
                                     onClick={() => generatePurchaseOrder(req.ingredient_id)}
