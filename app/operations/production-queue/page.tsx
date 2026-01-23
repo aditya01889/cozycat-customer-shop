@@ -91,17 +91,71 @@ export default function ProductionQueue() {
   const [orders, setOrders] = useState<OrderWithIngredients[]>([])
   const [cumulativeRequirements, setCumulativeRequirements] = useState<CumulativeRequirements[]>([])
   const [loading, setLoading] = useState(true)
+  const [showCumulativeView, setShowCumulativeView] = useState(false)
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null)
+  const [createdPOs, setCreatedPOs] = useState<Set<string>>(new Set())
+const [orderCreatedPOs, setOrderCreatedPOs] = useState<Map<string, Set<string>>>(new Map())
+const [showCustomPOModal, setShowCustomPOModal] = useState(false)
+const [customPOData, setCustomPOData] = useState<{
+  ingredientId: string
+  ingredientName: string
+  supplierName: string
+  suggestedQuantity: number
+  orderId?: string
+} | null>(null)
+const [customQuantity, setCustomQuantity] = useState('')
   const [operationsUser, setOperationsUser] = useState<any>(null)
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
-  const [showCumulativeView, setShowCumulativeView] = useState(false)
   const [refreshingRequirements, setRefreshingRequirements] = useState(false)
 
   useEffect(() => {
     checkOperationsAccess()
     fetchProductionQueue()
     fetchCumulativeRequirements()
+    fetchExistingPOs()
   }, [])
+
+  const fetchExistingPOs = async () => {
+    try {
+      // Get ingredients with recent POs from the view
+      const { data: poStatus } = await supabase
+        .from('ingredient_po_status')
+        .select('ingredient_id, has_recent_po')
+        .eq('has_recent_po', true)
+
+      if (poStatus) {
+        const ingredientIds = new Set(poStatus.map(item => item.ingredient_id))
+        setCreatedPOs(ingredientIds)
+      }
+
+      // Get order-specific PO status
+      const orderIds = orders.map(order => order.order_number)
+      if (orderIds.length > 0) {
+        const orderPOMap = new Map<string, Set<string>>()
+        
+        for (const orderId of orderIds) {
+          try {
+            const { data: orderPOStatus } = await supabase
+              .rpc('get_order_po_status', { p_order_id: orderId })
+
+            if (orderPOStatus) {
+              const ingredientIds = new Set(orderPOStatus.map((item: any) => item.ingredient_id) as string[])
+              orderPOMap.set(orderId, ingredientIds)
+            }
+          } catch (error) {
+            console.error(`Error fetching PO status for order ${orderId}:`, error)
+          }
+        }
+        
+        setOrderCreatedPOs(orderPOMap)
+      }
+    } catch (error) {
+      console.error('Error fetching existing POs:', error)
+      // Fallback to empty sets if views don't exist yet
+      setCreatedPOs(new Set())
+      setOrderCreatedPOs(new Map())
+    }
+  }
 
   const checkOperationsAccess = async () => {
     const opsUser = await getOperationsUserClient()
@@ -269,18 +323,98 @@ export default function ProductionQueue() {
     }
   }
 
-  const generatePurchaseOrder = async (ingredientId: string) => {
+  const generatePurchaseOrder = async (ingredientId: string, requiredQuantity?: number, orderId?: string) => {
     try {
+      const params: any = { p_ingredient_id: ingredientId }
+      if (requiredQuantity && requiredQuantity > 0) {
+        params.p_required_quantity = requiredQuantity
+      }
+      if (orderId) {
+        params.p_order_id = orderId
+      }
+      
       const { data, error } = await supabase
-        .rpc('generate_purchase_order_for_ingredient', { 
-          p_ingredient_id: ingredientId 
-        })
+        .rpc('generate_purchase_order_for_ingredient', params)
 
       if (error) throw error
 
+      // Mark this ingredient as having a PO created globally
+      setCreatedPOs(prev => new Set([...prev, ingredientId]))
+      
+      // Mark this ingredient as having a PO created for this specific order
+      if (orderId) {
+        setOrderCreatedPOs(prev => {
+          const newMap = new Map(prev)
+          const orderPOs = newMap.get(orderId) || new Set()
+          orderPOs.add(ingredientId)
+          newMap.set(orderId, orderPOs)
+          return newMap
+        })
+      }
+      
       alert(`Purchase order ${data} created as draft!`)
     } catch (error: any) {
       console.error('Error generating purchase order:', error)
+      alert(`Failed to generate purchase order: ${error.message}`)
+    }
+  }
+
+  const openCustomPODialog = (ingredientId: string, ingredientName: string, supplierName: string, suggestedQuantity: number, orderId?: string) => {
+    setCustomPOData({
+      ingredientId,
+      ingredientName,
+      supplierName,
+      suggestedQuantity,
+      orderId
+    })
+    setCustomQuantity(suggestedQuantity.toFixed(2))
+    setShowCustomPOModal(true)
+  }
+
+  const createCustomPO = async () => {
+    if (!customPOData || !customQuantity) return
+    
+    const quantity = parseFloat(customQuantity)
+    if (isNaN(quantity) || quantity <= 0) {
+      alert('Please enter a valid quantity')
+      return
+    }
+
+    try {
+      const params: any = {
+        p_ingredient_id: customPOData.ingredientId,
+        p_required_quantity: quantity
+      }
+      
+      if (customPOData.orderId) {
+        params.p_order_id = customPOData.orderId
+      }
+
+      const { data, error } = await supabase
+        .rpc('generate_purchase_order_for_ingredient', params)
+
+      if (error) throw error
+
+      // Mark this ingredient as having a PO created globally
+      setCreatedPOs(prev => new Set([...prev, customPOData.ingredientId]))
+      
+      // Mark this ingredient as having a PO created for this specific order
+      if (customPOData.orderId) {
+        setOrderCreatedPOs(prev => {
+          const newMap = new Map(prev)
+          const orderPOs = newMap.get(customPOData.orderId!) || new Set()
+          orderPOs.add(customPOData.ingredientId)
+          newMap.set(customPOData.orderId!, orderPOs)
+          return newMap
+        })
+      }
+      
+      alert(`Purchase order ${data} created with custom quantity ${quantity}!`)
+      setShowCustomPOModal(false)
+      setCustomPOData(null)
+      setCustomQuantity('')
+    } catch (error: any) {
+      console.error('Error generating custom purchase order:', error)
       alert(`Failed to generate purchase order: ${error.message}`)
     }
   }
@@ -311,8 +445,12 @@ export default function ProductionQueue() {
 
       // Add timestamps for specific status changes
       if (newStatus === 'confirmed') {
-        updateData.confirmed_at = new Date().toISOString()
-        updateData.confirmed_by = user?.id
+        updateData.confirmed_date = new Date().toISOString()
+        updateData.production_start_date = new Date().toISOString()
+      } else if (newStatus === 'in_production') {
+        updateData.ready_date = new Date().toISOString()
+      } else if (newStatus === 'delivered') {
+        updateData.delivered_date = new Date().toISOString()
       }
 
       const { error } = await supabase
@@ -321,6 +459,18 @@ export default function ProductionQueue() {
         .eq('id', orderId)
 
       if (error) throw error
+
+      // Deduct ingredients from inventory when order moves to production
+      if (newStatus === 'in_production') {
+        const { data: deductionResult, error: deductionError } = await supabase
+          .rpc('deduct_order_ingredients', { p_order_id: orderId })
+        
+        if (deductionError) {
+          console.error('Error deducting ingredients:', deductionError)
+        } else {
+          console.log('Inventory deduction result:', deductionResult)
+        }
+      }
 
       // Refresh the queue
       await fetchProductionQueue()
@@ -376,10 +526,11 @@ export default function ProductionQueue() {
   }
 
   const formatWeight = (grams: number) => {
-    if (grams >= 1000) {
-      return `${(grams / 1000).toFixed(1)}kg`
+    const roundedGrams = Math.round(grams * 100) / 100 // Round to 2 decimal places
+    if (roundedGrams >= 1000) {
+      return `${(roundedGrams / 1000).toFixed(2)}kg`
     }
-    return `${formatNumber(grams)}g`
+    return `${formatNumber(roundedGrams)}g`
   }
 
   if (loading) {
@@ -530,12 +681,26 @@ export default function ProductionQueue() {
                   {req.supplier_name && (
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">Supplier: {req.supplier_name}</span>
-                      <button
-                        onClick={() => generatePurchaseOrder(req.ingredient_id)}
-                        className="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-                      >
-                        Create PO
-                      </button>
+                      <div className="flex items-center space-x-1">
+                        <button
+                          onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_required)}
+                          disabled={createdPOs.has(req.ingredient_id)}
+                          className={`text-xs px-2 py-1 rounded transition-colors ${
+                            createdPOs.has(req.ingredient_id)
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              : 'bg-blue-500 text-white hover:bg-blue-600'
+                          }`}
+                        >
+                          {createdPOs.has(req.ingredient_id) ? 'PO Created' : 'Create PO'}
+                        </button>
+                        <button
+                          onClick={() => req.supplier_name && openCustomPODialog(req.ingredient_id, req.ingredient_name, req.supplier_name, req.total_required)}
+                          className="text-xs px-2 py-1 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                          title="Create PO with custom quantity"
+                        >
+                          Custom
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -587,13 +752,19 @@ export default function ProductionQueue() {
                       </td>
                       <td className="px-6 py-4">
                         {req.supplier_name ? (
-                          <button
-                            onClick={() => generatePurchaseOrder(req.ingredient_id)}
-                            className="text-blue-600 hover:text-blue-800 underline"
-                            title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
-                          >
-                            {req.supplier_name}
-                          </button>
+                          req.shortage > 0 ? (
+                            <button
+                              onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_required)}
+                              className="text-blue-600 hover:text-blue-800 underline"
+                              title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
+                            >
+                              {req.supplier_name}
+                            </button>
+                          ) : (
+                            <span className="text-gray-500">
+                              {req.supplier_name}
+                            </span>
+                          )
                         ) : (
                           <span className="text-gray-400">-</span>
                         )}
@@ -601,7 +772,7 @@ export default function ProductionQueue() {
                       <td className="px-6 py-4">
                         {req.shortage > 0 && req.supplier_name ? (
                           <button
-                            onClick={() => generatePurchaseOrder(req.ingredient_id)}
+                            onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_required)}
                             className="text-blue-600 hover:text-blue-800 text-sm"
                           >
                             Create PO
@@ -754,21 +925,39 @@ export default function ProductionQueue() {
                                   Stock: {formatWeight(req.current_stock)}
                                 </span>
                                 {req.supplier_name && (
-                                  <button
-                                    onClick={() => generatePurchaseOrder(req.ingredient_id)}
-                                    className="text-blue-600 hover:text-blue-800 text-xs underline"
-                                    title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
-                                  >
-                                    Supplier: {req.supplier_name}
-                                  </button>
+                                  req.stock_status !== 'sufficient' ? (
+                                    orderCreatedPOs.get(order.id)?.has(req.ingredient_id) ? (
+                                      <span className="text-gray-500 text-xs">
+                                        Supplier: {req.supplier_name} (PO Created)
+                                      </span>
+                                    ) : (
+                                      <button
+                                        onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_quantity, order.id)}
+                                        className="text-blue-600 hover:text-blue-800 text-xs underline"
+                                        title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
+                                      >
+                                        Supplier: {req.supplier_name}
+                                      </button>
+                                    )
+                                  ) : (
+                                    <span className="text-gray-500 text-xs">
+                                      Supplier: {req.supplier_name}
+                                    </span>
+                                  )
                                 )}
                                 {req.stock_status !== 'sufficient' && req.supplier_name && (
-                                  <button
-                                    onClick={() => generatePurchaseOrder(req.ingredient_id)}
-                                    className="text-blue-600 hover:text-blue-800 text-xs"
-                                  >
-                                    Create PO
-                                  </button>
+                                  orderCreatedPOs.get(order.id)?.has(req.ingredient_id) ? (
+                                    <span className="text-gray-500 text-xs">
+                                      PO Created
+                                    </span>
+                                  ) : (
+                                    <button
+                                      onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_quantity, order.id)}
+                                      className="text-blue-600 hover:text-blue-800 text-xs"
+                                    >
+                                      Create PO
+                                    </button>
+                                  )
                                 )}
                               </div>
                             </div>
@@ -804,7 +993,7 @@ export default function ProductionQueue() {
                         
                         {order.status === 'confirmed' && (
                           <button
-                            onClick={() => updateOrderStatus(order.id, 'ready_production')}
+                            onClick={() => updateOrderStatus(order.id, 'in_production')}
                             disabled={updatingOrder === order.id}
                             className="flex items-center px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50"
                           >
@@ -844,6 +1033,73 @@ export default function ProductionQueue() {
           </div>
         )}
       </div>
+
+      {/* Custom PO Modal */}
+      {showCustomPOModal && customPOData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Create Custom Purchase Order</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Ingredient
+                </label>
+                <div className="text-sm text-gray-900">{customPOData.ingredientName}</div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Supplier
+                </label>
+                <div className="text-sm text-gray-900">{customPOData.supplierName}</div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Suggested Quantity
+                </label>
+                <div className="text-sm text-gray-900">{customPOData.suggestedQuantity.toFixed(2)}</div>
+              </div>
+              
+              <div>
+                <label htmlFor="customQuantity" className="block text-sm font-medium text-gray-700 mb-1">
+                  Custom Quantity
+                </label>
+                <input
+                  id="customQuantity"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={customQuantity}
+                  onChange={(e) => setCustomQuantity(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter custom quantity"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowCustomPOModal(false)
+                  setCustomPOData(null)
+                  setCustomQuantity('')
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={createCustomPO}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Create PO
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

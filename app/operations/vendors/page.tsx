@@ -33,6 +33,243 @@ interface Vendor {
   last_order_date: string | null
 }
 
+interface PurchaseOrder {
+  id: string
+  order_number: string
+  status: string
+  total_amount: number
+  notes: string
+  created_at: string
+  sent_at: string | null
+  confirmed_at: string | null
+  received_at: string | null
+}
+
+function VendorPurchaseOrders({ vendorId }: { vendorId: string }) {
+  const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
+  const [loading, setLoading] = useState(true)
+  const [expanded, setExpanded] = useState(false)
+
+  useEffect(() => {
+    fetchPurchaseOrders()
+  }, [vendorId])
+
+  const fetchPurchaseOrders = async () => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_vendor_purchase_orders', { p_vendor_id: vendorId })
+
+      if (error) throw error
+      setPurchaseOrders(data || [])
+    } catch (error) {
+      console.error('Error fetching purchase orders:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'draft': return 'bg-gray-100 text-gray-700'
+      case 'sent': return 'bg-blue-100 text-blue-700'
+      case 'confirmed': return 'bg-green-100 text-green-700'
+      case 'received': return 'bg-purple-100 text-purple-700'
+      default: return 'bg-gray-100 text-gray-700'
+    }
+  }
+
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return 'N/A'
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    })
+  }
+
+  const updatePurchaseOrderStatus = async (poId: string, newStatus: string) => {
+    try {
+      const updateData: any = {
+        status: newStatus
+      }
+
+      // Add timestamps for specific status changes
+      if (newStatus === 'sent') {
+        updateData.sent_at = new Date().toISOString()
+      } else if (newStatus === 'confirmed') {
+        updateData.confirmed_at = new Date().toISOString()
+      } else if (newStatus === 'received') {
+        updateData.received_at = new Date().toISOString()
+      }
+
+      const { error } = await supabase
+        .from('purchase_orders')
+        .update(updateData)
+        .eq('id', poId)
+
+      if (error) throw error
+
+      // If marked as received, add inventory
+      if (newStatus === 'received') {
+        const { data: inventoryResult, error: inventoryError } = await supabase
+          .rpc('add_inventory_from_po', { p_po_id: poId })
+        
+        if (inventoryError) {
+          console.error('Error adding inventory:', inventoryError)
+        } else {
+          const result = inventoryResult?.[0]
+          if (result?.success) {
+            alert(`Purchase order marked as received!\n${result.message}`)
+          } else {
+            alert(`Purchase order marked as received, but inventory update failed: ${result?.message}`)
+          }
+        }
+      }
+
+      // Refresh the purchase orders
+      fetchPurchaseOrders()
+    } catch (error) {
+      console.error('Error updating PO status:', error)
+      alert('Failed to update purchase order status')
+    }
+  }
+
+  const cancelPurchaseOrder = async (poId: string) => {
+    if (!confirm('Are you sure you want to cancel this purchase order?')) {
+      return
+    }
+
+    try {
+      const { data, error } = await supabase
+        .rpc('cancel_purchase_order', { p_po_id: poId })
+
+      if (error) throw error
+
+      // Refresh the purchase orders
+      fetchPurchaseOrders()
+      
+      const result = data?.[0]
+      if (result?.success) {
+        alert(result.message)
+      } else {
+        alert(result?.message || 'Failed to cancel purchase order')
+      }
+    } catch (error) {
+      console.error('Error cancelling PO:', error)
+      alert('Failed to cancel purchase order')
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="px-6 py-4 border-t">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
+          <div className="h-3 bg-gray-200 rounded w-full"></div>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="px-6 py-4 border-t">
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="font-medium text-gray-900">Purchase Orders ({purchaseOrders.length})</h4>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-blue-600 hover:text-blue-800 text-sm"
+        >
+          {expanded ? 'Hide' : 'Show'}
+        </button>
+      </div>
+      
+      {expanded && purchaseOrders.length > 0 && (
+        <div className="space-y-2">
+          {purchaseOrders.map((po) => (
+            <div key={po.id} className="bg-gray-50 rounded-lg p-3 text-sm">
+              <div className="flex items-center justify-between mb-2">
+                <span className="font-medium text-gray-900">{po.order_number}</span>
+                <div className="flex items-center space-x-2">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(po.status)}`}>
+                    {po.status}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-gray-600 mb-2">
+                <div>Amount: ₹{po.total_amount.toFixed(2)}</div>
+                <div>Created: {formatDate(po.created_at)}</div>
+                {po.sent_at && <div>Sent: {formatDate(po.sent_at)}</div>}
+                {po.confirmed_at && <div>Confirmed: {formatDate(po.confirmed_at)}</div>}
+                {po.received_at && <div>Received: {formatDate(po.received_at)}</div>}
+              </div>
+              {po.notes && (
+                <div className="mt-2 text-gray-500 text-xs italic mb-2">
+                  {po.notes}
+                </div>
+              )}
+              {/* Action Buttons */}
+              <div className="flex items-center space-x-2 mt-2">
+                {po.status === 'draft' && (
+                  <>
+                    <button
+                      onClick={() => updatePurchaseOrderStatus(po.id, 'sent')}
+                      className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600"
+                    >
+                      Send to Vendor
+                    </button>
+                    <button
+                      onClick={() => updatePurchaseOrderStatus(po.id, 'confirmed')}
+                      className="px-2 py-1 bg-green-500 text-white text-white text-xs rounded hover:bg-green-600"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => cancelPurchaseOrder(po.id)}
+                      className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+                {po.status === 'sent' && (
+                  <>
+                    <button
+                      onClick={() => updatePurchaseOrderStatus(po.id, 'confirmed')}
+                      className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600"
+                    >
+                      Confirm
+                    </button>
+                    <button
+                      onClick={() => cancelPurchaseOrder(po.id)}
+                      className="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                )}
+                {po.status === 'confirmed' && (
+                  <button
+                    onClick={() => updatePurchaseOrderStatus(po.id, 'received')}
+                    className="px-2 py-1 bg-purple-500 text-white text-xs rounded hover:bg-purple-600"
+                  >
+                    Mark Received
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      
+      {expanded && purchaseOrders.length === 0 && (
+        <div className="text-gray-500 text-sm text-center py-4">
+          No purchase orders found for this vendor
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function VendorManagement() {
   const { user } = useAuth()
   const [vendors, setVendors] = useState<Vendor[]>([])
@@ -479,6 +716,9 @@ export default function VendorManagement() {
                     </div>
                   </div>
                 </div>
+
+                {/* Purchase Orders */}
+                <VendorPurchaseOrders vendorId={vendor.id} />
 
                 {/* Actions */}
                 <div className="px-6 pb-6 border-t bg-gray-50">

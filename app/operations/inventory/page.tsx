@@ -73,6 +73,13 @@ export default function InventoryManagement() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showUpdateStockModal, setShowUpdateStockModal] = useState(false)
   const [selectedIngredient, setSelectedIngredient] = useState<Ingredient | null>(null)
+  const [showPOModal, setShowPOModal] = useState(false)
+  const [poFormData, setPoFormData] = useState({
+    ingredient_id: '',
+    quantity: '',
+    supplier_id: '',
+    unit_cost: ''
+  })
   const [duplicateWarning, setDuplicateWarning] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
@@ -218,6 +225,54 @@ export default function InventoryManagement() {
       console.error('Error deleting ingredient:', error)
       alert('Failed to delete ingredient')
     }
+  }
+
+  const handleCreatePO = async () => {
+    try {
+      const quantity = parseFloat(poFormData.quantity)
+      const unitCost = parseFloat(poFormData.unit_cost)
+      
+      if (!poFormData.ingredient_id || !poFormData.supplier_id || !quantity || !unitCost) {
+        alert('Please fill in all required fields')
+        return
+      }
+
+      const { data, error } = await supabase
+        .rpc('generate_purchase_order_for_ingredient', {
+          p_ingredient_id: poFormData.ingredient_id,
+          p_required_quantity: quantity
+        })
+
+      if (error) throw error
+
+      alert(`Purchase order created successfully!`)
+      setShowPOModal(false)
+      resetPOForm()
+    } catch (error: any) {
+      console.error('Error creating PO:', error)
+      alert(`Failed to create purchase order: ${error.message}`)
+    }
+  }
+
+  const handleIngredientChange = (ingredientId: string) => {
+    const ingredient = ingredients.find(i => i.id === ingredientId)
+    if (ingredient) {
+      setPoFormData(prev => ({
+        ...prev,
+        ingredient_id: ingredientId,
+        supplier_id: ingredient.supplier || '',
+        unit_cost: ingredient.unit_cost.toString()
+      }))
+    }
+  }
+
+  const resetPOForm = () => {
+    setPoFormData({
+      ingredient_id: '',
+      quantity: '',
+      supplier_id: '',
+      unit_cost: ''
+    })
   }
 
   const handleUpdateStock = async () => {
@@ -455,8 +510,17 @@ export default function InventoryManagement() {
               <span className="text-2xl mr-3">📦</span>
               <h1 className="text-xl font-bold text-gray-900">Inventory Management</h1>
             </div>
-            <div className="text-sm text-gray-600">
-              {ingredients.length} ingredients
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => setShowPOModal(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Create PO
+              </button>
+              <div className="text-sm text-gray-600">
+                {ingredients.length} ingredients
+              </div>
             </div>
           </div>
         </div>
@@ -1214,6 +1278,106 @@ export default function InventoryManagement() {
                 className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Update Stock
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+
+      {/* PO Creation Modal */}
+      {showPOModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h3 className="text-lg font-semibold mb-4">Create Purchase Order</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="ingredient" className="block text-sm font-medium text-gray-700 mb-1">
+                  Ingredient *
+                </label>
+                <select
+                  id="ingredient"
+                  value={poFormData.ingredient_id}
+                  onChange={(e) => handleIngredientChange(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select ingredient</option>
+                  {ingredients.map((ingredient) => (
+                    <option key={ingredient.id} value={ingredient.id}>
+                      {ingredient.name} (Current: {ingredient.current_stock} {ingredient.unit})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+                  Quantity *
+                </label>
+                <input
+                  id="quantity"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={poFormData.quantity}
+                  onChange={(e) => setPoFormData({...poFormData, quantity: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter quantity"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="supplier" className="block text-sm font-medium text-gray-700 mb-1">
+                  Supplier *
+                </label>
+                <select
+                  id="supplier"
+                  value={poFormData.supplier_id}
+                  onChange={(e) => setPoFormData({...poFormData, supplier_id: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="">Select supplier</option>
+                  {vendors.map((vendor) => (
+                    <option key={vendor.id} value={vendor.id}>
+                      {vendor.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="unit_cost" className="block text-sm font-medium text-gray-700 mb-1">
+                  Unit Cost (₹) *
+                </label>
+                <input
+                  id="unit_cost"
+                  type="number"
+                  step="0.01"
+                  min="0.01"
+                  value={poFormData.unit_cost}
+                  onChange={(e) => setPoFormData({...poFormData, unit_cost: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  placeholder="Enter unit cost"
+                />
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => {
+                  setShowPOModal(false)
+                  resetPOForm()
+                }}
+                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreatePO}
+                className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Create PO
               </button>
             </div>
           </div>
