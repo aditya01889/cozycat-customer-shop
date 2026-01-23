@@ -112,20 +112,32 @@ const [customQuantity, setCustomQuantity] = useState('')
     checkOperationsAccess()
     fetchProductionQueue()
     fetchCumulativeRequirements()
-    fetchExistingPOs()
   }, [])
+
+  useEffect(() => {
+    // Fetch PO status after orders are loaded
+    if (orders.length > 0) {
+      fetchExistingPOs()
+    }
+  }, [orders])
 
   const fetchExistingPOs = async () => {
     try {
-      // Get ingredients with recent POs from the view
-      const { data: poStatus } = await supabase
+      console.log('Fetching PO status for orders:', orders.length)
+      
+      // Get ingredients with recent POs from the enhanced view
+      const { data: poStatus, error: viewError } = await supabase
         .from('ingredient_po_status')
-        .select('ingredient_id, has_recent_po')
+        .select('ingredient_id, has_recent_po, active_po_count')
         .eq('has_recent_po', true)
 
-      if (poStatus) {
+      if (viewError) {
+        console.error('Error fetching PO status from view:', viewError)
+      } else if (poStatus) {
         const ingredientIds = new Set(poStatus.map(item => item.ingredient_id))
         setCreatedPOs(ingredientIds)
+        console.log('✅ Loaded PO status for ingredients:', Array.from(ingredientIds))
+        console.log('PO Status details:', poStatus)
       }
 
       // Get order-specific PO status
@@ -135,12 +147,15 @@ const [customQuantity, setCustomQuantity] = useState('')
         
         for (const orderId of orderIds) {
           try {
-            const { data: orderPOStatus } = await supabase
+            const { data: orderPOStatus, error: orderError } = await supabase
               .rpc('get_order_po_status', { p_order_id: orderId })
 
-            if (orderPOStatus) {
+            if (orderError) {
+              console.error(`Error fetching PO status for order ${orderId}:`, orderError)
+            } else if (orderPOStatus) {
               const ingredientIds = new Set(orderPOStatus.map((item: any) => item.ingredient_id) as string[])
               orderPOMap.set(orderId, ingredientIds)
+              console.log(`✅ Order ${orderId} PO status:`, Array.from(ingredientIds))
             }
           } catch (error) {
             console.error(`Error fetching PO status for order ${orderId}:`, error)
@@ -148,6 +163,7 @@ const [customQuantity, setCustomQuantity] = useState('')
         }
         
         setOrderCreatedPOs(orderPOMap)
+        console.log('✅ Final order PO map:', Array.from(orderPOMap.entries()))
       }
     } catch (error) {
       console.error('Error fetching existing POs:', error)
@@ -325,6 +341,8 @@ const [customQuantity, setCustomQuantity] = useState('')
 
   const generatePurchaseOrder = async (ingredientId: string, requiredQuantity?: number, orderId?: string) => {
     try {
+      console.log('🚀 Creating PO for ingredient:', ingredientId, 'quantity:', requiredQuantity, 'order:', orderId)
+      
       const params: any = { p_ingredient_id: ingredientId }
       if (requiredQuantity && requiredQuantity > 0) {
         params.p_required_quantity = requiredQuantity
@@ -336,10 +354,19 @@ const [customQuantity, setCustomQuantity] = useState('')
       const { data, error } = await supabase
         .rpc('generate_purchase_order_for_ingredient', params)
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ PO creation error:', error)
+        throw error
+      }
+
+      console.log('✅ PO created successfully:', data)
 
       // Mark this ingredient as having a PO created globally
-      setCreatedPOs(prev => new Set([...prev, ingredientId]))
+      setCreatedPOs(prev => {
+        const newSet = new Set([...prev, ingredientId])
+        console.log('📝 Updated global PO status:', Array.from(newSet))
+        return newSet
+      })
       
       // Mark this ingredient as having a PO created for this specific order
       if (orderId) {
@@ -348,13 +375,18 @@ const [customQuantity, setCustomQuantity] = useState('')
           const orderPOs = newMap.get(orderId) || new Set()
           orderPOs.add(ingredientId)
           newMap.set(orderId, orderPOs)
+          console.log('📝 Updated order PO status for', orderId, ':', Array.from(orderPOs))
           return newMap
         })
       }
       
+      // Refresh PO status to ensure persistence
+      console.log('🔄 Refreshing PO status...')
+      await fetchExistingPOs()
+      
       alert(`Purchase order ${data} created as draft!`)
     } catch (error: any) {
-      console.error('Error generating purchase order:', error)
+      console.error('❌ Error generating purchase order:', error)
       alert(`Failed to generate purchase order: ${error.message}`)
     }
   }
@@ -408,6 +440,9 @@ const [customQuantity, setCustomQuantity] = useState('')
           return newMap
         })
       }
+      
+      // Refresh PO status to ensure persistence
+      await fetchExistingPOs()
       
       alert(`Purchase order ${data} created with custom quantity ${quantity}!`)
       setShowCustomPOModal(false)
@@ -690,6 +725,7 @@ const [customQuantity, setCustomQuantity] = useState('')
                               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                               : 'bg-blue-500 text-white hover:bg-blue-600'
                           }`}
+                          title={`Ingredient ID: ${req.ingredient_id}, Has PO: ${createdPOs.has(req.ingredient_id)}`}
                         >
                           {createdPOs.has(req.ingredient_id) ? 'PO Created' : 'Create PO'}
                         </button>
@@ -926,13 +962,13 @@ const [customQuantity, setCustomQuantity] = useState('')
                                 </span>
                                 {req.supplier_name && (
                                   req.stock_status !== 'sufficient' ? (
-                                    orderCreatedPOs.get(order.id)?.has(req.ingredient_id) ? (
+                                    orderCreatedPOs.get(order.order_number)?.has(req.ingredient_id) ? (
                                       <span className="text-gray-500 text-xs">
                                         Supplier: {req.supplier_name} (PO Created)
                                       </span>
                                     ) : (
                                       <button
-                                        onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_quantity, order.id)}
+                                        onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_quantity, order.order_number)}
                                         className="text-blue-600 hover:text-blue-800 text-xs underline"
                                         title={`Create Purchase Order for ${req.ingredient_name} from ${req.supplier_name}`}
                                       >
@@ -946,13 +982,13 @@ const [customQuantity, setCustomQuantity] = useState('')
                                   )
                                 )}
                                 {req.stock_status !== 'sufficient' && req.supplier_name && (
-                                  orderCreatedPOs.get(order.id)?.has(req.ingredient_id) ? (
+                                  orderCreatedPOs.get(order.order_number)?.has(req.ingredient_id) ? (
                                     <span className="text-gray-500 text-xs">
                                       PO Created
                                     </span>
                                   ) : (
                                     <button
-                                      onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_quantity, order.id)}
+                                      onClick={() => generatePurchaseOrder(req.ingredient_id, req.total_quantity, order.order_number)}
                                       className="text-blue-600 hover:text-blue-800 text-xs"
                                     >
                                       Create PO
