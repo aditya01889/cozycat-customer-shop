@@ -31,6 +31,7 @@ interface ProductionBatch {
   updated_at: string
   order_id?: string
   order_number?: string
+  all_order_numbers?: string  // New field for all order numbers
   order_status?: string
   order_total?: number
   item_count?: number
@@ -41,6 +42,7 @@ interface ProductionBatch {
   end_time?: string
   priority?: number
   notes?: string
+  delivery_created?: boolean  // New field to track if deliveries were created
 }
 
 export default function ManageBatches() {
@@ -57,9 +59,19 @@ export default function ManageBatches() {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [selectedBatch, setSelectedBatch] = useState<ProductionBatch | null>(null)
   const [editStatus, setEditStatus] = useState('')
+  const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     fetchBatches()
+  }, [])
+
+  // Refresh batches every 30 seconds to check for delivery creation status
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchBatches()
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(interval)
   }, [])
 
   const fetchBatches = async () => {
@@ -104,18 +116,19 @@ export default function ManageBatches() {
           created_at: batch.created_at,
           updated_at: batch.updated_at,
           order_id: batch.order_id || undefined,
+          order_number: batch.order_number || undefined,
+          all_order_numbers: batch.all_order_numbers || undefined,
           notes: batch.notes || undefined,
-          // Add default values for enhanced interface
-          order_number: batch.order_id ? `ORD-${batch.order_id.slice(-8)}` : undefined,
-          order_status: undefined,
-          order_total: undefined,
-          item_count: 0,
-          total_planned_quantity: 0,
-          total_produced_quantity: 0,
-          completion_percentage: 0,
+          order_status: batch.order_status || undefined,
+          order_total: batch.order_total || undefined,
+          item_count: batch.item_count || 0,
+          total_planned_quantity: batch.total_planned_quantity || 0,
+          total_produced_quantity: batch.total_produced_quantity || 0,
+          completion_percentage: batch.completion_percentage || 0,
           start_time: batch.start_time || undefined,
           end_time: batch.end_time || undefined,
-          priority: batch.priority || 1
+          priority: batch.priority || 1,
+          delivery_created: batch.delivery_created || false
         }))
         
         console.log('Mapped data:', mappedData)
@@ -127,6 +140,16 @@ export default function ManageBatches() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const toggleExpandedOrders = (batchId: string) => {
+    const newExpanded = new Set(expandedOrders)
+    if (newExpanded.has(batchId)) {
+      newExpanded.delete(batchId)
+    } else {
+      newExpanded.add(batchId)
+    }
+    setExpandedOrders(newExpanded)
   }
 
   const filteredBatches = batches.filter(batch => {
@@ -507,14 +530,67 @@ export default function ManageBatches() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(batch.status || batch.batch_status || 'unknown')}`}>
-                          {getStatusIcon(batch.status || batch.batch_status || 'unknown')}
-                          <span className="ml-1">{(batch.status || batch.batch_status || 'unknown').replace('_', ' ').toUpperCase()}</span>
-                        </span>
+                        <div className="flex flex-col items-start">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(batch.status || batch.batch_status || 'unknown')}`}>
+                            {getStatusIcon(batch.status || batch.batch_status || 'unknown')}
+                            <span className="ml-1">{(batch.status || batch.batch_status || 'unknown').replace('_', ' ').toUpperCase()}</span>
+                          </span>
+                          {(batch.status === 'completed' || batch.batch_status === 'completed') && (
+                            <span className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium mt-1 ${
+                              batch.delivery_created 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {batch.delivery_created ? 'Delivery Ready' : 'Processing Delivery...'}
+                            </span>
+                          )}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm">
-                          <div className="font-medium text-gray-900">{batch.order_number || 'N/A'}</div>
+                      <td className="px-6 py-4">
+                        <div className="text-sm max-w-xs">
+                          {batch.order_number && (
+                            <div>
+                              <div className="font-medium text-gray-900">
+                                {(() => {
+                                  const parts = batch.order_number.split(' | ')
+                                  const elements: React.ReactElement[] = []
+                                  
+                                  parts.forEach((order, index) => {
+                                    const isSeeAll = order.includes('(See all)')
+                                    if (isSeeAll) {
+                                      elements.push(
+                                        <span key={index}>
+                                          <span 
+                                            className="text-blue-600 cursor-pointer hover:text-blue-800"
+                                            onClick={() => toggleExpandedOrders(batch.batch_id || batch.id || '')}
+                                          >
+                                            (See all)
+                                          </span>
+                                        </span>
+                                      )
+                                    } else {
+                                      if (elements.length > 0 && !parts[index - 1].includes('(See all)')) {
+                                        elements.push(<span key={`sep-${index}`}> | </span>)
+                                      }
+                                      elements.push(<span key={index}>{order}</span>)
+                                    }
+                                  })
+                                  
+                                  return <>{elements}</>
+                                })()}
+                              </div>
+                              {batch.all_order_numbers && expandedOrders.has(batch.batch_id || batch.id || '') && (
+                                <div className="mt-2 p-2 bg-gray-50 rounded border text-xs">
+                                  <div className="font-medium text-gray-700 mb-1">All Orders:</div>
+                                  {batch.all_order_numbers.split(',').map((order, index) => (
+                                    <div key={index} className="text-gray-600 py-0.5">{order}</div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ) || (
+                            <div className="font-medium text-gray-900">N/A</div>
+                          )}
                           <div className="text-gray-500">₹{batch.order_total || '0'}</div>
                         </div>
                       </td>
@@ -626,7 +702,51 @@ export default function ManageBatches() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Order Number</label>
-                    <p className="mt-1 text-sm text-gray-900">{selectedBatch.order_number || 'N/A'}</p>
+                    <div className="mt-1 text-sm text-gray-900">
+                      {selectedBatch.order_number && (
+                        <div>
+                          <div>
+                            {(() => {
+                              const parts = selectedBatch.order_number.split(' | ')
+                              const elements: React.ReactElement[] = []
+                              
+                              parts.forEach((order, index) => {
+                                const isSeeAll = order.includes('(See all)')
+                                if (isSeeAll) {
+                                  elements.push(
+                                    <span key={index}>
+                                      <span 
+                                        className="text-blue-600 cursor-pointer hover:text-blue-800"
+                                        onClick={() => toggleExpandedOrders(selectedBatch.batch_id || selectedBatch.id || '')}
+                                      >
+                                        (See all)
+                                      </span>
+                                    </span>
+                                  )
+                                } else {
+                                  if (elements.length > 0 && !parts[index - 1].includes('(See all)')) {
+                                    elements.push(<span key={`sep-${index}`}> | </span>)
+                                  }
+                                  elements.push(<span key={index}>{order}</span>)
+                                }
+                              })
+                              
+                              return <>{elements}</>
+                            })()}
+                          </div>
+                          {selectedBatch.all_order_numbers && expandedOrders.has(selectedBatch.batch_id || selectedBatch.id || '') && (
+                            <div className="mt-2 p-2 bg-gray-50 rounded border text-xs">
+                              <div className="font-medium text-gray-700 mb-1">All Orders:</div>
+                              {selectedBatch.all_order_numbers.split(',').map((order, index) => (
+                                <div key={index} className="text-gray-600 py-0.5">{order}</div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      ) || (
+                        'N/A'
+                      )}
+                    </div>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Order Status</label>
