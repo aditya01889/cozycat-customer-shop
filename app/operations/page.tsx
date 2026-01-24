@@ -29,6 +29,9 @@ interface DashboardStats {
   totalRevenue: number
   lowStockIngredients: number
   activeVendors: number
+  pendingDeliveries: number
+  inTransitDeliveries: number
+  activeDeliveryPartners: number
 }
 
 export default function OperationsDashboard() {
@@ -41,7 +44,10 @@ export default function OperationsDashboard() {
     readyOrders: 0,
     totalRevenue: 0,
     lowStockIngredients: 0,
-    activeVendors: 0
+    activeVendors: 0,
+    pendingDeliveries: 0,
+    inTransitDeliveries: 0,
+    activeDeliveryPartners: 0
   })
   const [loading, setLoading] = useState(true)
   const [operationsUser, setOperationsUser] = useState<any>(null)
@@ -100,6 +106,20 @@ export default function OperationsDashboard() {
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true)
 
+      // Fetch delivery stats
+      const { data: deliveries } = await supabase
+        .from('deliveries')
+        .select('status')
+
+      const pendingDeliveries = deliveries?.filter(d => d.status === 'pending').length || 0
+      const inTransitDeliveries = deliveries?.filter(d => d.status === 'in_transit').length || 0
+
+      // Fetch active delivery partners
+      const { count: deliveryPartnersCount } = await supabase
+        .from('delivery_partners')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+
       setStats({
         totalProducts: productsCount || 0,
         totalOrders: orders?.length || 0,
@@ -108,7 +128,10 @@ export default function OperationsDashboard() {
         readyOrders,
         totalRevenue: revenue,
         lowStockIngredients,
-        activeVendors: vendorsCount || 0
+        activeVendors: vendorsCount || 0,
+        pendingDeliveries,
+        inTransitDeliveries,
+        activeDeliveryPartners: deliveryPartnersCount || 0
       })
     } catch (error) {
       console.error('Error fetching operations dashboard stats:', error)
@@ -164,7 +187,7 @@ export default function OperationsDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between">
               <div>
@@ -201,6 +224,18 @@ export default function OperationsDashboard() {
             </div>
           </div>
 
+          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600 mb-1">Pending Deliveries</p>
+                <p className="text-2xl font-bold text-gray-900">{stats.pendingDeliveries}</p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Truck className="w-6 h-6 text-blue-600" />
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-red-500">
             <div className="flex items-center justify-between">
               <div>
@@ -215,7 +250,7 @@ export default function OperationsDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Factory className="w-5 h-5 text-purple-600 mr-2" />
@@ -248,6 +283,36 @@ export default function OperationsDashboard() {
 
           <div className="bg-white rounded-2xl shadow-lg p-6">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+              <Truck className="w-5 h-5 text-green-600 mr-2" />
+              Delivery Management
+            </h3>
+            <div className="space-y-3">
+              <Link
+                href="/operations/deliveries"
+                className="flex items-center justify-between p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors group"
+              >
+                <div className="flex items-center">
+                  <Truck className="w-5 h-5 text-green-600 mr-3" />
+                  <span className="font-medium text-gray-900">Manage Deliveries</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-600" />
+              </Link>
+
+              <Link
+                href="/operations/delivery-partners"
+                className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors group"
+              >
+                <div className="flex items-center">
+                  <Users2 className="w-5 h-5 text-emerald-600 mr-3" />
+                  <span className="font-medium text-gray-900">Delivery Partners</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-emerald-600" />
+              </Link>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <InventoryIcon className="w-5 h-5 text-blue-600 mr-2" />
               Inventory & Vendors
             </h3>
@@ -265,13 +330,13 @@ export default function OperationsDashboard() {
 
               <Link
                 href="/operations/vendors"
-                className="flex items-center justify-between p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors group"
+                className="flex items-center justify-between p-3 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors group"
               >
                 <div className="flex items-center">
-                  <Users2 className="w-5 h-5 text-green-600 mr-3" />
+                  <Users2 className="w-5 h-5 text-cyan-600 mr-3" />
                   <span className="font-medium text-gray-900">Vendor Management</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-600" />
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-cyan-600" />
               </Link>
             </div>
           </div>
