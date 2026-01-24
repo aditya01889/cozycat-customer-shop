@@ -21,10 +21,12 @@ import {
 } from 'lucide-react'
 
 interface ProductionBatch {
-  id: string
+  id?: string
+  batch_id?: string
   batch_number: string
   quantity_produced: number
-  status: string
+  status?: string
+  batch_status?: string
   created_at: string
   updated_at: string
   order_id?: string
@@ -62,26 +64,65 @@ export default function ManageBatches() {
 
   const fetchBatches = async () => {
     try {
+      console.log('Fetching batches from batch_details_view...')
       const { data, error } = await supabase
         .from('batch_details_view')
         .select('*')
         .order('created_at', { ascending: false })
 
-      if (error) throw error
+      if (error) {
+        console.log('batch_details_view not available, using fallback:', error.message)
+        throw error
+      }
+      
+      console.log('batch_details_view data:', data)
       setBatches(data || [])
     } catch (error) {
-      console.error('Error fetching batches:', error)
+      console.error('Error fetching batches from view:', error)
+      
       // Fallback to basic query if view doesn't exist yet
       try {
+        console.log('Fetching batches from production_batches table...')
         const { data: fallbackData, error: fallbackError } = await supabase
           .from('production_batches')
           .select('*')
           .order('created_at', { ascending: false })
 
-        if (fallbackError) throw fallbackError
-        setBatches(fallbackData || [])
+        if (fallbackError) {
+          console.error('Error with fallback query:', fallbackError)
+          throw fallbackError
+        }
+        
+        console.log('production_batches data:', fallbackData)
+        
+        // Map the basic data to match the expected interface
+        const mappedData = fallbackData.map((batch: any): ProductionBatch => ({
+          id: batch.id || batch.batch_id,  // Handle both field names
+          batch_number: batch.batch_number,
+          quantity_produced: batch.quantity_produced || 0,
+          status: batch.status || batch.batch_status || 'unknown',  // Handle both field names
+          created_at: batch.created_at,
+          updated_at: batch.updated_at,
+          order_id: batch.order_id || undefined,
+          notes: batch.notes || undefined,
+          // Add default values for enhanced interface
+          order_number: batch.order_id ? `ORD-${batch.order_id.slice(-8)}` : undefined,
+          order_status: undefined,
+          order_total: undefined,
+          item_count: 0,
+          total_planned_quantity: 0,
+          total_produced_quantity: 0,
+          completion_percentage: 0,
+          start_time: batch.start_time || undefined,
+          end_time: batch.end_time || undefined,
+          priority: batch.priority || 1
+        }))
+        
+        console.log('Mapped data:', mappedData)
+        setBatches(mappedData)
       } catch (fallbackError) {
         console.error('Error with fallback query:', fallbackError)
+        setBatches([])
       }
     } finally {
       setLoading(false)
@@ -134,8 +175,12 @@ export default function ManageBatches() {
   }
 
   const handleEditBatch = (batch: ProductionBatch) => {
+    console.log('handleEditBatch called with batch:', batch)
+    console.log('Batch ID:', batch.id || batch.batch_id)
+    console.log('Batch status:', batch.status || batch.batch_status)
+    
     setSelectedBatch(batch)
-    setEditStatus(batch.status)
+    setEditStatus(batch.status || batch.batch_status || 'unknown')
     setShowEditModal(true)
   }
 
@@ -145,21 +190,45 @@ export default function ManageBatches() {
   }
 
   const handleEditSubmit = async () => {
-    if (!selectedBatch || !editStatus) return
+    console.log('handleEditSubmit called', { selectedBatch, editStatus })
+    
+    if (!selectedBatch || !editStatus) {
+      console.log('Missing selectedBatch or editStatus')
+      return
+    }
+    
+    // Get the correct ID and status from the batch object
+    const batchId = selectedBatch.id || selectedBatch.batch_id
+    const currentStatus = selectedBatch.status || selectedBatch.batch_status
+    
+    console.log('Selected batch details:', {
+      id: batchId,
+      batch_id: selectedBatch.batch_id,
+      status: currentStatus,
+      batch_status: selectedBatch.batch_status,
+      batch_number: selectedBatch.batch_number
+    })
     
     // Validate batch ID
-    if (!selectedBatch.id || selectedBatch.id === 'undefined') {
+    if (!batchId || batchId === 'undefined') {
+      console.log('Invalid batch ID:', batchId)
       showError(new Error('Invalid batch selected'))
       return
     }
     
     const validStatuses = ['planned', 'in_progress', 'completed', 'cancelled', 'on_hold']
+    console.log('Validating status:', { editStatus, validStatuses })
+    
     if (!validStatuses.includes(editStatus)) {
+      console.log('Invalid status:', editStatus)
       showWarning('Please select a valid status', 'Invalid Status')
       return
     }
     
-    await updateBatchStatus(selectedBatch.id, editStatus)
+    console.log('Calling updateBatchStatus...')
+    await updateBatchStatus(batchId, editStatus)
+    console.log('updateBatchStatus completed')
+    
     setShowEditModal(false)
     setSelectedBatch(null)
     setEditStatus('')
@@ -190,23 +259,54 @@ export default function ManageBatches() {
         throw new Error('Status is required')
       }
 
-      // Use basic update since RPC function doesn't exist yet
-      const { error } = await supabase
-        .from('production_batches')
-        .update({ 
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', batchId)
+      // Validate status against database constraints
+      const validStatuses = ['planned', 'in_progress', 'completed', 'cancelled', 'on_hold']
+      if (!validStatuses.includes(newStatus)) {
+        throw new Error(`Invalid status. Must be one of: ${validStatuses.join(', ')}`)
+      }
 
-      if (error) throw error
+      console.log('Updating batch status:', { batchId, newStatus })
+
+      // Update with all available columns for proper timestamp tracking
+      const updateData: any = { 
+        status: newStatus,
+        updated_at: new Date().toISOString()
+      }
+
+      // Add start_time when status changes to in_progress
+      if (newStatus === 'in_progress') {
+        updateData.start_time = new Date().toISOString()
+      }
+
+      // Add end_time when status changes to completed or cancelled
+      if (newStatus === 'completed' || newStatus === 'cancelled') {
+        updateData.end_time = new Date().toISOString()
+      }
+
+      const { data, error } = await supabase
+        .from('production_batches')
+        .update(updateData)
+        .eq('id', batchId)
+        .select()
+
+      console.log('Update response:', { data, error })
+      console.log('Update data sent:', updateData)
+
+      if (error) {
+        console.error('Supabase error details:', error)
+        console.error('Error code:', error.code)
+        console.error('Error message:', error.message)
+        console.error('Error details:', error.details)
+        throw new Error(`Database error: ${error.message || 'Unknown error'} (Code: ${error.code})`)
+      }
       
       // Refresh the batches list
-      fetchBatches()
+      await fetchBatches()
       showSuccess(`Batch status updated to ${newStatus}`, 'Status Updated')
     } catch (error) {
       console.error('Error updating batch status:', error)
-      showError(error instanceof Error ? error : new Error('Failed to update batch status'))
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update batch status'
+      showError(new Error(errorMessage))
     }
   }
 
@@ -217,19 +317,28 @@ export default function ManageBatches() {
         throw new Error('Invalid batch ID')
       }
 
-      const { error } = await supabase
+      console.log('Deleting batch:', { batchId })
+
+      const { data, error } = await supabase
         .from('production_batches')
         .delete()
         .eq('id', batchId)
+        .select()
 
-      if (error) throw error
+      console.log('Delete response:', { data, error })
+
+      if (error) {
+        console.error('Supabase error details:', error)
+        throw new Error(`Database error: ${error.message || 'Unknown error'}`)
+      }
       
       // Refresh the batches list
-      fetchBatches()
+      await fetchBatches()
       showSuccess('Batch deleted successfully', 'Batch Deleted')
     } catch (error) {
       console.error('Error deleting batch:', error)
-      showError(error instanceof Error ? error : new Error('Failed to delete batch'))
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete batch'
+      showError(new Error(errorMessage))
     }
   }
 
@@ -347,7 +456,9 @@ export default function ManageBatches() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredBatches.map((batch, index) => (
+                  {filteredBatches.map((batch, index) => {
+                    console.log('Rendering batch in table:', batch)
+                    return (
                     <tr key={batch.id || index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -356,9 +467,9 @@ export default function ManageBatches() {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(batch.status || 'unknown')}`}>
-                          {getStatusIcon(batch.status || 'unknown')}
-                          <span className="ml-1">{(batch.status || 'unknown').replace('_', ' ').toUpperCase()}</span>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(batch.status || batch.batch_status || 'unknown')}`}>
+                          {getStatusIcon(batch.status || batch.batch_status || 'unknown')}
+                          <span className="ml-1">{(batch.status || batch.batch_status || 'unknown').replace('_', ' ').toUpperCase()}</span>
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -422,7 +533,8 @@ export default function ManageBatches() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    )
+                  })}
                 </tbody>
               </table>
             </div>
@@ -453,9 +565,9 @@ export default function ManageBatches() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Status</label>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${getStatusColor(selectedBatch.status)}`}>
-                    {getStatusIcon(selectedBatch.status)}
-                    <span className="ml-1">{(selectedBatch.status || 'unknown').replace('_', ' ').toUpperCase()}</span>
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${getStatusColor(selectedBatch.status || selectedBatch.batch_status || 'unknown')}`}>
+                    {getStatusIcon(selectedBatch.status || selectedBatch.batch_status || 'unknown')}
+                    <span className="ml-1">{(selectedBatch.status || selectedBatch.batch_status || 'unknown').replace('_', ' ').toUpperCase()}</span>
                   </span>
                 </div>
                 <div>
@@ -580,9 +692,9 @@ export default function ManageBatches() {
               
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Current Status</label>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedBatch.status)}`}>
-                  {getStatusIcon(selectedBatch.status)}
-                  <span className="ml-1">{(selectedBatch.status || 'unknown').replace('_', ' ').toUpperCase()}</span>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(selectedBatch.status || selectedBatch.batch_status || 'unknown')}`}>
+                  {getStatusIcon(selectedBatch.status || selectedBatch.batch_status || 'unknown')}
+                  <span className="ml-1">{(selectedBatch.status || selectedBatch.batch_status || 'unknown').replace('_', ' ').toUpperCase()}</span>
                 </span>
               </div>
               
