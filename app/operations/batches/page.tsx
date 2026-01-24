@@ -161,11 +161,29 @@ export default function ManageBatches() {
       case 'completed':
         return <CheckCircle className="w-4 h-4" />
       case 'cancelled':
-        return <AlertCircle className="w-4 h-4" />
+        return <X className="w-4 h-4" />
       case 'on_hold':
         return <AlertCircle className="w-4 h-4" />
       default:
         return <Package className="w-4 h-4" />
+    }
+  }
+
+  const getCompletionPercentage = (status?: string, batchStatus?: string) => {
+    const currentStatus = status || batchStatus || 'unknown'
+    switch (currentStatus) {
+      case 'planned':
+        return 0
+      case 'on_hold':
+        return 25
+      case 'in_progress':
+        return 50
+      case 'completed':
+        return 100
+      case 'cancelled':
+        return 0
+      default:
+        return 0
     }
   }
 
@@ -266,6 +284,28 @@ export default function ManageBatches() {
       }
 
       console.log('Updating batch status:', { batchId, newStatus })
+
+      // Calculate completion percentage based on status
+      let completionPercentage = 0
+      switch (newStatus) {
+        case 'planned':
+          completionPercentage = 0
+          break
+        case 'in_progress':
+          completionPercentage = 50
+          break
+        case 'completed':
+          completionPercentage = 100
+          break
+        case 'cancelled':
+          completionPercentage = 0
+          break
+        case 'on_hold':
+          completionPercentage = 25
+          break
+        default:
+          completionPercentage = 0
+      }
 
       // Update with all available columns for proper timestamp tracking
       const updateData: any = { 
@@ -489,13 +529,13 @@ export default function ManageBatches() {
                           <div className="flex-1">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-sm font-medium text-gray-900">
-                                {batch.completion_percentage || 0}%
+                                {getCompletionPercentage(batch.status, batch.batch_status)}%
                               </span>
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2">
                               <div 
                                 className="bg-indigo-600 h-2 rounded-full" 
-                                style={{ width: `${batch.completion_percentage || 0}%` }}
+                                style={{ width: `${getCompletionPercentage(batch.status, batch.batch_status)}%` }}
                               ></div>
                             </div>
                           </div>
@@ -618,10 +658,10 @@ export default function ManageBatches() {
                         <div className="flex-1 bg-gray-200 rounded-full h-2 mr-2">
                           <div 
                             className="bg-indigo-600 h-2 rounded-full" 
-                            style={{ width: `${selectedBatch.completion_percentage || 0}%` }}
+                            style={{ width: `${getCompletionPercentage(selectedBatch.status, selectedBatch.batch_status)}%` }}
                           ></div>
                         </div>
-                        <span className="text-sm text-gray-900">{selectedBatch.completion_percentage || 0}%</span>
+                        <span className="text-sm text-gray-900">{getCompletionPercentage(selectedBatch.status, selectedBatch.batch_status)}%</span>
                       </div>
                     </div>
                   </div>
