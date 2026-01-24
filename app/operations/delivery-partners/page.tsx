@@ -330,7 +330,7 @@ export default function DeliveryPartners() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm">
                         <div className="font-medium text-gray-900">{partner.total_deliveries} deliveries</div>
-                        <div className="text-gray-500">Rating: {partner.rating.toFixed(1)}/5.0</div>
+                        <div className="text-gray-500">Rating: {(partner.rating || 0).toFixed(1)}/5.0</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -469,7 +469,7 @@ export default function DeliveryPartners() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">Rating</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.rating.toFixed(1)}/5.0</p>
+                      <p className="mt-1 text-sm text-gray-900">{(selectedPartner.rating || 0).toFixed(1)}/5.0</p>
                     </div>
                   </div>
                 </div>
