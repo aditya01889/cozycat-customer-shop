@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/components/Toast/ToastProvider'
 import { supabase } from '@/lib/supabase/client'
 import { getOperationsUserClient } from '@/lib/middleware/operations-client'
 import Link from 'next/link'
@@ -45,7 +46,13 @@ interface PurchaseOrder {
   received_at: string | null
 }
 
-function VendorPurchaseOrders({ vendorId }: { vendorId: string }) {
+function VendorPurchaseOrders({ vendorId, showSuccess, showError, showWarning, showInfo }: { 
+  vendorId: string
+  showSuccess: (message: string, title?: string) => string
+  showError: (error: Error | any, config?: any) => string
+  showWarning: (message: string, title?: string) => string
+  showInfo: (message: string, title?: string) => string
+}) {
   const [purchaseOrders, setPurchaseOrders] = useState<PurchaseOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [expanded, setExpanded] = useState(false)
@@ -119,9 +126,9 @@ function VendorPurchaseOrders({ vendorId }: { vendorId: string }) {
         } else {
           const result = inventoryResult?.[0]
           if (result?.success) {
-            alert(`Purchase order marked as received!\n${result.message}`)
+            showInfo(`Purchase order marked as received!\n${result.message}`, 'PO Received')
           } else {
-            alert(`Purchase order marked as received, but inventory update failed: ${result?.message}`)
+            showWarning(`Purchase order marked as received, but inventory update failed: ${result?.message}`, 'Partial Success')
           }
         }
       }
@@ -130,7 +137,7 @@ function VendorPurchaseOrders({ vendorId }: { vendorId: string }) {
       fetchPurchaseOrders()
     } catch (error) {
       console.error('Error updating PO status:', error)
-      alert('Failed to update purchase order status')
+      showError(error instanceof Error ? error : new Error('Failed to update purchase order status'))
     }
   }
 
@@ -150,13 +157,13 @@ function VendorPurchaseOrders({ vendorId }: { vendorId: string }) {
       
       const result = data?.[0]
       if (result?.success) {
-        alert(result.message)
+        showSuccess(result.message, 'PO Cancelled')
       } else {
-        alert(result?.message || 'Failed to cancel purchase order')
+        showWarning(result?.message || 'Failed to cancel purchase order', 'Cancellation Failed')
       }
     } catch (error) {
       console.error('Error cancelling PO:', error)
-      alert('Failed to cancel purchase order')
+      showError(error instanceof Error ? error : new Error('Failed to cancel purchase order'))
     }
   }
 
@@ -272,6 +279,7 @@ function VendorPurchaseOrders({ vendorId }: { vendorId: string }) {
 
 export default function VendorManagement() {
   const { user } = useAuth()
+  const { showSuccess, showError, showWarning, showInfo } = useToast()
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
@@ -335,7 +343,7 @@ export default function VendorManagement() {
       await fetchVendors()
     } catch (error) {
       console.error('Error updating vendor status:', error)
-      alert('Failed to update vendor status')
+      showError(error instanceof Error ? error : new Error('Failed to update vendor status'))
     }
   }
 
@@ -343,7 +351,7 @@ export default function VendorManagement() {
     try {
       // Validate required fields
       if (!formData.name.trim()) {
-        alert('Vendor name is required')
+        showWarning('Vendor name is required', 'Validation Error')
         return
       }
 
@@ -384,7 +392,7 @@ export default function VendorManagement() {
       await fetchVendors()
     } catch (error) {
       console.error('Error adding vendor:', error)
-      alert(`Failed to add vendor: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(error instanceof Error ? error : new Error('Failed to add vendor'))
     }
   }
 
@@ -394,7 +402,7 @@ export default function VendorManagement() {
     try {
       // Validate required fields
       if (!formData.name.trim()) {
-        alert('Vendor name is required')
+        showWarning('Vendor name is required', 'Validation Error')
         return
       }
 
@@ -428,7 +436,7 @@ export default function VendorManagement() {
       await fetchVendors()
     } catch (error) {
       console.error('Error updating vendor:', error)
-      alert(`Failed to update vendor: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(error instanceof Error ? error : new Error('Failed to update vendor'))
     }
   }
 
@@ -455,7 +463,7 @@ export default function VendorManagement() {
       await fetchVendors()
     } catch (error) {
       console.error('Error deleting vendor:', error)
-      alert(`Failed to delete vendor: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      showError(error instanceof Error ? error : new Error('Failed to delete vendor'))
     }
   }
 
@@ -718,7 +726,13 @@ export default function VendorManagement() {
                 </div>
 
                 {/* Purchase Orders */}
-                <VendorPurchaseOrders vendorId={vendor.id} />
+                <VendorPurchaseOrders 
+                  vendorId={vendor.id} 
+                  showSuccess={showSuccess}
+                  showError={showError}
+                  showWarning={showWarning}
+                  showInfo={showInfo}
+                />
 
                 {/* Actions */}
                 <div className="px-6 pb-6 border-t bg-gray-50">

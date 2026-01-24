@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/components/Toast/ToastProvider'
 import { supabase } from '@/lib/supabase/client'
 import { getOperationsUserClient } from '@/lib/middleware/operations-client'
 import Link from 'next/link'
@@ -88,6 +89,7 @@ interface CumulativeRequirements {
 
 export default function ProductionQueue() {
   const { user } = useAuth()
+  const { showSuccess, showError, showWarning, showInfo } = useToast()
   const [orders, setOrders] = useState<OrderWithIngredients[]>([])
   const [cumulativeRequirements, setCumulativeRequirements] = useState<CumulativeRequirements[]>([])
   const [loading, setLoading] = useState(true)
@@ -201,12 +203,14 @@ const [customQuantity, setCustomQuantity] = useState('')
             unit_price,
             total_price,
             product_variant:product_variants (
+              id,
               weight_grams,
-              product:products (name)
+              product_id,
+              product:products (id, name)
             )
           )
         `)
-        .in('status', ['pending', 'confirmed', 'ready_production'])
+        .in('status', ['pending', 'confirmed', 'in_production'])
         .order('created_at', { ascending: true })
 
       if (detailsError) throw detailsError
@@ -230,6 +234,15 @@ const [customQuantity, setCustomQuantity] = useState('')
           // Find matching queue data
           const queueInfo = queueData?.find((q: any) => q.order_id === order.id)
 
+          // Calculate insufficient_count manually if queue data doesn't have it
+          const insufficientCount = queueInfo?.insufficient_count !== undefined 
+            ? queueInfo.insufficient_count 
+            : requirementsWithVendors.filter((req: any) => req.stock_status !== 'sufficient').length
+
+          const canProduce = queueInfo?.can_produce !== undefined 
+            ? queueInfo.can_produce 
+            : insufficientCount === 0
+
           return {
             ...order,
             customer_info: order.delivery_notes ? JSON.parse(order.delivery_notes) : null,
@@ -239,8 +252,8 @@ const [customQuantity, setCustomQuantity] = useState('')
               weight_grams: item.product_variant?.weight_grams || 0
             })),
             ingredient_requirements: requirementsWithVendors,
-            can_produce: queueInfo?.can_produce || false,
-            insufficient_count: queueInfo?.insufficient_count || 0,
+            can_produce: canProduce,
+            insufficient_count: insufficientCount,
             total_weight: queueInfo?.total_weight || 0,
             priority_order: queueInfo?.priority_order || 0
           }
@@ -318,22 +331,82 @@ const [customQuantity, setCustomQuantity] = useState('')
   const createProductionBatch = async (orderId: string) => {
     setUpdatingOrder(orderId)
     try {
+      const order = orders.find(o => o.id === orderId)
+      
+      // Validate order items have valid products
+      if (!order?.order_items || order.order_items.length === 0) {
+        throw new Error('This order has no items to produce')
+      }
+      
+      // Check for missing products in order items
+      const invalidItems = order.order_items.filter((item: any) => {
+        // Check if product variant exists and has valid product data
+        const hasProductVariant = !!item.product_variant
+        const hasValidProduct = hasProductVariant && !!item.product_variant.product
+        const hasProductName = hasValidProduct && !!item.product_variant.product.name
+        const isUnknownProduct = hasProductName && item.product_variant.product.name === 'Unknown Product'
+        
+        return !hasProductVariant || !hasValidProduct || !hasProductName || isUnknownProduct
+      })
+      
+      if (invalidItems.length > 0) {
+        const invalidDetails = invalidItems.map((item: any) => {
+          const productName = item.product_name || 'Unknown Product'
+          const variantId = item.product_variant?.id || 'No variant'
+          const productId = item.product_variant?.product?.id || 'No product'
+          return `${productName} (Variant: ${variantId}, Product: ${productId})`
+        }).join(', ')
+        throw new Error(`Cannot create production batch: Invalid product data for items: ${invalidDetails}. Product references may be corrupted.`)
+      }
+      
+      // Pre-validate product IDs exist in database
+      const productIds = order.order_items
+        .map((item: any) => {
+          // Use the actual product ID from the nested product object
+          return item.product_variant?.product?.id
+        })
+        .filter((id: string) => id) // Remove null/undefined
+      
+      if (productIds.length > 0) {
+        const { data: existingProducts, error: productCheckError } = await supabase
+          .from('products')
+          .select('id')
+          .in('id', productIds)
+        
+        if (productCheckError) {
+          console.error('❌ Error checking products:', productCheckError)
+        } else {
+          const existingIds = new Set(existingProducts?.map((p: any) => p.id) || [])
+          const missingIds = productIds.filter((id: string) => !existingIds.has(id))
+          
+          if (missingIds.length > 0) {
+            console.error('❌ Missing product IDs:', missingIds)
+            throw new Error(`Cannot create production batch: Products with IDs ${missingIds.join(', ')} do not exist in the database. Please fix product references.`)
+          }
+        }
+      }
+      
       const { data, error } = await supabase
         .rpc('create_production_batch', { 
           p_order_id: orderId,
           p_notes: 'Created from production queue'
         })
 
-      if (error) throw error
+      if (error) {
+        console.error('❌ Production batch error:', error)
+        throw error
+      }
+
+      console.log('✅ Production batch created:', data)
 
       // Refresh the queue
       await fetchProductionQueue()
       await fetchCumulativeRequirements()
       
-      alert(`Production batch ${data} created successfully!`)
+      showSuccess(`Production batch ${data} created successfully!`, 'Batch Created')
     } catch (error: any) {
       console.error('Error creating production batch:', error)
-      alert(`Failed to create production batch: ${error.message}`)
+      showError(error instanceof Error ? error : new Error('Failed to create production batch'))
     } finally {
       setUpdatingOrder(null)
     }
@@ -384,10 +457,10 @@ const [customQuantity, setCustomQuantity] = useState('')
       console.log('🔄 Refreshing PO status...')
       await fetchExistingPOs()
       
-      alert(`Purchase order ${data} created as draft!`)
+      showSuccess(`Purchase order ${data} created as draft!`, 'PO Created')
     } catch (error: any) {
       console.error('❌ Error generating purchase order:', error)
-      alert(`Failed to generate purchase order: ${error.message}`)
+      showError(error instanceof Error ? error : new Error('Failed to generate purchase order'))
     }
   }
 
@@ -408,7 +481,7 @@ const [customQuantity, setCustomQuantity] = useState('')
     
     const quantity = parseFloat(customQuantity)
     if (isNaN(quantity) || quantity <= 0) {
-      alert('Please enter a valid quantity')
+      showWarning('Please enter a valid quantity', 'Invalid Quantity')
       return
     }
 
@@ -659,9 +732,9 @@ const [customQuantity, setCustomQuantity] = useState('')
               <div>
                 <p className="text-sm text-gray-600 mb-1">Ready for Production</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {orders.filter(o => o.status === 'ready_production').length}
+                  {orders.filter(o => o.status === 'in_production').length}
                 </p>
-              </div>
+                              </div>
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                 <Package className="w-6 h-6 text-purple-600" />
               </div>
@@ -1009,21 +1082,30 @@ const [customQuantity, setCustomQuantity] = useState('')
                       <div className="text-sm text-gray-600">
                         {order.status === 'pending' && 'Order needs confirmation before production'}
                         {order.status === 'confirmed' && 'Order confirmed, ready for production planning'}
-                        {order.status === 'ready_production' && 'Order ready to start production'}
+                        {order.status === 'in_production' && 'Order ready to start production'}
                       </div>
                       <div className="flex items-center space-x-3">
                         {order.status === 'pending' && (
                           <button
                             onClick={() => updateOrderStatus(order.id, 'confirmed')}
-                            disabled={updatingOrder === order.id}
-                            className="flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+                            disabled={updatingOrder === order.id || order.insufficient_count > 0}
+                            className={`flex items-center px-4 py-2 rounded-lg transition-colors disabled:opacity-50 ${
+                              order.insufficient_count > 0
+                                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                : 'bg-blue-500 text-white hover:bg-blue-600'
+                            }`}
+                            title={
+                              order.insufficient_count > 0
+                                ? `${order.insufficient_count} ingredient(s) insufficient. Create POs first.`
+                                : 'Confirm this order for production'
+                            }
                           >
                             {updatingOrder === order.id ? (
                               <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></span>
                             ) : (
                               <CheckCircle className="w-4 h-4 mr-2" />
                             )}
-                            Confirm Order
+                            {order.insufficient_count > 0 ? 'Insufficient Stock' : 'Confirm Order'}
                           </button>
                         )}
                         
@@ -1042,7 +1124,7 @@ const [customQuantity, setCustomQuantity] = useState('')
                           </button>
                         )}
                         
-                        {order.status === 'ready_production' && (
+                        {order.status === 'in_production' && (
                           <button
                             onClick={() => createProductionBatch(order.id)}
                             disabled={updatingOrder === order.id || !order.can_produce}

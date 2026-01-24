@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useToast } from '@/components/Toast/ToastProvider'
 import { supabase } from '@/lib/supabase/client'
 import { getOperationsUserClient } from '@/lib/middleware/operations-client'
 import Link from 'next/link'
@@ -62,6 +63,7 @@ interface IngredientUpdate {
 
 export default function InventoryManagement() {
   const { user } = useAuth()
+  const { showSuccess, showError, showWarning, showInfo } = useToast()
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [loading, setLoading] = useState(true)
@@ -169,7 +171,7 @@ export default function InventoryManagement() {
       await fetchInventory()
     } catch (error) {
       console.error('Error adding ingredient:', error)
-      alert('Failed to add ingredient')
+      showError(error instanceof Error ? error : new Error('Failed to add ingredient'))
     }
   }
 
@@ -179,7 +181,7 @@ export default function InventoryManagement() {
     try {
       // Validate required fields
       if (!formData.name.trim()) {
-        alert('Ingredient name is required')
+        showWarning('Ingredient name is required', 'Validation Error')
         return
       }
 
@@ -203,7 +205,7 @@ export default function InventoryManagement() {
       await fetchInventory()
     } catch (error) {
       console.error('Error updating ingredient:', error)
-      alert('Failed to update ingredient')
+      showError(error instanceof Error ? error : new Error('Failed to update ingredient'))
     }
   }
 
@@ -223,7 +225,7 @@ export default function InventoryManagement() {
       await fetchInventory()
     } catch (error) {
       console.error('Error deleting ingredient:', error)
-      alert('Failed to delete ingredient')
+      showError(error instanceof Error ? error : new Error('Failed to delete ingredient'))
     }
   }
 
@@ -233,7 +235,7 @@ export default function InventoryManagement() {
       const unitCost = parseFloat(poFormData.unit_cost)
       
       if (!poFormData.ingredient_id || !poFormData.supplier_id || !quantity || !unitCost) {
-        alert('Please fill in all required fields')
+        showWarning('Please fill in all required fields', 'Validation Error')
         return
       }
 
@@ -245,12 +247,12 @@ export default function InventoryManagement() {
 
       if (error) throw error
 
-      alert(`Purchase order created successfully!`)
+      showSuccess('Purchase order created successfully!', 'PO Created')
       setShowPOModal(false)
       resetPOForm()
     } catch (error: any) {
       console.error('Error creating PO:', error)
-      alert(`Failed to create purchase order: ${error.message}`)
+      showError(error instanceof Error ? error : new Error('Failed to create purchase order'))
     }
   }
 
@@ -338,7 +340,7 @@ export default function InventoryManagement() {
       await fetchInventory()
     } catch (error) {
       console.error('Error updating stock:', error)
-      alert('Failed to update stock')
+      showError(error instanceof Error ? error : new Error('Failed to update stock'))
     }
   }
 
