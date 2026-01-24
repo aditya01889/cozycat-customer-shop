@@ -21,8 +21,8 @@ import {
 } from 'lucide-react'
 
 interface ProductionBatch {
-  id?: string
   batch_id?: string
+  id?: string  // Keep for backward compatibility
   batch_number: string
   quantity_produced: number
   status?: string
@@ -97,7 +97,7 @@ export default function ManageBatches() {
         
         // Map the basic data to match the expected interface
         const mappedData = fallbackData.map((batch: any): ProductionBatch => ({
-          id: batch.id || batch.batch_id,  // Handle both field names
+          batch_id: batch.batch_id || batch.id,  // Handle both field names
           batch_number: batch.batch_number,
           quantity_produced: batch.quantity_produced || 0,
           status: batch.status || batch.batch_status || 'unknown',  // Handle both field names
@@ -194,7 +194,7 @@ export default function ManageBatches() {
 
   const handleEditBatch = (batch: ProductionBatch) => {
     console.log('handleEditBatch called with batch:', batch)
-    console.log('Batch ID:', batch.id || batch.batch_id)
+    console.log('Batch ID:', batch.batch_id || batch.id)
     console.log('Batch status:', batch.status || batch.batch_status)
     
     setSelectedBatch(batch)
@@ -216,7 +216,7 @@ export default function ManageBatches() {
     }
     
     // Get the correct ID and status from the batch object
-    const batchId = selectedBatch.id || selectedBatch.batch_id
+    const batchId = selectedBatch.batch_id || selectedBatch.id
     const currentStatus = selectedBatch.status || selectedBatch.batch_status
     
     console.log('Selected batch details:', {
@@ -256,12 +256,12 @@ export default function ManageBatches() {
     if (!selectedBatch) return
     
     // Validate batch ID
-    if (!selectedBatch.id || selectedBatch.id === 'undefined') {
+    if (!selectedBatch.batch_id || selectedBatch.batch_id === 'undefined') {
       showError(new Error('Invalid batch selected'))
       return
     }
     
-    await deleteBatch(selectedBatch.id)
+    await deleteBatch(selectedBatch.batch_id)
     setShowDeleteModal(false)
     setSelectedBatch(null)
   }
@@ -499,7 +499,7 @@ export default function ManageBatches() {
                   {filteredBatches.map((batch, index) => {
                     console.log('Rendering batch in table:', batch)
                     return (
-                    <tr key={batch.id || index} className="hover:bg-gray-50">
+                    <tr key={batch.batch_id || index} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <Package className="w-5 h-5 text-indigo-600 mr-2" />

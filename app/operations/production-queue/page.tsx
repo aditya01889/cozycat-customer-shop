@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/components/Toast/ToastProvider'
 import { supabase } from '@/lib/supabase/client'
@@ -51,6 +51,15 @@ interface Order {
     weight_grams: number
     unit_price: number
     total_price: number
+    product_variant?: {
+      id: string
+      weight_grams: number
+      product_id: string
+      product: {
+        id: string
+        name: string
+      }
+    }
   }>
 }
 
@@ -65,6 +74,19 @@ interface IngredientRequirement {
   supplier_name?: string
   supplier_phone?: string
   supplier_email?: string
+}
+
+interface ProductGroup {
+  product_id: string
+  product_name: string
+  order_count: number
+  total_quantity: number
+  total_weight_grams: number
+  order_item_ids: string[]  // Changed from order_ids to order_item_ids
+  can_produce: boolean
+  insufficient_ingredients: string[]
+  total_shortage: number
+  ingredient_requirements?: IngredientRequirement[]  // Add ingredient requirements
 }
 
 interface OrderWithIngredients extends Order {
@@ -91,9 +113,11 @@ export default function ProductionQueue() {
   const { user } = useAuth()
   const { showSuccess, showError, showWarning, showInfo } = useToast()
   const [orders, setOrders] = useState<OrderWithIngredients[]>([])
+  const [productGroups, setProductGroups] = useState<ProductGroup[]>([])
   const [cumulativeRequirements, setCumulativeRequirements] = useState<CumulativeRequirements[]>([])
   const [loading, setLoading] = useState(true)
   const [showCumulativeView, setShowCumulativeView] = useState(false)
+  const [showProductGroupView, setShowProductGroupView] = useState(false)
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null)
   const [createdPOs, setCreatedPOs] = useState<Set<string>>(new Set())
 const [orderCreatedPOs, setOrderCreatedPOs] = useState<Map<string, Set<string>>>(new Map())
@@ -107,12 +131,16 @@ const [customPOData, setCustomPOData] = useState<{
 } | null>(null)
 const [customQuantity, setCustomQuantity] = useState('')
   const [operationsUser, setOperationsUser] = useState<any>(null)
+  const [showOrdersModal, setShowOrdersModal] = useState(false)
+  const [selectedProductGroup, setSelectedProductGroup] = useState<ProductGroup | null>(null)
+  const [expandedIngredientGroups, setExpandedIngredientGroups] = useState<Set<string>>(new Set())
   const [expandedOrders, setExpandedOrders] = useState<Set<string>>(new Set())
   const [refreshingRequirements, setRefreshingRequirements] = useState(false)
 
   useEffect(() => {
     checkOperationsAccess()
     fetchProductionQueue()
+    fetchProductGroups()
     fetchCumulativeRequirements()
   }, [])
 
@@ -249,7 +277,8 @@ const [customQuantity, setCustomQuantity] = useState('')
             order_items: order.order_items.map((item: any) => ({
               ...item,
               product_name: item.product_variant?.product?.name || 'Unknown Product',
-              weight_grams: item.product_variant?.weight_grams || 0
+              weight_grams: item.product_variant?.weight_grams || 0,
+              product_variant: item.product_variant // Preserve the product_variant data
             })),
             ingredient_requirements: requirementsWithVendors,
             can_produce: canProduce,
@@ -328,6 +357,90 @@ const [customQuantity, setCustomQuantity] = useState('')
     }
   }
 
+  const fetchProductGroups = async () => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_product_groups_for_batching')
+
+      if (error) throw error
+      setProductGroups(data || [])
+    } catch (error) {
+      console.error('Error fetching product groups:', error)
+    }
+  }
+
+  const fetchProductGroupIngredientRequirements = async (productGroupId: string) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('get_product_group_ingredient_requirements', {
+          p_product_id: productGroupId
+        })
+
+      if (error) throw error
+      return data || []
+    } catch (error) {
+      console.error('Error fetching product group ingredient requirements:', error)
+      return []
+    }
+  }
+
+  const switchToProductGroups = async (productId: string) => {
+    try {
+      // Switch to Product Groups view
+      setShowProductGroupView(true)
+      setShowCumulativeView(false)
+      
+      // Refresh product groups to ensure latest data
+      await fetchProductGroups()
+      
+      // Show success message
+      showSuccess(`Switched to Product Groups view. Look for the product to create a batch!`, 'Product Groups View')
+      
+      // Optional: Scroll to the product group after a short delay
+      setTimeout(() => {
+        const productElement = document.querySelector(`[data-product-id="${productId}"]`)
+        if (productElement) {
+          productElement.scrollIntoView({ behavior: 'smooth', block: 'center' })
+          // Add highlight effect
+          productElement.classList.add('ring-2', 'ring-blue-500', 'ring-opacity-50')
+          setTimeout(() => {
+            productElement.classList.remove('ring-2', 'ring-blue-500', 'ring-opacity-50')
+          }, 2000)
+        }
+      }, 500)
+    } catch (error) {
+      console.error('Error switching to product groups:', error)
+      showError('Failed to switch to Product Groups view')
+    }
+  }
+
+  const createProductionBatchForProductGroup = async (productId: string) => {
+    try {
+      const { data, error } = await supabase
+        .rpc('create_production_batch_for_product_group', {
+          p_product_id: productId,
+          p_notes: 'Created from product group batching'
+        })
+
+      if (error) {
+        console.error('❌ Product group batch error:', error)
+        throw error
+      }
+
+      console.log('✅ Production batch created for product group:', data)
+
+      // Refresh the data
+      await fetchProductGroups()
+      await fetchProductionQueue()
+      await fetchCumulativeRequirements()
+      
+      showSuccess(`Production batch ${data} created successfully!`, 'Batch Created')
+    } catch (error: any) {
+      console.error('Error creating production batch for product group:', error)
+      showError(error instanceof Error ? error : new Error('Failed to create production batch'))
+    }
+  }
+
   const createProductionBatch = async (orderId: string) => {
     setUpdatingOrder(orderId)
     try {
@@ -401,6 +514,7 @@ const [customQuantity, setCustomQuantity] = useState('')
 
       // Refresh the queue
       await fetchProductionQueue()
+      await fetchProductGroups()  // Add this line to refresh product groups after batch creation
       await fetchCumulativeRequirements()
       
       showSuccess(`Production batch ${data} created successfully!`, 'Batch Created')
@@ -582,7 +696,11 @@ const [customQuantity, setCustomQuantity] = useState('')
 
       // Refresh the queue
       await fetchProductionQueue()
+      await fetchProductGroups()  // Add this line to refresh product groups after status change
       await fetchCumulativeRequirements()
+      
+      // Show success notification
+      showSuccess(`Order ${orderId.slice(-8)} updated to ${newStatus}!`, 'Status Updated')
     } catch (error) {
       console.error('Error updating order status:', error)
       alert('Failed to update order status')
@@ -669,14 +787,43 @@ const [customQuantity, setCustomQuantity] = useState('')
             </div>
             <div className="flex items-center space-x-4">
               <button
-                onClick={() => setShowCumulativeView(!showCumulativeView)}
+                onClick={() => {
+                  setShowProductGroupView(false)
+                  setShowCumulativeView(false)
+                }}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  !showProductGroupView && !showCumulativeView
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Order View
+              </button>
+              <button
+                onClick={() => {
+                  setShowProductGroupView(true)
+                  setShowCumulativeView(false)
+                }}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  showProductGroupView
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Product Groups
+              </button>
+              <button
+                onClick={() => {
+                  setShowProductGroupView(false)
+                  setShowCumulativeView(true)
+                }}
                 className={`px-4 py-2 rounded-lg transition-colors ${
                   showCumulativeView 
                     ? 'bg-blue-500 text-white' 
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                {showCumulativeView ? 'Order View' : 'Cumulative View'}
+                Cumulative View
               </button>
               <button
                 onClick={() => {
@@ -689,7 +836,12 @@ const [customQuantity, setCustomQuantity] = useState('')
                 <RefreshCw className={`w-5 h-5 ${refreshingRequirements ? 'animate-spin' : ''}`} />
               </button>
               <div className="text-sm text-gray-600">
-                {orders.length} orders in queue
+                {showProductGroupView 
+                  ? `${productGroups.length} product groups ready for batching`
+                  : showCumulativeView
+                  ? `${cumulativeRequirements.length} ingredients tracked`
+                  : `${orders.length} orders in queue`
+                }
               </div>
             </div>
           </div>
@@ -819,7 +971,197 @@ const [customQuantity, setCustomQuantity] = useState('')
         )}
 
         {/* View Toggle */}
-        {showCumulativeView ? (
+        {showProductGroupView ? (
+          /* Product Groups View */
+          <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-bold text-gray-900">Product Groups Ready for Batching</h2>
+              <p className="text-gray-600 mt-1">Confirmed and in-production orders grouped by product for efficient production</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Orders</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Quantity</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Total Weight</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {productGroups.map((group) => (
+                    <React.Fragment key={group.product_id}>
+                      <tr data-product-id={group.product_id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div>
+                            <div className="font-medium text-gray-900">{group.product_name}</div>
+                            <div className="text-sm text-gray-500">Product ID: {group.product_id.slice(-8)}</div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center">
+                            <ShoppingCart className="w-4 h-4 text-gray-400 mr-2" />
+                            <span className="font-medium">{group.order_count}</span>
+                            <span className="text-gray-500 ml-1">orders</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="font-medium">{group.total_quantity}</span>
+                          <span className="text-gray-500 ml-1">units</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="font-medium">{formatWeight(group.total_weight_grams)}</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          {group.can_produce ? (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                              <CheckCircle className="w-3 h-3 mr-1" />
+                              Ready to Batch
+                            </span>
+                          ) : (
+                            <div>
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                                <AlertTriangle className="w-3 h-3 mr-1" />
+                                Insufficient Stock
+                              </span>
+                              {group.insufficient_ingredients.length > 0 && (
+                                <div className="text-xs text-red-600 mt-1">
+                                  Missing: {group.insufficient_ingredients.slice(0, 2).join(', ')}
+                                  {group.insufficient_ingredients.length > 2 && ` +${group.insufficient_ingredients.length - 2} more`}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center space-x-2">
+                            {group.can_produce ? (
+                              <button
+                                onClick={() => createProductionBatchForProductGroup(group.product_id)}
+                                className="inline-flex items-center px-3 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                <Package className="w-4 h-4 mr-2" />
+                                Create Batch
+                              </button>
+                            ) : (
+                              <button
+                                disabled
+                                className="inline-flex items-center px-3 py-2 bg-gray-300 text-gray-500 text-sm font-medium rounded-lg cursor-not-allowed"
+                                title="Cannot create batch due to insufficient ingredients"
+                              >
+                                <Package className="w-4 h-4 mr-2" />
+                                Cannot Batch
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                // Set the selected product group and show modal
+                                setSelectedProductGroup(group)
+                                setShowOrdersModal(true)
+                              }}
+                              className="text-gray-600 hover:text-gray-900"
+                              title={`View ${group.order_count} orders in this group`}
+                            >
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                      {/* Ingredient Requirements Row */}
+                      <tr className="bg-gray-50">
+                        <td colSpan={6} className="px-6 py-3">
+                          <div className="flex items-center justify-between">
+                            <button
+                              onClick={async () => {
+                                // Toggle ingredient requirements for this group
+                                const targetRow = document.getElementById(`ingredients-${group.product_id}`)
+                                if (targetRow) {
+                                  const isHidden = targetRow.classList.contains('hidden')
+                                  if (isHidden) {
+                                    // Load ingredient requirements
+                                    try {
+                                      const { data, error } = await supabase
+                                        .rpc('get_product_group_ingredient_requirements', {
+                                          p_product_id: group.product_id
+                                        })
+                                      
+                                      if (error) throw error
+                                      
+                                      // Update the content
+                                      const contentDiv = targetRow.querySelector('.ingredient-content')
+                                      if (contentDiv) {
+                                        if (data && data.length > 0) {
+                                          contentDiv.innerHTML = `
+                                            <div class="space-y-2">
+                                              ${data.map((req: any) => `
+                                                <div class="flex justify-between items-center p-2 bg-white rounded border">
+                                                  <div>
+                                                    <span class="font-medium">${req.ingredient_name}</span>
+                                                    <span class="text-xs text-gray-500 ml-2">(${req.stock_status})</span>
+                                                  </div>
+                                                  <div class="text-right">
+                                                    <div class="text-sm font-medium">${req.total_quantity.toFixed(2)}g</div>
+                                                    <div class="text-xs text-gray-500">Stock: ${req.current_stock.toFixed(2)}g</div>
+                                                  </div>
+                                                </div>
+                                              `).join('')}
+                                            </div>
+                                          `
+                                        } else {
+                                          contentDiv.innerHTML = '<div class="text-sm text-gray-500">No ingredient requirements found</div>'
+                                        }
+                                      }
+                                    } catch (error) {
+                                      console.error('Error loading ingredient requirements:', error)
+                                      const contentDiv = targetRow.querySelector('.ingredient-content')
+                                      if (contentDiv) {
+                                        contentDiv.innerHTML = '<div class="text-sm text-red-500">Error loading ingredient requirements</div>'
+                                      }
+                                    }
+                                  }
+                                  targetRow.classList.toggle('hidden')
+                                }
+                              }}
+                              className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                            >
+                              <Info className="w-4 h-4 mr-1" />
+                              View Ingredient Requirements
+                            </button>
+                            <span className="text-xs text-gray-500">
+                              {group.total_quantity} units × {formatWeight(group.total_weight_grams / group.total_quantity)} each
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                      {/* Hidden Ingredient Details Row */}
+                      <tr id={`ingredients-${group.product_id}`} className="hidden">
+                        <td colSpan={6} className="px-6 py-0">
+                          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <h5 className="font-medium text-gray-900 mb-3">Ingredient Requirements (including 7.5% waste)</h5>
+                            <div className="ingredient-content text-sm text-gray-600">
+                              Loading ingredient requirements...
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+              {productGroups.length === 0 && (
+                <div className="p-12 text-center">
+                  <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No product groups ready for batching</h3>
+                  <p className="text-gray-500">
+                    Confirmed orders will appear here once they're ready for production batching.
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        ) : showCumulativeView ? (
           /* Cumulative Requirements View */
           <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
             <div className="p-6 border-b">
@@ -1126,20 +1468,24 @@ const [customQuantity, setCustomQuantity] = useState('')
                         
                         {order.status === 'in_production' && (
                           <button
-                            onClick={() => createProductionBatch(order.id)}
-                            disabled={updatingOrder === order.id || !order.can_produce}
-                            className={`flex items-center px-4 py-2 rounded-lg transition-colors disabled:opacity-50 ${
-                              order.can_produce 
-                                ? 'bg-green-500 text-white hover:bg-green-600' 
-                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            }`}
+                            onClick={() => {
+                              // Get the product ID from the order items
+                              const productId = order.order_items[0]?.product_variant?.product?.id
+                              if (productId) {
+                                switchToProductGroups(productId)
+                              } else {
+                                showError('Unable to determine product for this order')
+                              }
+                            }}
+                            disabled={updatingOrder === order.id}
+                            className="flex items-center px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors disabled:opacity-50"
                           >
                             {updatingOrder === order.id ? (
                               <span className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></span>
                             ) : (
                               <Package className="w-4 h-4 mr-2" />
                             )}
-                            {order.can_produce ? 'Create Production Batch' : 'Insufficient Stock'}
+                            Create Product Group Batch
                           </button>
                         )}
                       </div>
@@ -1213,6 +1559,57 @@ const [customQuantity, setCustomQuantity] = useState('')
                 className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors"
               >
                 Create PO
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Orders Modal */}
+      {showOrdersModal && selectedProductGroup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-96 overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Orders for {selectedProductGroup.product_name}
+              </h3>
+              <button
+                onClick={() => setShowOrdersModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-2">
+              {(() => {
+                const orderDetails = Array.from(new Set(
+                  selectedProductGroup.order_item_ids.map(itemId => {
+                    const item = orders.flatMap(o => o.order_items).find(oi => oi.id === itemId)
+                    return item ? orders.find(o => o.order_items.some(oi => oi.id === itemId)) : null
+                  }).filter(Boolean)
+                ))
+                
+                return orderDetails.map(order => (
+                  <div key={order.id} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <span className="font-medium text-gray-900">{order.order_number}</span>
+                      <span className="text-sm text-gray-500 ml-2">({order.status})</span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {order.customer_info?.customer_name || 'No customer'}
+                    </div>
+                  </div>
+                ))
+              })()}
+            </div>
+            
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={() => setShowOrdersModal(false)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Close
               </button>
             </div>
           </div>
