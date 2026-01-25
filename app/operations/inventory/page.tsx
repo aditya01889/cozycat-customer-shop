@@ -40,8 +40,9 @@ interface Ingredient {
   unit: string
   reorder_level: number
   unit_cost: number
-  supplier: string | null  // This is now a UUID reference to vendors table, not a name
+  supplier: string | null
   last_updated: string
+  material_type?: 'ingredient' | 'packaging' | 'label'
 }
 
 interface IngredientUpdate {
@@ -69,6 +70,7 @@ export default function InventoryManagement() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState<'all' | 'low' | 'critical'>('all')
+  const [materialTypeFilter, setMaterialTypeFilter] = useState<'all' | 'ingredients' | 'packaging' | 'labels'>('all')
   const [operationsUser, setOperationsUser] = useState<any>(null)
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
@@ -467,11 +469,17 @@ export default function InventoryManagement() {
     const matchesSearch = ingredient.name.toLowerCase().includes(searchTerm.toLowerCase())
     const stockStatus = getStockStatus(ingredient)
     
+    // Determine material type
+    const materialType = ingredient.name.toLowerCase().includes('label') || ingredient.name.toLowerCase().includes('sticker') ? 'labels' :
+                        ingredient.name.toLowerCase().includes('pouch') || ingredient.name.toLowerCase().includes('jar') || ingredient.name.toLowerCase().includes('box') ? 'packaging' : 'ingredients'
+    
     const matchesFilter = filterStatus === 'all' || 
       (filterStatus === 'low' && stockStatus.status === 'low') ||
       (filterStatus === 'critical' && stockStatus.status === 'critical')
     
-    return matchesSearch && matchesFilter
+    const matchesMaterialType = materialTypeFilter === 'all' || materialTypeFilter === materialType
+    
+    return matchesSearch && matchesFilter && matchesMaterialType
   })
 
   const formatNumber = (num: number) => {
@@ -636,6 +644,49 @@ export default function InventoryManagement() {
                 }`}
               >
                 Critical
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setMaterialTypeFilter('all')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  materialTypeFilter === 'all' 
+                    ? 'bg-purple-500 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                All Types
+              </button>
+              <button
+                onClick={() => setMaterialTypeFilter('ingredients')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  materialTypeFilter === 'ingredients' 
+                    ? 'bg-green-500 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Ingredients
+              </button>
+              <button
+                onClick={() => setMaterialTypeFilter('packaging')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  materialTypeFilter === 'packaging' 
+                    ? 'bg-blue-500 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Packaging
+              </button>
+              <button
+                onClick={() => setMaterialTypeFilter('labels')}
+                className={`px-4 py-2 rounded-lg transition-colors ${
+                  materialTypeFilter === 'labels' 
+                    ? 'bg-orange-500 text-white' 
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Labels
               </button>
             </div>
 

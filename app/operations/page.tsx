@@ -17,7 +17,8 @@ import {
   Factory,
   Truck,
   Package as InventoryIcon,
-  Users2
+  Users2,
+  ChefHat
 } from 'lucide-react'
 
 interface DashboardStats {
@@ -257,6 +258,17 @@ export default function OperationsDashboard() {
               Production Management
             </h3>
             <div className="space-y-3">
+              <Link
+                href="/operations/recipes"
+                className="flex items-center justify-between p-3 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors group"
+              >
+                <div className="flex items-center">
+                  <ChefHat className="w-5 h-5 text-orange-600 mr-3" />
+                  <span className="font-medium text-gray-900">Recipe Management</span>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600" />
+              </Link>
+
               <Link
                 href="/operations/production-queue"
                 className="flex items-center justify-between p-3 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors group"

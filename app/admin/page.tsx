@@ -6,14 +6,14 @@ import { supabase } from '@/lib/supabase/client'
 import AdminAuth from '@/components/AdminAuth'
 import Link from 'next/link'
 import { 
-  Package, 
-  ShoppingCart, 
   Users, 
+  ShoppingCart, 
+  Package, 
   TrendingUp, 
   DollarSign, 
-  Clock,
   ChevronRight,
-  LogOut
+  LogOut,
+  Clock
 } from 'lucide-react'
 
 interface DashboardStats {
