@@ -24,17 +24,9 @@ import {
 interface DeliveryPartner {
   id: string
   name: string
-  email: string
-  phone: string
-  vehicle_type: string
-  vehicle_number: string
-  license_number: string
-  address: string
+  contact_phone: string
   is_active: boolean
-  total_deliveries: number
-  rating: number
   created_at: string
-  updated_at: string
 }
 
 export default function DeliveryPartners() {
@@ -75,24 +67,21 @@ export default function DeliveryPartners() {
   const filteredPartners = partners.filter(partner => {
     const matchesSearch = 
       partner.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      partner.phone.includes(searchTerm)
+      partner.contact_phone?.includes(searchTerm)
     const matchesStatus = statusFilter === 'all' || 
       (statusFilter === 'active' && partner.is_active) ||
       (statusFilter === 'inactive' && !partner.is_active)
     return matchesSearch && matchesStatus
   })
 
-  const handleCreatePartner = async (partnerData: Omit<DeliveryPartner, 'id' | 'total_deliveries' | 'rating' | 'created_at' | 'updated_at'>) => {
+  const handleCreatePartner = async (partnerData: Omit<DeliveryPartner, 'id' | 'created_at'>) => {
     try {
       const { data, error } = await supabase
         .from('delivery_partners')
         .insert({
-          ...partnerData,
-          total_deliveries: 0,
-          rating: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          name: partnerData.name,
+          contact_phone: partnerData.contact_phone,
+          is_active: partnerData.is_active
         })
         .select()
         .single()
@@ -114,8 +103,9 @@ export default function DeliveryPartners() {
       const { error } = await supabase
         .from('delivery_partners')
         .update({
-          ...partnerData,
-          updated_at: new Date().toISOString()
+          name: partnerData.name,
+          contact_phone: partnerData.contact_phone,
+          is_active: partnerData.is_active
         })
         .eq('id', partnerId)
 
@@ -259,16 +249,13 @@ export default function DeliveryPartners() {
                     Partner Info
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Contact
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Vehicle
+                    Contact & Service
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Performance
+                    Joined
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -291,21 +278,8 @@ export default function DeliveryPartners() {
                       <div className="text-sm">
                         <div className="flex items-center text-gray-900">
                           <Phone className="w-4 h-4 mr-1" />
-                          {partner.phone}
+                          {partner.contact_phone || 'N/A'}
                         </div>
-                        <div className="flex items-center text-gray-500">
-                          <Mail className="w-4 h-4 mr-1" />
-                          {partner.email}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm">
-                        <div className="flex items-center text-gray-900">
-                          <Truck className="w-4 h-4 mr-1" />
-                          {partner.vehicle_type}
-                        </div>
-                        <div className="text-gray-500">{partner.vehicle_number}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -328,9 +302,8 @@ export default function DeliveryPartners() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm">
-                        <div className="font-medium text-gray-900">{partner.total_deliveries} deliveries</div>
-                        <div className="text-gray-500">Rating: {(partner.rating || 0).toFixed(1)}/5.0</div>
+                      <div className="text-sm text-gray-500">
+                        Partner since {new Date(partner.created_at).toLocaleDateString()}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
@@ -426,50 +399,29 @@ export default function DeliveryPartners() {
                   <h3 className="text-lg font-medium text-gray-900 mb-3">Contact Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Email</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.email}</p>
-                    </div>
-                    <div>
                       <label className="block text-sm font-medium text-gray-700">Phone</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.phone}</p>
+                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.contact_phone || 'N/A'}</p>
                     </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">Address</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.address}</p>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Status</label>
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mt-1 ${
+                        selectedPartner.is_active 
+                          ? 'bg-green-100 text-green-800' 
+                          : 'bg-red-100 text-red-800'
+                      }`}>
+                        {selectedPartner.is_active ? 'Active' : 'Inactive'}
+                      </span>
                     </div>
                   </div>
                 </div>
 
-                {/* Vehicle Information */}
+                {/* Additional Information */}
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">Vehicle Information</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">Additional Information</h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Vehicle Type</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.vehicle_type}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Vehicle Number</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.vehicle_number}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <label className="block text-sm font-medium text-gray-700">License Number</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.license_number}</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Performance */}
-                <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-3">Performance</h3>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Total Deliveries</label>
-                      <p className="mt-1 text-sm text-gray-900">{selectedPartner.total_deliveries}</p>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700">Rating</label>
-                      <p className="mt-1 text-sm text-gray-900">{(selectedPartner.rating || 0).toFixed(1)}/5.0</p>
+                      <label className="block text-sm font-medium text-gray-700">Partner Since</label>
+                      <p className="mt-1 text-sm text-gray-900">{new Date(selectedPartner.created_at).toLocaleDateString()}</p>
                     </div>
                   </div>
                 </div>
@@ -522,16 +474,11 @@ export default function DeliveryPartners() {
 // Create Partner Modal Component
 function CreatePartnerModal({ onClose, onCreate }: { 
   onClose: () => void
-  onCreate: (partnerData: Omit<DeliveryPartner, 'id' | 'total_deliveries' | 'rating' | 'created_at' | 'updated_at'>) => Promise<void>
+  onCreate: (partnerData: Omit<DeliveryPartner, 'id' | 'created_at'>) => Promise<void>
 }) {
   const [formData, setFormData] = useState({
     name: '',
-    email: '',
-    phone: '',
-    vehicle_type: '',
-    vehicle_number: '',
-    license_number: '',
-    address: '',
+    contact_phone: '',
     is_active: true
   })
   const [loading, setLoading] = useState(false)
@@ -580,25 +527,12 @@ function CreatePartnerModal({ onClose, onCreate }: {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone *
+                    Phone
                   </label>
                   <input
                     type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    value={formData.contact_phone}
+                    onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
@@ -616,68 +550,6 @@ function CreatePartnerModal({ onClose, onCreate }: {
                   </select>
                 </div>
               </div>
-            </div>
-
-            {/* Vehicle Information */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Vehicle Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Type *
-                  </label>
-                  <select
-                    required
-                    value={formData.vehicle_type}
-                    onChange={(e) => setFormData({...formData, vehicle_type: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="">Select vehicle type...</option>
-                    <option value="Motorcycle">Motorcycle</option>
-                    <option value="Van">Van</option>
-                    <option value="Truck">Truck</option>
-                    <option value="Bicycle">Bicycle</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Number *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.vehicle_number}
-                    onChange={(e) => setFormData({...formData, vehicle_number: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    License Number *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.license_number}
-                    onChange={(e) => setFormData({...formData, license_number: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address *
-              </label>
-              <textarea
-                required
-                rows={3}
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
             </div>
 
             <div className="flex justify-end space-x-3">
@@ -715,12 +587,7 @@ function EditPartnerModal({
 }) {
   const [formData, setFormData] = useState({
     name: partner.name,
-    email: partner.email,
-    phone: partner.phone,
-    vehicle_type: partner.vehicle_type,
-    vehicle_number: partner.vehicle_number,
-    license_number: partner.license_number,
-    address: partner.address,
+    contact_phone: partner.contact_phone,
     is_active: partner.is_active
   })
   const [loading, setLoading] = useState(false)
@@ -769,25 +636,12 @@ function EditPartnerModal({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Phone *
+                    Phone
                   </label>
                   <input
                     type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                    value={formData.contact_phone}
+                    onChange={(e) => setFormData({...formData, contact_phone: e.target.value})}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                   />
                 </div>
@@ -805,67 +659,6 @@ function EditPartnerModal({
                   </select>
                 </div>
               </div>
-            </div>
-
-            {/* Vehicle Information */}
-            <div>
-              <h3 className="text-lg font-medium text-gray-900 mb-3">Vehicle Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Type *
-                  </label>
-                  <select
-                    required
-                    value={formData.vehicle_type}
-                    onChange={(e) => setFormData({...formData, vehicle_type: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  >
-                    <option value="Motorcycle">Motorcycle</option>
-                    <option value="Van">Van</option>
-                    <option value="Truck">Truck</option>
-                    <option value="Bicycle">Bicycle</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Vehicle Number *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.vehicle_number}
-                    onChange={(e) => setFormData({...formData, vehicle_number: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-                <div className="col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    License Number *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={formData.license_number}
-                    onChange={(e) => setFormData({...formData, license_number: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Address */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Address *
-              </label>
-              <textarea
-                required
-                rows={3}
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-              />
             </div>
 
             <div className="flex justify-end space-x-3">
