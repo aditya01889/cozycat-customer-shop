@@ -83,7 +83,6 @@ export default function OperationsDashboard() {
 
       const pendingOrders = orders?.filter(o => o.status === 'pending').length || 0
       const inProductionOrders = orders?.filter(o => o.status === 'in_production').length || 0
-      const readyOrders = orders?.filter(o => o.status === 'ready_delivery').length || 0
       
       const revenue = orders?.reduce((sum, order) => {
         const amount = parseFloat(order.total_amount) || 0
@@ -109,10 +108,11 @@ export default function OperationsDashboard() {
       // Fetch delivery stats
       const { data: deliveries } = await supabase
         .from('deliveries')
-        .select('status')
+        .select('delivery_status')
 
-      const pendingDeliveries = deliveries?.filter(d => d.status === 'pending').length || 0
-      const inTransitDeliveries = deliveries?.filter(d => d.status === 'in_transit').length || 0
+      const pendingDeliveries = deliveries?.filter(d => d.delivery_status === 'pending').length || 0
+      const inTransitDeliveries = deliveries?.filter(d => d.delivery_status === 'in_transit').length || 0
+      const readyOrders = deliveries?.filter(d => d.delivery_status === 'scheduled').length || 0
 
       // Fetch active delivery partners
       const { count: deliveryPartnersCount } = await supabase

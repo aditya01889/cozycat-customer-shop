@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useToast } from '@/components/Toast/ToastProvider'
 import { supabase } from '@/lib/supabase/client'
+import Link from 'next/link'
 import { 
   Package, 
   Search, 
@@ -17,7 +18,8 @@ import {
   X,
   Truck,
   User,
-  FileText
+  FileText,
+  ArrowLeft
 } from 'lucide-react'
 
 interface Delivery {
@@ -84,9 +86,19 @@ export default function DeliveryManagement() {
               // Get order with customer info
               const { data: orderData } = await supabase
                 .from('orders')
-                .select('*')
+                .select('order_number, customer_id, delivery_address_id, total_amount')
                 .eq('id', delivery.order_id)
                 .single()
+              
+              // Get order items count
+              let itemsCount = 0
+              if (orderData) {
+                const { data: orderItems } = await supabase
+                  .from('order_items')
+                  .select('id')
+                  .eq('order_id', delivery.order_id)
+                itemsCount = orderItems?.length || 0
+              }
               
               console.log('Processing delivery:', delivery.id, 'for order:', delivery.order_id)
               console.log('Full order data:', orderData)
@@ -148,7 +160,9 @@ export default function DeliveryManagement() {
                       customer_name: profileData.full_name,
                       customer_email: profileData.email,
                       customer_phone: profileData.phone,
-                      delivery_address: deliveryAddress
+                      delivery_address: deliveryAddress,
+                      items_count: itemsCount,
+                      total_value: parseFloat(orderData.total_amount) || 0
                     }
                   }
                 }
@@ -158,7 +172,9 @@ export default function DeliveryManagement() {
               const finalDeliveryData = {
                 ...delivery,
                 order_number: orderData?.order_number,
-                delivery_address: deliveryAddress
+                delivery_address: deliveryAddress,
+                items_count: itemsCount,
+                total_value: parseFloat(orderData?.total_amount) || 0
               }
               console.log('Final delivery data for', delivery.id, ':', finalDeliveryData)
               console.log('Specifically - delivery_address:', finalDeliveryData.delivery_address)
@@ -191,6 +207,9 @@ export default function DeliveryManagement() {
     try {
       console.log('Starting partner assignment:', { partnerId, deliveryId: selectedDelivery.id })
       
+      // Generate tracking number if not exists
+      const trackingNumber = selectedDelivery.tracking_number || `TRK-${Date.now()}`
+      
       // Get partner details
       const { data: partnerData, error: partnerError } = await supabase
         .from('delivery_partners')
@@ -205,7 +224,7 @@ export default function DeliveryManagement() {
       
       console.log('Partner data:', partnerData)
       
-      // Update delivery with partner info
+      // Update delivery with partner info and tracking number
       const { error: updateError } = await supabase
         .from('deliveries')
         .update({
@@ -213,6 +232,7 @@ export default function DeliveryManagement() {
           delivery_partner_name: partnerData.name,
           delivery_partner_phone: partnerData.contact_phone,
           delivery_status: 'scheduled',
+          tracking_number: trackingNumber,
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedDelivery.id)
@@ -222,8 +242,8 @@ export default function DeliveryManagement() {
         throw updateError
       }
       
-      console.log('Partner assignment successful')
-      showSuccess('Delivery partner assigned successfully!')
+      console.log('Partner assignment successful with tracking number:', trackingNumber)
+      showSuccess(`Delivery partner assigned successfully! Tracking number: ${trackingNumber}`)
       setShowAssignModal(false)
       setSelectedPartnerId('')
       fetchDeliveries() // Refresh data
@@ -257,6 +277,17 @@ export default function DeliveryManagement() {
     }
   }
 
+  const formatDeliveryNumber = (deliveryNumber: string) => {
+    // Remove UUID suffix if present (everything after the last dash after time)
+    // Format: DEL-2026-01-24-176927-24f8a2da -> DEL-2026-01-24-176927
+    const parts = deliveryNumber.split('-')
+    if (parts.length >= 5) {
+      // Remove the last part (UUID suffix)
+      return parts.slice(0, -1).join('-')
+    }
+    return deliveryNumber
+  }
+
   const generateShippingSlip = (delivery: Delivery) => {
     // Generate tracking number if not exists
     const trackingNumber = delivery.tracking_number || `TRK${Date.now()}`
@@ -265,8 +296,8 @@ export default function DeliveryManagement() {
     const slipContent = `
 SHIPPING SLIP
 ==============
-Delivery Number: ${delivery.delivery_number}
-Order ID: ${delivery.order_id}
+Delivery Number: ${formatDeliveryNumber(delivery.delivery_number)}
+Order Number: ${delivery.order_number || `Order: ${delivery.order_id?.slice(0, 8)}...`}
 Tracking Number: ${trackingNumber}
 
 Customer Information:
@@ -286,18 +317,51 @@ Total Value: ₹${delivery.total_value}
 Notes: N/A
     `.trim()
     
-    // Create and download file
-    const blob = new Blob([slipContent], { type: 'text/plain' })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `shipping-slip-${delivery.delivery_number}.txt`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    window.URL.revokeObjectURL(url)
-    
-    showSuccess('Shipping slip downloaded successfully!')
+    // Create PDF using jsPDF-like approach with browser's print-to-PDF
+    const printWindow = window.open('', '_blank', 'width=800,height=600')
+    if (printWindow) {
+      printWindow.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <title>Shipping Slip - ${delivery.delivery_number}</title>
+          <style>
+            body { 
+              font-family: 'Courier New', monospace; 
+              padding: 20px; 
+              line-height: 1.6;
+              white-space: pre-wrap;
+              margin: 0;
+            }
+            @media print {
+              body { padding: 10px; margin: 0; }
+              @page { margin: 0.5in; }
+            }
+          </style>
+        </head>
+        <body>
+          <pre>${slipContent}</pre>
+          <script>
+            window.onload = function() {
+              // Auto-trigger print dialog
+              setTimeout(function() {
+                window.print();
+                // After print dialog closes, close the window
+                setTimeout(function() {
+                  window.close();
+                }, 1000);
+              }, 500);
+            }
+          </script>
+        </body>
+        </html>
+      `)
+      printWindow.document.close()
+      
+      showSuccess('Shipping slip PDF download initiated! Choose "Save as PDF" in the print dialog.')
+    } else {
+      showError('Failed to open print window. Please check your browser settings and allow popups.')
+    }
   }
 
   const filteredDeliveries = deliveries.filter(delivery => {
@@ -365,21 +429,24 @@ Notes: N/A
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Back to Dashboard Button */}
+          <div className="pt-4 pb-2">
+            <Link
+              href="/operations"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Link>
+          </div>
+          
+          {/* Page Title */}
           <div className="flex justify-between items-center py-4">
-            <div className="flex items-center">
-              <Truck className="w-8 h-8 text-indigo-600 mr-3" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Delivery Management</h1>
-                <p className="text-sm text-gray-500">Manage order deliveries and shipping</p>
-              </div>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Delivery Management</h1>
+              <p className="text-gray-600 mt-1">Manage and track all deliveries</p>
             </div>
           </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="bg-white rounded-lg shadow p-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
             <div className="flex-1 min-w-0">
               <div className="relative">
@@ -418,7 +485,7 @@ Notes: N/A
 
       {/* Deliveries Table */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="bg-white shadow rounded-lg overflow-hidden">
+        <div className="mt-6 bg-white shadow rounded-lg overflow-hidden">
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
@@ -451,7 +518,7 @@ Notes: N/A
                         <Package className="w-5 h-5 text-indigo-600 mr-2" />
                         <div>
                           <div className="font-medium text-gray-900">
-                          {delivery.delivery_number}
+                          {formatDeliveryNumber(delivery.delivery_number)}
                         </div>
                           <div className="text-sm text-gray-500">
                             {delivery.order_number || `Order: ${delivery.order_id?.slice(0, 8)}...`}
@@ -573,7 +640,7 @@ Notes: N/A
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Delivery Number</label>
-                    <p className="mt-1 text-sm text-gray-900 font-medium">{selectedDelivery.delivery_number}</p>
+                    <p className="mt-1 text-sm text-gray-900 font-medium">{formatDeliveryNumber(selectedDelivery.delivery_number)}</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Order Number</label>

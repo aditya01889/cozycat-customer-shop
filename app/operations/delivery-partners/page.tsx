@@ -18,7 +18,8 @@ import {
   Truck,
   CheckCircle,
   X,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft
 } from 'lucide-react'
 
 interface DeliveryPartner {
@@ -177,6 +178,18 @@ export default function DeliveryPartners() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Back to Dashboard Button */}
+          <div className="pt-4 pb-2">
+            <Link
+              href="/operations"
+              className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Link>
+          </div>
+          
+          {/* Page Title and Actions */}
           <div className="flex justify-between items-center py-4">
             <div className="flex items-center">
               <User className="w-8 h-8 text-indigo-600 mr-3" />
