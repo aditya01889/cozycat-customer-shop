@@ -704,7 +704,10 @@ export default function InventoryManagement() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {formatNumber(ingredient.current_stock)} {ingredient.unit}
+                            {ingredient.unit === 'pieces' && ingredient.name.toLowerCase().includes('egg') 
+                              ? `${Math.floor(ingredient.current_stock)} ${ingredient.unit}`
+                              : `${formatNumber(ingredient.current_stock)} ${ingredient.unit}`
+                            }
                           </div>
                           <div className="text-sm text-gray-500">
                             {stockPercentage.toFixed(0)}% of reorder level
@@ -1126,7 +1129,12 @@ export default function InventoryManagement() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                   <div>
                     <span className="text-gray-600">Stock:</span>
-                    <p className="font-medium">{selectedIngredient.current_stock} {selectedIngredient.unit}</p>
+                    <p className="font-medium">
+                      {selectedIngredient.unit === 'pieces' && selectedIngredient.name.toLowerCase().includes('egg') 
+                        ? `${Math.floor(selectedIngredient.current_stock)} ${selectedIngredient.unit}`
+                        : `${selectedIngredient.current_stock} ${selectedIngredient.unit}`
+                      }
+                    </p>
                   </div>
                   <div>
                     <span className="text-gray-600">Unit Cost:</span>

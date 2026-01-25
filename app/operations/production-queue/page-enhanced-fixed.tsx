@@ -57,9 +57,14 @@ interface IngredientRequirement {
   ingredient_id: string
   ingredient_name: string
   required_quantity: number
+  required_quantity_display?: number
+  display_unit?: string
   waste_quantity: number
+  waste_quantity_display?: number
   total_quantity: number
+  total_quantity_display?: number
   current_stock: number
+  current_stock_display?: number
   stock_status: 'sufficient' | 'insufficient' | 'out_of_stock'
   supplier_name?: string
   supplier_phone?: string
@@ -78,8 +83,12 @@ interface CumulativeRequirements {
   ingredient_id: string
   ingredient_name: string
   total_required: number
+  total_required_display?: number
+  display_unit?: string
   current_stock: number
+  current_stock_display?: number
   shortage: number
+  shortage_display?: number
   affected_orders: string[]
   supplier_name?: string
   supplier_phone?: string
@@ -204,71 +213,13 @@ export default function ProductionQueue() {
 
   const fetchCumulativeRequirements = async () => {
     try {
-      // Get all pending orders
-      const { data: pendingOrders, error: pendingError } = await supabase
-        .from('orders')
-        .select('id')
-        .eq('status', 'pending')
+      // Use the new cumulative requirements function
+      const { data: cumulativeData, error } = await supabase
+        .rpc('get_cumulative_ingredient_requirements')
 
-      if (pendingError) throw pendingError
+      if (error) throw error
 
-      if (!pendingOrders || pendingOrders.length === 0) {
-        setCumulativeRequirements([])
-        return
-      }
-
-      // For now, create a simple cumulative calculation
-      const orderIds = pendingOrders.map(o => o.id)
-      const allRequirements: { [key: string]: CumulativeRequirements } = {}
-
-      // Get requirements for each pending order
-      for (const orderId of orderIds) {
-        const { data: requirements, error } = await supabase
-          .rpc('calculate_order_ingredient_requirements', { p_order_id: orderId })
-
-        if (error) continue
-
-        for (const req of requirements || []) {
-          const key = req.ingredient_id
-          if (!allRequirements[key]) {
-            // Get current stock and vendor info
-            const { data: ingredient } = await supabase
-              .from('ingredients_with_vendors')
-              .select(`
-                current_stock,
-                vendor_name,
-                vendor_phone,
-                vendor_email
-              `)
-              .eq('id', req.ingredient_id)
-              .single()
-
-            const ingredientData = ingredient as any
-            allRequirements[key] = {
-              ingredient_id: req.ingredient_id,
-              ingredient_name: req.ingredient_name,
-              total_required: 0,
-              current_stock: ingredientData?.current_stock || 0,
-              shortage: 0,
-              affected_orders: [],
-              supplier_name: ingredientData?.vendor_name,
-              supplier_phone: ingredientData?.vendor_phone,
-              supplier_email: ingredientData?.vendor_email
-            }
-          }
-
-          allRequirements[key].total_required += req.total_quantity
-          allRequirements[key].affected_orders.push(orderId)
-        }
-      }
-
-      // Calculate shortages
-      const cumulativeArray = Object.values(allRequirements).map(req => ({
-        ...req,
-        shortage: Math.max(0, req.total_required - req.current_stock)
-      }))
-
-      setCumulativeRequirements(cumulativeArray)
+      setCumulativeRequirements(cumulativeData || [])
     } catch (error) {
       console.error('Error fetching cumulative requirements:', error)
     }
@@ -411,6 +362,30 @@ export default function ProductionQueue() {
     return `${formatNumber(grams)}g`
   }
 
+  const formatIngredientQuantity = (quantity: number, unit?: string, ingredientName?: string) => {
+    // If unit is pieces and ingredient is eggs, handle fractions properly
+    if (unit === 'pieces' && ingredientName?.toLowerCase().includes('egg')) {
+      if (quantity >= 1) {
+        return `${Math.floor(quantity)} pcs`
+      } else if (quantity >= 0.75) {
+        return '3/4 pcs'
+      } else if (quantity >= 0.5) {
+        return '1/2 pcs'
+      } else if (quantity >= 0.25) {
+        return '1/4 pcs'
+      } else if (quantity > 0) {
+        return '< 1/4 pcs'
+      } else {
+        return '0 pcs'
+      }
+    }
+    // Otherwise show in grams/kg
+    if (quantity >= 1000) {
+      return `${(quantity / 1000).toFixed(1)}kg`
+    }
+    return `${formatNumber(quantity)}g`
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center">
@@ -550,11 +525,11 @@ export default function ProductionQueue() {
                   <div className="flex items-center justify-between mb-2">
                     <span className="font-medium text-gray-900">{req.ingredient_name}</span>
                     <span className="text-sm text-red-600 font-medium">
-                      Short: {formatWeight(req.shortage)}
+                      Short: {formatIngredientQuantity(req.shortage_display || req.shortage, req.display_unit, req.ingredient_name)}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600 mb-2">
-                    Current: {formatWeight(req.current_stock)} | Required: {formatWeight(req.total_required)}
+                    Current: {formatIngredientQuantity(req.current_stock_display || req.current_stock, req.display_unit, req.ingredient_name)} | Required: {formatIngredientQuantity(req.total_required_display || req.total_required, req.display_unit, req.ingredient_name)}
                   </div>
                   {req.supplier_name && (
                     <div className="flex items-center justify-between">
@@ -598,11 +573,11 @@ export default function ProductionQueue() {
                   {cumulativeRequirements.map((req) => (
                     <tr key={req.ingredient_id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 font-medium text-gray-900">{req.ingredient_name}</td>
-                      <td className="px-6 py-4 text-gray-600">{formatWeight(req.current_stock)}</td>
-                      <td className="px-6 py-4 text-gray-600">{formatWeight(req.total_required)}</td>
+                      <td className="px-6 py-4 text-gray-600">{formatIngredientQuantity(req.current_stock_display || req.current_stock, req.display_unit, req.ingredient_name)}</td>
+                      <td className="px-6 py-4 text-gray-600">{formatIngredientQuantity(req.total_required_display || req.total_required, req.display_unit, req.ingredient_name)}</td>
                       <td className="px-6 py-4">
                         {req.shortage > 0 ? (
-                          <span className="text-red-600 font-medium">{formatWeight(req.shortage)}</span>
+                          <span className="text-red-600 font-medium">{formatIngredientQuantity(req.shortage_display || req.shortage, req.display_unit, req.ingredient_name)}</span>
                         ) : (
                           <span className="text-green-600">-</span>
                         )}
@@ -752,16 +727,16 @@ export default function ProductionQueue() {
                               </div>
                               <div className="flex items-center space-x-4 text-sm">
                                 <span className="text-gray-600">
-                                  Required: {formatWeight(req.required_quantity)}
+                                  Required: {formatIngredientQuantity(req.required_quantity_display || req.required_quantity, req.display_unit, req.ingredient_name)}
                                 </span>
                                 <span className="text-orange-600">
-                                  +{formatWeight(req.waste_quantity)} waste
+                                  +{formatIngredientQuantity(req.waste_quantity_display || req.waste_quantity, req.display_unit, req.ingredient_name)} waste
                                 </span>
                                 <span className="font-medium text-gray-900">
-                                  Total: {formatWeight(req.total_quantity)}
+                                  Total: {formatIngredientQuantity(req.total_quantity_display || req.total_quantity, req.display_unit, req.ingredient_name)}
                                 </span>
                                 <span className="text-gray-600">
-                                  Stock: {formatWeight(req.current_stock)}
+                                  Stock: {formatIngredientQuantity(req.current_stock_display || req.current_stock, req.display_unit, req.ingredient_name)}
                                 </span>
                                 {req.stock_status !== 'sufficient' && req.supplier_name && (
                                   <button
