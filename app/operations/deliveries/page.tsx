@@ -174,7 +174,8 @@ export default function DeliveryManagement() {
                 order_number: orderData?.order_number,
                 delivery_address: deliveryAddress,
                 items_count: itemsCount,
-                total_value: parseFloat(orderData?.total_amount) || 0
+                total_value: parseFloat(orderData?.total_amount) || 0,
+                delivery_status: delivery.status  // Map status to delivery_status for UI compatibility
               }
               console.log('Final delivery data for', delivery.id, ':', finalDeliveryData)
               console.log('Specifically - delivery_address:', finalDeliveryData.delivery_address)
@@ -187,8 +188,14 @@ export default function DeliveryManagement() {
         })
       )
       
-      console.log('Enriched deliveries data:', deliveriesWithCustomerData)
-      setDeliveries(deliveriesWithCustomerData)
+      // Ensure all deliveries have the delivery_status field mapped from status
+      const deliveriesWithStatusMapping = deliveriesWithCustomerData.map(delivery => ({
+        ...delivery,
+        delivery_status: delivery.status  // Always map status to delivery_status
+      }))
+      
+      console.log('Enriched deliveries data:', deliveriesWithStatusMapping)
+      setDeliveries(deliveriesWithStatusMapping)
     } catch (error) {
       console.error('Error fetching deliveries:', error)
       showError('Failed to fetch deliveries')
@@ -260,7 +267,7 @@ export default function DeliveryManagement() {
       const { error } = await supabase
         .from('deliveries')
         .update({
-          delivery_status: newStatus,
+          status: newStatus,
           updated_at: new Date().toISOString()
         })
         .eq('id', selectedDelivery.id)

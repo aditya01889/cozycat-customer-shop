@@ -7,7 +7,19 @@ import AdminAuth from '@/components/AdminAuth'
 import { Package, Search, Filter, ArrowUpDown, Eye, Edit, Trash2, Clock, CheckCircle, Truck, Home } from 'lucide-react'
 import Link from 'next/link'
 
-type Order = Database['public']['Tables']['orders']['Row']
+type OrderLifecycle = Database['public']['Tables']['orders']['Row'] & {
+  order_status?: string;
+  production_status?: string;
+  delivery_status?: string;
+  production_batch_id?: string;
+  delivery_id?: string;
+  customer_status?: string;
+  last_activity_at?: string;
+  customer_name?: string;
+  customer_email?: string;
+  order_created_at?: string;
+  order_updated_at?: string;
+}
 
 export default function AdminOrdersPage() {
   return (
@@ -18,25 +30,34 @@ export default function AdminOrdersPage() {
 }
 
 function AdminOrdersContent() {
-  const [orders, setOrders] = useState<Order[]>([])
+  const [orders, setOrders] = useState<OrderLifecycle[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('')
   const [sortBy, setSortBy] = useState('created_at')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<OrderLifecycle | null>(null)
 
   useEffect(() => {
     fetchOrders()
   }, [searchTerm, filterStatus, sortBy, sortOrder])
 
+  // Auto-refresh every 30 seconds to get real-time updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchOrders()
+    }, 30000) // Refresh every 30 seconds
+
+    return () => clearInterval(interval)
+  }, [searchTerm, filterStatus, sortBy, sortOrder])
+
   const fetchOrders = async () => {
     try {
-      console.log('Fetching admin orders...')
+      console.log('Fetching admin orders with real-time status...')
       let query = supabase
-        .from('orders')
+        .from('order_lifecycle_view')
         .select('*')
-        .order(sortBy, { ascending: sortOrder === 'asc' })
+        .order('order_created_at', { ascending: sortOrder === 'asc' })
 
       // Apply search filter
       if (searchTerm) {
@@ -45,7 +66,7 @@ function AdminOrdersContent() {
 
       // Apply status filter
       if (filterStatus) {
-        query = query.eq('status', filterStatus)
+        query = query.eq('order_status', filterStatus)
       }
 
       const { data, error } = await query
@@ -62,36 +83,7 @@ function AdminOrdersContent() {
     }
   }
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
-    try {
-      console.log('Updating order status:', orderId, newStatus)
-      const { error } = await supabase
-        .from('orders')
-        .update({ status: newStatus as Order['status'] })
-        .eq('id', orderId)
-
-      if (error) throw error
-      
-      // Update local state immediately
-      setOrders(prevOrders => 
-        prevOrders.map(order => 
-          order.id === orderId 
-            ? { ...order, status: newStatus as Order['status'] }
-            : order
-        )
-      )
-      
-      // Update selected order if it's currently open
-      if (selectedOrder && selectedOrder.id === orderId) {
-        setSelectedOrder(prev => prev ? { ...prev, status: newStatus as Order['status'] } : null)
-      }
-      
-      console.log('Order status updated successfully')
-    } catch (error) {
-      console.error('Error updating order status:', error)
-    }
-  }
-
+  
   const parseCustomerInfo = (deliveryNotes: string | null) => {
     if (!deliveryNotes) return null
     try {
@@ -151,7 +143,7 @@ function AdminOrdersContent() {
                 Back to Dashboard
               </Link>
               <span className="text-2xl mr-3">🐾</span>
-              <h1 className="text-xl font-bold text-gray-900">Order Management</h1>
+              <h1 className="text-xl font-bold text-gray-900">Order Tracking</h1>
             </div>
           </div>
         </div>
@@ -160,8 +152,14 @@ function AdminOrdersContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Page Title */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Orders</h2>
-          <p className="text-gray-600">Manage customer orders and track delivery status</p>
+          <div className="flex items-center justify-between mb-2">
+            <h2 className="text-3xl font-bold text-gray-900">Orders</h2>
+            <div className="flex items-center text-sm text-gray-500">
+              <div className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></div>
+              Auto-refreshing every 30 seconds
+            </div>
+          </div>
+          <p className="text-gray-600">View customer orders and track real-time delivery status (auto-managed)</p>
         </div>
 
         {/* Filters and Search */}
@@ -247,26 +245,43 @@ function AdminOrdersContent() {
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm text-gray-900">
                           {(() => {
+                            // First try to get customer name from the view
+                            if (order.customer_name && order.customer_name !== 'Unknown Customer') {
+                              return order.customer_name
+                            }
+                            // Then try to parse from delivery notes
                             const customerInfo = parseCustomerInfo(order.delivery_notes)
                             if (customerInfo && customerInfo.customer_name) {
                               return customerInfo.customer_name
-                            } else {
-                              return `Customer ID: ${order.customer_id || 'N/A'}`
-                            }
+                            } 
+                            // Finally fall back to customer ID
+                            return `Customer ID: ${order.customer_id || 'N/A'}`
                           })()}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}>
-                          {getStatusIcon(order.status)}
-                          <span className="ml-1">{order.status.replace('_', ' ')}</span>
-                        </span>
+                        <div className="flex flex-col space-y-1">
+                          <div className="flex items-center space-x-2">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.order_status || order.status)}`}>
+                              {getStatusIcon(order.order_status || order.status)}
+                              <span className="ml-1">{(order.customer_status || order.order_status || order.status)?.replace(/_/g, ' ')}</span>
+                            </span>
+                            <div className="w-2 h-2 bg-green-500 rounded-full" title="Auto-managed status"></div>
+                          </div>
+                          {(order.production_status || order.delivery_status) && (
+                            <div className="text-xs text-gray-500">
+                              {order.production_status && <span>🏭 {order.production_status}</span>}
+                              {order.production_status && order.delivery_status && <span> • </span>}
+                              {order.delivery_status && <span>🚚 {order.delivery_status}</span>}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className="font-semibold text-gray-900">₹{order.total_amount}</span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(order.created_at).toLocaleDateString('en-IN', {
+                        {new Date(order.order_created_at || order.created_at).toLocaleDateString('en-IN', {
                           day: 'numeric',
                           month: 'short',
                           year: 'numeric'
@@ -284,7 +299,7 @@ function AdminOrdersContent() {
                           <button
                             onClick={() => setSelectedOrder(order)}
                             className="text-orange-600 hover:text-orange-900 p-1 rounded hover:bg-orange-50"
-                            title="Quick View & Edit"
+                            title="Quick View Order Details"
                           >
                             <Edit className="w-4 h-4" />
                           </button>
@@ -467,21 +482,65 @@ function AdminOrdersContent() {
                   </div>
                   
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Update Order Status</label>
-                    <div className="flex flex-wrap gap-2">
-                      {['pending', 'confirmed', 'in_production', 'ready_production', 'ready_delivery', 'out_for_delivery', 'delivered'].map((status) => (
-                        <button
-                          key={status}
-                          onClick={() => updateOrderStatus(selectedOrder.id, status)}
-                          className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
-                            selectedOrder.status === status
-                              ? getStatusColor(status)
-                              : 'bg-gray-100 text-gray-700 border-gray-200 hover:bg-gray-200 hover:text-gray-900'
-                          }`}
-                        >
-                          {status.replace(/_/g, ' ')}
-                        </button>
-                      ))}
+                    <label className="block text-sm font-medium text-gray-700 mb-3">Order Status & Timeline</label>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium border ${getStatusColor(selectedOrder.order_status || selectedOrder.status)}`}>
+                          {getStatusIcon(selectedOrder.order_status || selectedOrder.status)}
+                          <span className="ml-2">{(selectedOrder.customer_status || selectedOrder.order_status || selectedOrder.status)?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}</span>
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          Last updated: {new Date(selectedOrder.last_activity_at || selectedOrder.updated_at).toLocaleDateString('en-IN', {
+                            day: 'numeric',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                      
+                      {/* Production Status */}
+                      {selectedOrder.production_status && (
+                        <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <span className="text-blue-600 mr-2">🏭</span>
+                              <span className="text-sm font-medium text-blue-800">Production</span>
+                            </div>
+                            <span className="text-sm text-blue-700 capitalize">{selectedOrder.production_status.replace('_', ' ')}</span>
+                          </div>
+                          {selectedOrder.production_batch_id && (
+                            <div className="text-xs text-blue-600 mt-1">Batch ID: {selectedOrder.production_batch_id}</div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Delivery Status */}
+                      {selectedOrder.delivery_status && (
+                        <div className="mb-3 p-3 bg-green-50 border border-green-200 rounded">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <span className="text-green-600 mr-2">🚚</span>
+                              <span className="text-sm font-medium text-green-800">Delivery</span>
+                            </div>
+                            <span className="text-sm text-green-700 capitalize">{selectedOrder.delivery_status.replace('_', ' ')}</span>
+                          </div>
+                          {selectedOrder.delivery_id && (
+                            <div className="text-xs text-green-600 mt-1">Delivery ID: {selectedOrder.delivery_id}</div>
+                          )}
+                        </div>
+                      )}
+                      
+                      <div className="text-sm text-gray-600 bg-yellow-50 border border-yellow-200 rounded p-3">
+                        <div className="flex items-start">
+                          <span className="text-yellow-600 mr-2">ℹ️</span>
+                          <div>
+                            <p className="font-medium text-yellow-800">Status is automatically updated</p>
+                            <p className="text-yellow-700 mt-1">Order status changes automatically based on production and delivery events. Manual updates are disabled to ensure accuracy.</p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
