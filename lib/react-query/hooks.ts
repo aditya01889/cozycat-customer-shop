@@ -79,12 +79,23 @@ export function useProduct(id: string) {
   })
 }
 
-// Dashboard hooks
-export function useDashboardStats() {
+// Dashboard hooks with pagination and filtering
+export function useDashboardStats(params: {
+  includeRecentOrders?: boolean
+  includeOrderStats?: boolean
+  includeProductPerformance?: boolean
+  includeRecentActivity?: boolean
+  activityLimit?: number
+  page?: number
+  limit?: number
+  startDate?: string
+  endDate?: string
+  useCache?: boolean
+} = {}) {
   return useQuery({
-    queryKey: ['dashboard', 'stats'],
+    queryKey: ['dashboard', 'stats', params],
     queryFn: () => {
-      console.log('🚀 Dashboard Query Function Called')
+      console.log('🚀 Optimized Dashboard Query Function Called')
       
       // Get session first
       return supabase.auth.getSession().then(({ data: { session } }) => {
@@ -103,18 +114,23 @@ export function useDashboardStats() {
           'Authorization': `Bearer ${session.access_token}`
         }
         
-        return fetch('/api/admin/dashboard/client', {
+        return fetch('/api/admin/dashboard', {
           method: 'POST',
           headers,
           body: JSON.stringify({
-            includeRecentOrders: true,
-            includeOrderStats: false,
-            includeProductPerformance: false,
-            includeRecentActivity: false,
-            activityLimit: 10
+            includeRecentOrders: params.includeRecentOrders ?? true,
+            includeOrderStats: params.includeOrderStats ?? false,
+            includeProductPerformance: params.includeProductPerformance ?? false,
+            includeRecentActivity: params.includeRecentActivity ?? false,
+            activityLimit: params.activityLimit ?? 10,
+            page: params.page ?? 1,
+            limit: params.limit ?? 20,
+            startDate: params.startDate,
+            endDate: params.endDate,
+            useCache: params.useCache ?? true
           })
         }).then(response => {
-          console.log('📊 API Response status:', response.status)
+          console.log('📊 Optimized API Response status:', response.status)
           
           if (!response.ok) {
             return response.json().then(error => {
@@ -124,23 +140,156 @@ export function useDashboardStats() {
           }
           
           return response.json().then(result => {
-            console.log('✅ Dashboard Query Result:', { 
+            console.log('✅ Optimized Dashboard Query Result:', { 
               success: result.success, 
               hasData: !!result.data,
-              dataKeys: result.data ? Object.keys(result.data) : null
+              dataKeys: result.data ? Object.keys(result.data) : null,
+              usingRPC: result.meta?.usingRPC
             })
             return result
           })
         })
       })
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes for dashboard stats
-    gcTime: 5 * 60 * 1000, // 5 minutes cache
+    staleTime: params.useCache ? 2 * 60 * 1000 : 0, // 2 minutes cache if enabled
+    gcTime: params.useCache ? 5 * 60 * 1000 : 0, // 5 minutes cache if enabled
     retry: (failureCount, error) => {
-      console.log(`🔄 Dashboard Query Retry ${failureCount}:`, error.message)
-      return failureCount < 3
+      console.log(`🔄 Optimized Dashboard Query Retry ${failureCount}:`, error.message)
+      return failureCount < 2 // Reduced retries for better performance
     },
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000), // Max 10 seconds
+    refetchOnWindowFocus: params.useCache ?? false, // Don't refetch on window focus for better performance
+  })
+}
+
+// Analytics hooks
+export function useAnalytics(params: {
+  type: 'revenue' | 'customers' | 'products' | 'inventory' | 'orders'
+  startDate?: string
+  endDate?: string
+  groupBy?: 'day' | 'week' | 'month'
+  page?: number
+  limit?: number
+  useCache?: boolean
+}) {
+  return useQuery({
+    queryKey: ['analytics', params.type, params],
+    queryFn: () => {
+      console.log(`📊 Analytics Query Function Called: ${params.type}`)
+      
+      return supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session?.access_token) {
+          throw new Error('No session token available')
+        }
+        
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+        
+        return fetch('/api/admin/analytics', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            type: params.type,
+            startDate: params.startDate,
+            endDate: params.endDate,
+            groupBy: params.groupBy ?? 'day',
+            page: params.page ?? 1,
+            limit: params.limit ?? 20,
+            useCache: params.useCache ?? true
+          })
+        }).then(response => {
+          if (!response.ok) {
+            return response.json().then(error => {
+              throw new Error(error.error || `API error: ${response.status}`)
+            })
+          }
+          
+          return response.json().then(result => {
+            console.log(`✅ Analytics Query Result (${params.type}):`, { 
+              success: result.success, 
+              hasData: !!result.data,
+              dataLength: Array.isArray(result.data) ? result.data.length : 'object'
+            })
+            return result
+          })
+        })
+      })
+    },
+    staleTime: params.useCache ? 5 * 60 * 1000 : 0, // 5 minutes cache for analytics
+    gcTime: params.useCache ? 10 * 60 * 1000 : 0, // 10 minutes cache
+    retry: 1,
+    refetchOnWindowFocus: false,
+  })
+}
+
+// Paginated orders hook
+export function usePaginatedOrders(params: {
+  page?: number
+  limit?: number
+  status?: string
+  startDate?: string
+  endDate?: string
+  search?: string
+  sortBy?: string
+  sortOrder?: 'asc' | 'desc'
+  includeCustomer?: boolean
+  includeItems?: boolean
+} = {}) {
+  return useQuery({
+    queryKey: ['orders', 'paginated', params],
+    queryFn: () => {
+      console.log('📦 Paginated Orders Query Function Called')
+      
+      return supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session?.access_token) {
+          throw new Error('No session token available')
+        }
+        
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+        
+        return fetch('/api/admin/orders/paginated', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            page: params.page ?? 1,
+            limit: params.limit ?? 20,
+            status: params.status,
+            startDate: params.startDate,
+            endDate: params.endDate,
+            search: params.search,
+            sortBy: params.sortBy ?? 'created_at',
+            sortOrder: params.sortOrder ?? 'desc',
+            includeCustomer: params.includeCustomer ?? true,
+            includeItems: params.includeItems ?? false
+          })
+        }).then(response => {
+          if (!response.ok) {
+            return response.json().then(error => {
+              throw new Error(error.error || `API error: ${response.status}`)
+            })
+          }
+          
+          return response.json().then(result => {
+            console.log('✅ Paginated Orders Query Result:', { 
+              success: result.success, 
+              hasData: !!result.data,
+              orderCount: result.data?.orders?.length || 0,
+              pagination: result.data?.pagination
+            })
+            return result
+          })
+        })
+      })
+    },
+    staleTime: 30 * 1000, // 30 seconds for orders (more dynamic)
+    gcTime: 2 * 60 * 1000, // 2 minutes cache
+    retry: 2,
+    refetchOnWindowFocus: false,
   })
 }
 
