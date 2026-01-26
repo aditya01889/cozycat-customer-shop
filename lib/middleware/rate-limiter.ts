@@ -15,25 +15,25 @@ const rateLimitStore = new Map<string, RateLimitStore>()
 
 // Rate limit configurations
 const RATE_LIMITS = {
-  // General API endpoints (more restrictive for testing)
+  // General API endpoints (production ready)
   default: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 10, // 10 requests per 15 minutes (reduced from 100)
+    maxRequests: 100, // 100 requests per 15 minutes
   },
   // Authentication endpoints (more restrictive)
   auth: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 5, // 5 requests per 15 minutes (reduced from 20)
+    maxRequests: 20, // 20 requests per 15 minutes
   },
-  // Admin endpoints (very restrictive)
+  // Admin endpoints (moderate restriction)
   admin: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 5, // 5 requests per 15 minutes (reduced from 50)
+    maxRequests: 50, // 50 requests per 15 minutes
   },
-  // Public endpoints (more restrictive for testing)
+  // Public endpoints (less restrictive)
   public: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 15, // 15 requests per 15 minutes (reduced from 200)
+    maxRequests: 200, // 200 requests per 15 minutes
   },
 }
 
@@ -79,6 +79,13 @@ function cleanupExpiredEntries() {
       rateLimitStore.delete(key)
     }
   }
+}
+
+/**
+ * Clear all rate limit entries (for development/testing)
+ */
+export function clearRateLimitStore() {
+  rateLimitStore.clear()
 }
 
 /**

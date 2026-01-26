@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { getSupabaseConfig } from '@/lib/env-validation'
 import { sessionManager } from './session-manager'
 
 export interface AuthContext {
@@ -22,14 +23,61 @@ export class AuthMiddleware {
     try {
       // Get session from server-side client
       const supabase = await createClient()
-      const { data: { session }, error } = await supabase.auth.getSession()
-
-      console.log('🔍 Auth verification - Session:', {
-        hasSession: !!session,
-        userId: session?.user?.id,
-        userEmail: session?.user?.email,
-        error: error?.message
-      })
+      
+      // Check for Bearer token in headers first (client-side auth)
+      const authHeader = request.headers.get('authorization')
+      let session = null
+      let error = null
+      let user = null
+      
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        // Use admin client to validate token
+        const token = authHeader.substring(7)
+        const { url, serviceRoleKey } = getSupabaseConfig()
+        
+        if (serviceRoleKey) {
+          const supabaseAdmin = await createClient(url, serviceRoleKey, {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false
+            }
+          })
+          
+          try {
+            const { data: { user: tokenUser }, error: tokenError } = await supabaseAdmin.auth.getUser(token)
+            user = tokenUser
+            error = tokenError
+            
+            if (user && !error) {
+              // Create a minimal session object for consistency
+              session = { user }
+              
+              console.log('🔍 Auth verification - Token User:', {
+                hasUser: !!user,
+                userId: user?.id,
+                userEmail: user?.email,
+                error: error?.message
+              })
+            }
+          } catch (tokenError) {
+            error = tokenError
+            console.log('🔍 Auth verification - Token Error:', tokenError)
+          }
+        }
+      } else {
+        // Fallback to server-side session
+        const { data: { session: serverSession }, error: serverError } = await supabase.auth.getSession()
+        session = serverSession
+        user = serverSession?.user
+        error = serverError
+        
+        console.log('🔍 Auth verification - Server Session:', {
+          hasSession: !!session,
+          userId: user?.id,
+          userEmail: user?.email,
+          error: error?.message
+        })
+      }
 
       if (error) {
         console.error('Auth verification error:', error)
@@ -41,8 +89,8 @@ export class AuthMiddleware {
         }
       }
 
-      if (!session) {
-        console.log('🔍 No session found in auth verification')
+      if (!user) {
+        console.log('🔍 No user found in auth verification')
         return {
           user: null,
           session: null,
@@ -54,24 +102,34 @@ export class AuthMiddleware {
       // Check admin role
       let isAdmin = false
       try {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', session.user.id)
-          .single()
+        const { url, serviceRoleKey } = getSupabaseConfig()
+        if (serviceRoleKey) {
+          const supabaseAdmin = await createClient(url, serviceRoleKey, {
+            auth: {
+              autoRefreshToken: false,
+              persistSession: false
+            }
+          })
+          
+          const { data: profile } = await supabaseAdmin
+            .from('profiles')
+            .select('role')
+            .eq('id', user.id)
+            .single()
 
-        isAdmin = (profile as any)?.role === 'admin'
-        console.log('🔍 Admin role check:', {
-          userId: session.user.id,
-          profileRole: (profile as any)?.role,
-          isAdmin
-        })
+          isAdmin = (profile as any)?.role === 'admin'
+          console.log('🔍 Admin role check:', {
+            userId: user.id,
+            profileRole: (profile as any)?.role,
+            isAdmin
+          })
+        }
       } catch (error) {
         console.warn('Admin role check failed:', error)
       }
 
       return {
-        user: session.user,
+        user,
         session,
         isAdmin,
         isAuthenticated: true

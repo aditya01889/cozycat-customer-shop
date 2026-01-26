@@ -210,11 +210,19 @@ function AdminUsersContent() {
           const profileIds = filteredData.map((user: any) => user.profile_id)
           console.log('Looking for profile IDs:', profileIds)
           
-          // Use service role API to bypass RLS restrictions
+          // Get session token for authentication
+          const { data: { session } } = await supabase.auth.getSession()
+          
+          if (!session?.access_token) {
+            throw new Error('No session token available')
+          }
+          
+          // Use service role API to bypass RLS restrictions with proper authentication
           const response = await fetch('/api/admin/get-profiles', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json'
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session.access_token}`
             },
             body: JSON.stringify({ profileIds })
           })
@@ -879,10 +887,17 @@ function AdminUsersContent() {
                     }
                     
                     // Call API route instead of using service role client directly
+                    const { data: { session } } = await supabase.auth.getSession()
+                    
+                    if (!session?.access_token) {
+                      throw new Error('No session token available')
+                    }
+                    
                     const response = await fetch('/api/admin/update-profile', {
                       method: 'POST',
                       headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${session.access_token}`
                       },
                       body: JSON.stringify({
                         profileId,
@@ -1220,11 +1235,19 @@ function AdminUsersContent() {
                 }
                 
                 try {
+                  // Get session token for authentication
+                  const { data: { session } } = await supabase.auth.getSession()
+                  
+                  if (!session?.access_token) {
+                    throw new Error('No session token available')
+                  }
+                  
                   // Call Next.js API route
                   const response = await fetch('/api/send-email', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json',
+                      'Authorization': `Bearer ${session.access_token}`
                     },
                     body: JSON.stringify({
                       to: email,
