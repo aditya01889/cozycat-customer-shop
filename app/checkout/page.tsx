@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useCartStore } from '@/lib/store/cart'
 import { useAuth } from '@/contexts/AuthContext'
@@ -9,6 +9,7 @@ import { useToast } from '@/components/Toast/ToastProvider'
 import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 import { ArrowLeft, Truck, Shield, CreditCard, User, Phone, MapPin } from 'lucide-react'
 import { RazorpayClient, RazorpayOptions, RazorpayResponse } from '@/lib/razorpay/client'
+import { getCSRFHeader } from '@/lib/security/csrf-client'
 
 export default function CheckoutPage() {
   const router = useRouter()
@@ -16,6 +17,20 @@ export default function CheckoutPage() {
   const { user } = useAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const { showError, showSuccess } = useToast()
+
+  // Fetch CSRF token on component mount
+  useEffect(() => {
+    const fetchCSRFToken = async () => {
+      try {
+        const response = await fetch('/api/csrf')
+        const data = await response.json()
+      } catch (error) {
+        console.error('Error fetching CSRF token:', error)
+      }
+    }
+    
+    fetchCSRFToken()
+  }, [])
 
   // Form state
   const [customerInfo, setCustomerInfo] = useState({
@@ -259,11 +274,23 @@ export default function CheckoutPage() {
 
       // Handle payment based on method
       if (paymentMethod === 'online') {
+        // Get authentication token
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!session?.access_token) {
+          throw new Error('Authentication required for online payment')
+        }
+
+        // Debug: Check CSRF token
+        const csrfToken = getCSRFHeader()
+
         // Create Razorpay order first
         const razorpayResponse = await fetch('/api/razorpay/create-order', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+            ...csrfToken,
           },
           body: JSON.stringify({
             amount: total,
@@ -277,6 +304,11 @@ export default function CheckoutPage() {
             }
           })
         })
+
+        if (!razorpayResponse.ok) {
+          const errorText = await razorpayResponse.text()
+          throw new Error(`Payment order creation failed: ${razorpayResponse.status} - ${errorText}`)
+        }
 
         const razorpayData = await razorpayResponse.json()
         

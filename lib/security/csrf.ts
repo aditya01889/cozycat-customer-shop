@@ -18,14 +18,24 @@ function generateCSRFToken(): string {
 }
 
 /**
- * Set CSRF token in HTTP-only cookie
+ * Set CSRF token in both HTTP-only and accessible cookies
  */
 export async function setCSRFToken(): Promise<string> {
   const token = generateCSRFToken()
   const cookieStore = await cookies()
   
+  // Set HTTP-only cookie for server-side validation
   cookieStore.set(CSRF_TOKEN_NAME, token, {
     httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 24, // 24 hours
+    path: '/',
+  })
+  
+  // Set accessible cookie for client-side access
+  cookieStore.set(`${CSRF_TOKEN_NAME}_client`, token, {
+    httpOnly: false,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
     maxAge: 60 * 60 * 24, // 24 hours

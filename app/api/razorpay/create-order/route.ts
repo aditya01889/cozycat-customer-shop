@@ -20,15 +20,36 @@ export const POST = createSecureHandler({
   rateLimiter: actionRateLimiters.payment,
   requireCSRF: true,
   preCheck: async (req: NextRequest) => {
-    // Check if user is authenticated for payment processing
+    console.log('🔍 Razorpay Pre-check - Starting validation...')
+    
+    // Extract JWT token from Authorization header
+    const authHeader = req.headers.get('authorization')
+    console.log('🔍 Razorpay Pre-check - Auth header present:', !!authHeader)
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ Razorpay Pre-check - No valid Authorization header')
+      return { allowed: false, error: 'Valid Authorization header required' }
+    }
+    
+    const token = authHeader.substring(7) // Remove 'Bearer ' prefix
+    console.log('🔍 Razorpay Pre-check - Token extracted:', token.substring(0, 20) + '...')
+    
+    // Create Supabase client with the token
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
     
-    if (!user) {
+    // Set the token manually for this request
+    const { data: { user }, error } = await supabase.auth.getUser(token)
+    
+    console.log('🔍 Razorpay Pre-check - User:', user ? 'Authenticated' : 'Not authenticated')
+    console.log('🔍 Razorpay Pre-check - Auth error:', error)
+    
+    if (!user || error) {
+      console.log('❌ Razorpay Pre-check - Authentication failed:', error?.message)
       return { allowed: false, error: 'Authentication required to create payment orders' }
     }
     
+    console.log('✅ Razorpay Pre-check - Authentication passed for user:', user.id)
     return { allowed: true }
   },
   handler: async (req: NextRequest, data) => {

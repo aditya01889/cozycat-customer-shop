@@ -21,6 +21,14 @@ interface CartStore {
   getTotalItems: () => number
   getTotalPrice: () => number
   updateCartItemsWithImages: () => Promise<void>
+  getSubtotal: () => number
+  getDeliveryFee: () => number
+  getTotal: () => number
+  getFreeDeliveryThreshold: () => number
+  getAmountForFreeDelivery: () => number
+  isFreeDelivery: () => boolean
+  getItemsCount: () => number
+  hasItems: () => boolean
 }
 
 export const useCartStore = create<CartStore>()(
@@ -105,6 +113,43 @@ export const useCartStore = create<CartStore>()(
         } catch (error) {
           console.error('Failed to update cart items with images:', error)
         }
+      },
+
+      getSubtotal: () => {
+        return get().items.reduce((total, item) => total + (item.price * item.quantity), 0)
+      },
+
+      getDeliveryFee: () => {
+        const subtotal = get().getSubtotal()
+        return subtotal >= 500 ? 0 : 40
+      },
+
+      getTotal: () => {
+        const subtotal = get().getSubtotal()
+        const deliveryFee = get().getDeliveryFee()
+        return subtotal + deliveryFee
+      },
+
+      getFreeDeliveryThreshold: () => {
+        return 500
+      },
+
+      getAmountForFreeDelivery: () => {
+        const subtotal = get().getSubtotal()
+        const threshold = get().getFreeDeliveryThreshold()
+        return Math.max(0, threshold - subtotal)
+      },
+
+      isFreeDelivery: () => {
+        return get().getSubtotal() >= get().getFreeDeliveryThreshold()
+      },
+
+      getItemsCount: () => {
+        return get().items.length
+      },
+
+      hasItems: () => {
+        return get().items.length > 0
       }
     }),
     {

@@ -55,17 +55,20 @@ function addSecurityHeaders(response: NextResponse) {
     'camera=(), microphone=(), geolocation=(), interest-cohort=()'
   )
   
-  // Content Security Policy (CSP)
+  // Content Security Policy (CSP) - Updated for Razorpay compatibility
   response.headers.set(
     'Content-Security-Policy',
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com",
+      "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com",
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: https: blob:",
       "font-src 'self' data:",
-      "connect-src 'self' https://xfnbhheapralprcwjvzl.supabase.co wss://xfnbhheapralprcwjvzl.supabase.co https://api.razorpay.com",
-      "frame-src https://checkout.razorpay.com",
+      "connect-src 'self' https://xfnbhheapralprcwjvzl.supabase.co wss://xfnbhheapralprcwjvzl.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com",
+      "frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'"
     ].join('; ')
   )
   
