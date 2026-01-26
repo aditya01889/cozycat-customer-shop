@@ -1,19 +1,46 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { createSecureHandler } from '@/lib/api/secure-handler'
+import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
+import { getSupabaseConfig } from '@/lib/env-validation'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-export async function GET() {
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+export const GET = createSecureHandler({
+  rateLimiter: actionRateLimiters.contactForm,
+  requireCSRF: false, // GET requests don't need CSRF
+  preCheck: async (req: NextRequest) => {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { allowed: false, error: 'Authentication required' }
+    }
+    
+    // Check if user has admin role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    
+    if (!profile || (profile as any).role !== 'admin') {
+      return { allowed: false, error: 'Admin access required' }
+    }
+    
+    return { allowed: true }
+  },
+  handler: async (req: NextRequest) => {
+    // Get validated Supabase configuration
+    const { url, serviceRoleKey } = getSupabaseConfig()
+    
+    const supabase = createClient(url, serviceRoleKey!, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
       }
     })
 
-    console.log('🔍 Checking all profiles in database...')
+    console.log('🔍 Admin checking all profiles in database...')
 
     // Get all profiles
     const { data: profiles, error: profilesError } = await supabase
@@ -23,7 +50,7 @@ export async function GET() {
 
     if (profilesError) {
       console.error('Error fetching profiles:', profilesError)
-      return NextResponse.json({ error: 'Failed to fetch profiles', details: profilesError }, { status: 500 })
+      throw new Error('Failed to fetch profiles')
     }
 
     console.log('All profiles in database:', profiles?.length || 0)
@@ -35,7 +62,7 @@ export async function GET() {
 
     if (customersError) {
       console.error('Error fetching customers:', customersError)
-      return NextResponse.json({ error: 'Failed to fetch customers', details: customersError }, { status: 500 })
+      throw new Error('Failed to fetch customers')
     }
 
     console.log('All customers in database:', customers?.length || 0)
@@ -49,16 +76,20 @@ export async function GET() {
     console.log('Customers without profiles:', customersWithoutProfiles?.length || 0)
 
     return NextResponse.json({
+      success: true,
+      warning: 'This is a debug endpoint - remove from production',
       profiles: profiles || [],
       customers: customers || [],
       customersWithProfiles: customersWithProfiles || [],
       customersWithoutProfiles: customersWithoutProfiles || [],
       profileIds: profileIds,
-      customerProfileIds: customers?.map(c => c.profile_id) || []
+      customerProfileIds: customers?.map(c => c.profile_id) || [],
+      summary: {
+        totalProfiles: profiles?.length || 0,
+        totalCustomers: customers?.length || 0,
+        customersWithProfiles: customersWithProfiles?.length || 0,
+        customersWithoutProfiles: customersWithoutProfiles?.length || 0
+      }
     })
-
-  } catch (error: any) {
-    console.error('Debug error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-}
+})

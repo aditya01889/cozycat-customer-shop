@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import nodemailer from 'nodemailer'
+import { createSecureHandler } from '@/lib/api/secure-handler'
+import { contactFormSchema } from '@/lib/validation/schemas'
+import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
+import { getSupabaseConfig } from '@/lib/env-validation'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+// Get validated Supabase configuration
+const { url: supabaseUrl, serviceRoleKey: supabaseServiceKey } = getSupabaseConfig()
 
 // Configure nodemailer with Gmail (or any SMTP service)
 const transporter = nodemailer.createTransport({
@@ -15,21 +19,54 @@ const transporter = nodemailer.createTransport({
   debug: true // Enable debug logging
 })
 
-export async function POST(request: NextRequest) {
-  try {
-    const { to, subject, body, customerName } = await request.json()
+// Email sending schema for validation
+const emailSchema = contactFormSchema.pick({
+  name: true,
+  email: true,
+  subject: true,
+  message: true
+}).extend({
+  to: contactFormSchema.shape.email,
+  customerName: contactFormSchema.shape.name.optional()
+})
 
-    if (!to || !subject || !body) {
-      return NextResponse.json({ error: 'Missing required fields: to, subject, body' }, { status: 400 })
+export const POST = createSecureHandler({
+  schema: emailSchema,
+  rateLimiter: actionRateLimiters.contactForm,
+  requireCSRF: true,
+  preCheck: async (req: NextRequest) => {
+    // Check if user is authenticated for sending emails
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { allowed: false, error: 'Authentication required to send emails' }
     }
+    
+    // Check if user has admin or partner role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    
+    if (!profile || !['admin', 'partner'].includes((profile as any).role)) {
+      return { allowed: false, error: 'Admin or partner access required to send emails' }
+    }
+    
+    return { allowed: true }
+  },
+  handler: async (req: NextRequest, data) => {
+    const { to, subject, message, name, customerName } = data
 
     // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey)
+    const supabase = createClient(supabaseUrl, supabaseServiceKey!)
 
     console.log('=== SENDING EMAIL VIA NODEMAILER ===')
     console.log('To:', to)
     console.log('Subject:', subject)
-    console.log('Customer:', customerName)
+    console.log('Customer:', customerName || name)
     console.log('==============================')
 
     // Send email using nodemailer
@@ -100,8 +137,8 @@ export async function POST(request: NextRequest) {
               
               <div class="content">
                 <h2>${subject}</h2>
-                <p>Dear <span class="customer-name">${customerName || 'Valued Customer'}</span>,</p>
-                <div style="white-space: pre-wrap; font-family: inherit;">${body}</div>
+                <p>Dear <span class="customer-name">${customerName || name || 'Valued Customer'}</span>,</p>
+                <div style="white-space: pre-wrap; font-family: inherit;">${message}</div>
               </div>
               
               <div class="footer">
@@ -120,7 +157,7 @@ export async function POST(request: NextRequest) {
 
     } catch (emailError: any) {
       console.error('Email sending failed:', emailError)
-      return NextResponse.json({ error: `Email sending failed: ${emailError.message}` }, { status: 500 })
+      throw new Error(`Email sending failed: ${emailError.message}`)
     }
 
     // Log email in database for tracking
@@ -129,8 +166,8 @@ export async function POST(request: NextRequest) {
       .insert({
         to_email: to,
         subject,
-        body,
-        customer_name: customerName,
+        body: message,
+        customer_name: customerName || name,
         status: 'sent',
         sent_at: new Date().toISOString(),
         email_provider: 'nodemailer'
@@ -138,6 +175,7 @@ export async function POST(request: NextRequest) {
 
     if (dbError) {
       console.error('Error logging email:', dbError)
+      // Don't fail the request if logging fails
     }
 
     return NextResponse.json({ 
@@ -146,14 +184,10 @@ export async function POST(request: NextRequest) {
       details: { 
         to, 
         subject, 
-        body,
+        body: message,
         provider: 'Nodemailer',
         delivered: true
       }
     })
-
-  } catch (error: any) {
-    console.error('Error in send-email API:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-}
+})

@@ -191,4 +191,5 @@ export const actionRateLimiters = {
   passwordReset: createRateLimiter(60 * 60 * 1000, 3), // 3 attempts per hour
   emailVerification: createRateLimiter(15 * 60 * 1000, 5), // 5 attempts per 15 minutes
   contactForm: createRateLimiter(60 * 60 * 1000, 10), // 10 submissions per hour
+  payment: createRateLimiter(60 * 60 * 1000, 20), // 20 payment attempts per hour
 }

@@ -1,19 +1,46 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { createSecureHandler } from '@/lib/api/secure-handler'
+import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
+import { getSupabaseConfig } from '@/lib/env-validation'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-export async function GET() {
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+export const GET = createSecureHandler({
+  rateLimiter: actionRateLimiters.contactForm,
+  requireCSRF: false, // GET requests don't need CSRF
+  preCheck: async (req: NextRequest) => {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { allowed: false, error: 'Authentication required' }
+    }
+    
+    // Check if user has admin role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    
+    if (!profile || (profile as any).role !== 'admin') {
+      return { allowed: false, error: 'Admin access required' }
+    }
+    
+    return { allowed: true }
+  },
+  handler: async (req: NextRequest) => {
+    // Get validated Supabase configuration
+    const { url, serviceRoleKey } = getSupabaseConfig()
+    
+    const supabase = createClient(url, serviceRoleKey!, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
       }
     })
 
-    console.log('🔍 Testing different join approaches...')
+    console.log('🔍 Admin testing different join approaches...')
 
     // Test 1: Try different join syntax
     const { data: test1, error: error1 } = await supabase
@@ -62,15 +89,34 @@ export async function GET() {
     }))
 
     return NextResponse.json({
-      test1: { data: test1, error: error1 },
-      test2: { data: test2, error: error2 },
-      manualJoin: { data: manualJoin, error: null },
-      customersCount: customers?.length || 0,
-      profilesCount: profiles?.length || 0
+      success: true,
+      warning: 'This is a debug endpoint - remove from production',
+      tests: {
+        test1: {
+          count: test1?.length || 0,
+          error: error1?.message || null,
+          sample: test1?.slice(0, 2) || []
+        },
+        test2: {
+          count: test2?.length || 0,
+          error: error2?.message || null,
+          sample: test2?.slice(0, 2) || []
+        },
+        manualJoin: {
+          count: manualJoin?.length || 0,
+          error: null,
+          sample: manualJoin?.slice(0, 2) || []
+        }
+      },
+      summary: {
+        totalTests: 3,
+        successfulTests: [test1, test2, manualJoin].filter(t => t && t.length > 0).length,
+        hasErrors: !!(error1 || error2 || customersError || profilesError)
+      },
+      debugInfo: {
+        customersCount: customers?.length || 0,
+        profilesCount: profiles?.length || 0
+      }
     })
-
-  } catch (error: any) {
-    console.error('Debug error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-}
+})

@@ -1,19 +1,46 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { createSecureHandler } from '@/lib/api/secure-handler'
+import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
+import { getSupabaseConfig } from '@/lib/env-validation'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-export async function GET() {
-  try {
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+export const GET = createSecureHandler({
+  rateLimiter: actionRateLimiters.contactForm,
+  requireCSRF: false, // GET requests don't need CSRF
+  preCheck: async (req: NextRequest) => {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { allowed: false, error: 'Authentication required' }
+    }
+    
+    // Check if user has admin role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    
+    if (!profile || (profile as any).role !== 'admin') {
+      return { allowed: false, error: 'Admin access required' }
+    }
+    
+    return { allowed: true }
+  },
+  handler: async (req: NextRequest) => {
+    // Get validated Supabase configuration
+    const { url, serviceRoleKey } = getSupabaseConfig()
+    
+    const supabase = createClient(url, serviceRoleKey!, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
       }
     })
 
-    console.log('🔍 Debugging profile data...')
+    console.log('🔍 Admin debugging profile data...')
 
     // Get all customers
     const { data: customers, error: customersError } = await supabase
@@ -41,6 +68,8 @@ export async function GET() {
       `)
 
     return NextResponse.json({
+      success: true,
+      warning: 'This is a debug endpoint - remove from production',
       customers: customers || [],
       profiles: profiles || [],
       joinedData: joinedData || [],
@@ -51,11 +80,13 @@ export async function GET() {
       },
       customerCount: customers?.length || 0,
       profileCount: profiles?.length || 0,
-      joinedCount: joinedData?.length || 0
+      joinedCount: joinedData?.length || 0,
+      summary: {
+        totalCustomers: customers?.length || 0,
+        totalProfiles: profiles?.length || 0,
+        successfulJoins: joinedData?.length || 0,
+        hasErrors: !!(customersError || profilesError || joinError)
+      }
     })
-
-  } catch (error: any) {
-    console.error('Debug error:', error)
-    return NextResponse.json({ error: error.message }, { status: 500 })
   }
-}
+})

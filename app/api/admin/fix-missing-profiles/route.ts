@@ -1,20 +1,47 @@
 import { createClient } from '@supabase/supabase-js'
-import { NextResponse } from 'next/server'
+import { NextResponse, NextRequest } from 'next/server'
+import { createSecureHandler } from '@/lib/api/secure-handler'
+import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
+import { getSupabaseConfig } from '@/lib/env-validation'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-
-export async function POST() {
-  try {
+export const POST = createSecureHandler({
+  rateLimiter: actionRateLimiters.contactForm,
+  requireCSRF: true,
+  preCheck: async (req: NextRequest) => {
+    const { createClient } = await import('@/lib/supabase/server')
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      return { allowed: false, error: 'Authentication required' }
+    }
+    
+    // Check if user has admin role
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single()
+    
+    if (!profile || (profile as any).role !== 'admin') {
+      return { allowed: false, error: 'Admin access required' }
+    }
+    
+    return { allowed: true }
+  },
+  handler: async (req: NextRequest) => {
+    // Get validated Supabase configuration
+    const { url, serviceRoleKey } = getSupabaseConfig()
+    
     // Initialize Supabase client with service role key (bypasses RLS)
-    const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+    const supabase = createClient(url, serviceRoleKey!, {
       auth: {
         autoRefreshToken: false,
         persistSession: false
       }
     })
 
-    console.log('🔧 Fixing missing profiles for existing customers...')
+    console.log('🔧 Admin fixing missing profiles for existing customers...')
 
     // Get all customers
     const { data: customers, error: customersError } = await supabase
@@ -28,23 +55,24 @@ export async function POST() {
 
     if (customersError || profilesError) {
       console.error('Error fetching data:', { customersError, profilesError })
-      return NextResponse.json({ error: 'Failed to fetch data' }, { status: 500 })
+      throw new Error('Failed to fetch data for profile fixing')
     }
 
-    // Find customers without profiles
-    const profileIds = profiles?.map(p => p.id) || []
-    const customersWithoutProfiles = customers?.filter(
-      customer => !profileIds.includes(customer.profile_id)
-    ) || []
+    const existingProfileIds = new Set(profiles?.map(p => p.id) || [])
+    const customersWithoutProfiles = customers?.filter(customer => !existingProfileIds.has(customer.profile_id)) || []
 
-    console.log('📊 Found customers without profiles:', customersWithoutProfiles.length)
+    console.log(`Found ${customersWithoutProfiles.length} customers without profiles`)
 
     if (customersWithoutProfiles.length === 0) {
-      return NextResponse.json({ message: 'All customers have profiles' })
+      return NextResponse.json({
+        success: true,
+        message: 'All customers already have profiles',
+        fixedCount: 0
+      })
     }
 
     // Create missing profiles
-    const profileInserts = customersWithoutProfiles.map((customer) => ({
+    const profilesToCreate = customersWithoutProfiles.map(customer => ({
       id: customer.profile_id,
       full_name: `Customer ${customer.id.slice(0, 8)}`,
       email: `customer-${customer.id.slice(0, 8)}@cozycatkitchen.com`,
@@ -54,28 +82,24 @@ export async function POST() {
       updated_at: new Date().toISOString()
     }))
 
-    console.log('📝 Creating profiles:', profileInserts.length)
-
-    const { data: insertedProfiles, error: insertError } = await supabase
+    const { data: createdProfiles, error: createError } = await supabase
       .from('profiles')
-      .upsert(profileInserts, { onConflict: 'id' })
-      .select('id, full_name, email, phone')
+      .upsert(profilesToCreate, { onConflict: 'id' })
+      .select('id, full_name, email, role')
 
-    if (insertError) {
-      console.error('Error creating profiles:', insertError)
-      return NextResponse.json({ error: 'Failed to create profiles', details: insertError }, { status: 500 })
+    if (createError) {
+      console.error('Error creating profiles:', createError)
+      throw new Error('Failed to create missing profiles')
     }
 
-    console.log('✅ Successfully created profiles:', insertedProfiles?.length || 0)
+    console.log(`Successfully created ${createdProfiles?.length || 0} profiles`)
 
     return NextResponse.json({
       success: true,
-      message: `Created ${insertedProfiles?.length || 0} missing profiles`,
-      profiles: insertedProfiles
+      warning: 'This is a maintenance endpoint - remove from production',
+      message: `Created ${createdProfiles?.length || 0} missing profiles`,
+      fixedCount: createdProfiles?.length || 0,
+      profiles: createdProfiles || []
     })
-
-  } catch (error: any) {
-    console.error('Error fixing missing profiles:', error)
-    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 })
   }
-}
+})
