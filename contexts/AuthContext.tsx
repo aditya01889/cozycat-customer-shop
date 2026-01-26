@@ -29,79 +29,82 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('👤 User metadata:', user.user_metadata)
       console.log('📧 User email:', user.email)
       console.log('📝 Provided name:', name)
-      
-      // First, check if profile already exists with role
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('role, phone, full_name, email')
-        .eq('id', user.id)
-        .single()
 
-      console.log('📋 Existing profile:', existingProfile)
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Customer record creation timeout')), 10000)
+      )
 
-      // Only create/update profile if it doesn't exist or needs updating
-      const profileRole = existingProfile?.role || 'customer' // Preserve existing role
-      
-      // Use the provided name from signup, or fallback to metadata, or existing profile name
-      const fullName = name || user.user_metadata?.name || existingProfile?.full_name || 'User'
-      
-      console.log('🏷️ Creating/updating profile with name:', fullName)
-      
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          role: profileRole, // Use existing role, don't override
-          full_name: fullName,
-          email: user.email,
-          phone: existingProfile?.phone || null, // Preserve existing phone
-          updated_at: new Date().toISOString()
-        })
+      const ensureRecordPromise = async () => {
+        // First, check if profile already exists with role
+        const { data: existingProfile } = await supabase
+          .from('profiles')
+          .select('role, phone, full_name, email')
+          .eq('id', user.id)
+          .single()
 
-      if (profileError) {
-        console.error('❌ Error creating/updating profile record:', profileError)
-        throw profileError
-      } else {
-        console.log('✅ Profile record created/updated successfully')
-      }
+        console.log('📋 Existing profile:', existingProfile)
 
-      if (existingProfile?.role && existingProfile.role !== 'customer') {
-        console.log('👤 User is not a customer, skipping customer record creation')
-        return
-      }
-
-      // Then check if customer record exists
-      const { data: existingCustomer } = await supabase
-        .from('customers')
-        .select('id')
-        .eq('id', user.id)
-        .single()
-
-      console.log('📋 Existing customer:', existingCustomer)
-
-      if (!existingCustomer) {
-        console.log('🆕 Creating new customer record...')
+        // Only create/update profile if it doesn't exist or needs updating
+        const profileRole = existingProfile?.role || 'customer' // Preserve existing role
         
-        const { error: customerError } = await supabase
-          .from('customers')
-          .insert({
+        // Use the provided name from signup, or fallback to metadata, or existing profile name
+        const fullName = name || user.user_metadata?.name || existingProfile?.full_name || 'User'
+        
+        console.log('🏷️ Creating/updating profile with name:', fullName)
+        
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .upsert({
             id: user.id,
-            profile_id: user.id,
-            phone: existingProfile?.phone || '' // Use profile phone or empty string
+            email: user.email,
+            full_name: fullName,
+            role: profileRole,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'id'
           })
 
-        if (customerError) {
-          console.error('❌ Error creating customer record:', customerError)
-          throw customerError
-        } else {
-          console.log('✅ Customer record created successfully')
+        if (profileError) {
+          console.error('❌ Profile upsert error:', profileError)
+          throw profileError
         }
-      } else {
-        console.log('✅ Customer record already exists')
+
+        console.log('✅ Profile record created/updated successfully')
+
+        // Only create customer record if user is a customer
+        if (profileRole === 'customer') {
+          console.log('� Creating customer record...')
+          
+          const { error: customerError } = await supabase
+            .from('customers')
+            .upsert({
+              id: user.id,
+              profile_id: user.id,
+              email: user.email,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString()
+            }, {
+              onConflict: 'id'
+            })
+
+          if (customerError) {
+            console.error('❌ Customer upsert error:', customerError)
+            throw customerError
+          }
+
+          console.log('✅ Customer record created successfully')
+        } else {
+          console.log('👤 User is not a customer, skipping customer record creation')
+        }
       }
+      
+      await Promise.race([ensureRecordPromise(), timeoutPromise])
+      
     } catch (error) {
       console.error('❌ Error ensuring customer record:', error)
-      throw error
+      // Don't throw error - this is non-critical for login
+      // The user is already authenticated, profile creation can be retried later
     }
   }
 
@@ -111,9 +114,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const { data: { session } } = await supabase.auth.getSession()
       setUser(session?.user ?? null)
       
-      // Ensure customer record exists for logged in user
+      // Ensure customer record exists for logged in user (non-blocking)
       if (session?.user) {
-        await ensureCustomerRecord(session.user)
+        ensureCustomerRecord(session.user).catch(error => {
+          console.warn('⚠️ Initial customer record creation failed (non-critical):', error)
+        })
       }
       
       setLoading(false)
@@ -127,9 +132,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
       setUser(session?.user ?? null)
       
-      // Ensure customer record exists for logged in user
+      // Ensure customer record exists for logged in user (non-blocking)
       if (session?.user) {
-        await ensureCustomerRecord(session.user)
+        ensureCustomerRecord(session.user).catch(error => {
+          console.warn('⚠️ Auth state change customer record creation failed (non-critical):', error)
+        })
       }
       
       setLoading(false)
@@ -178,104 +185,71 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setLoading(true)
       console.log('🔐 Starting sign in process...')
       
-      // Try multiple approaches for sign in
-      let signInSuccess = false
-      let userData = null
-      let lastError = null
-      
-      // Method 1: Standard sign in with shorter timeout
+      // Try sign in with longer timeout and better error handling
       try {
-        console.log('🔄 Method 1: Standard sign in...')
-        const signInPromise = supabase.auth.signInWithPassword({
+        console.log('🔄 Attempting sign in...')
+        const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         })
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Standard sign in timeout')), 5000)
-        )
         
-        const { data, error } = await Promise.race([signInPromise, timeoutPromise]) as any
-        console.log('📋 Method 1 response:', { error, user: !!data?.user })
+        console.log('📋 Sign in response:', { error, user: !!data?.user })
         
-        if (!error && data?.user) {
-          signInSuccess = true
-          userData = data.user
-          console.log('✅ Method 1 successful')
-        } else {
-          lastError = error
-          console.log('❌ Method 1 failed:', error)
+        if (error) {
+          console.error('❌ Sign in error:', error)
+          throw new Error(error.message || 'Invalid email or password')
         }
-      } catch (method1Error) {
-        lastError = method1Error
-        console.log('❌ Method 1 exception:', method1Error)
-      }
-      
-      // Method 2: Try with different auth options using same client
-      if (!signInSuccess) {
-        try {
-          console.log('🔄 Method 2: Alternative sign in with different options...')
+        
+        if (data?.user) {
+          console.log('✅ Sign in successful for user:', data.user.id)
+          showSuccess('Welcome back!')
           
-          // Temporarily modify auth options
-          const originalAuth = supabase.auth
-          
-          const signInPromise = supabase.auth.signInWithPassword({
-            email,
-            password,
-            options: {
-              // Try with minimal options
-            }
+          // Ensure customer record asynchronously (non-blocking)
+          ensureCustomerRecord(data.user).catch(error => {
+            console.warn('⚠️ Customer record creation failed (non-critical):', error)
+            // Don't throw error - user is already logged in
           })
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Alternative sign in timeout')), 5000)
-          )
           
-          const { data, error } = await Promise.race([signInPromise, timeoutPromise]) as any
-          console.log('📋 Method 2 response:', { error, user: !!data?.user })
-          
-          if (!error && data?.user) {
-            signInSuccess = true
-            userData = data.user
-            console.log('✅ Method 2 successful')
-          } else {
-            lastError = error
-            console.log('❌ Method 2 failed:', error)
-          }
-        } catch (method2Error) {
-          lastError = method2Error
-          console.log('❌ Method 2 exception:', method2Error)
+          return
         }
+      } catch (signInError) {
+        console.error('❌ Sign in failed:', signInError)
+        throw signInError
       }
       
-      if (signInSuccess && userData) {
-        console.log('🎉 Sign in successful overall')
+    } catch (error: any) {
+      console.error('💥 Sign in catch error:', error)
+      
+      // Check if user is actually authenticated despite the error
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user) {
+        console.log('✅ User is authenticated despite error, proceeding...')
         showSuccess('Welcome back!')
+        
+        // Ensure customer record asynchronously
+        ensureCustomerRecord(session.user).catch(error => {
+          console.warn('⚠️ Customer record creation failed (non-critical):', error)
+        })
+        
         return
       }
       
-      // All methods failed
-      console.error('💥 All sign in methods failed:', lastError)
-      
       // Provide better error messages
       let errorMessage = 'Failed to sign in'
-      if (lastError?.message?.includes('timeout')) {
-        errorMessage = 'Sign in is currently experiencing issues. Please try again in a few minutes.'
-      } else if (lastError?.message?.includes('Invalid login credentials')) {
+      if (error?.message?.includes('timeout')) {
+        errorMessage = 'Sign in is taking longer than expected. Please try again.'
+      } else if (error?.message?.includes('Invalid login credentials')) {
         errorMessage = 'Invalid email or password'
-      } else if (lastError?.message) {
-        errorMessage = lastError.message
+      } else if (error?.message) {
+        errorMessage = error.message
       } else {
         errorMessage = 'Authentication service is temporarily unavailable. Please try again later.'
       }
       
-      const appError = ErrorHandler.fromError(lastError)
+      const appError = ErrorHandler.fromError(error)
       showError(appError)
       throw new Error(errorMessage)
       
-    } catch (error: any) {
-      console.error('💥 Sign in catch error:', error)
-      const appError = ErrorHandler.fromError(error)
-      showError(appError)
-      throw error
     } finally {
       setLoading(false)
     }
