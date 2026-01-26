@@ -128,10 +128,27 @@ export function isProduction(): boolean {
 }
 
 /**
- * Get Supabase configuration safely
+ * Get Supabase configuration safely (without full validation)
+ * Used during build process to avoid payment variable validation
  */
 export function getSupabaseConfig() {
-  const env = getEnv()
+  const env = process.env as Record<string, string | undefined>
+  
+  if (!env.NEXT_PUBLIC_SUPABASE_URL) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not set')
+  }
+
+  if (!env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    throw new Error('NEXT_PUBLIC_SUPABASE_ANON_KEY is required but not set')
+  }
+
+  // Validate Supabase URL format
+  try {
+    new URL(env.NEXT_PUBLIC_SUPABASE_URL)
+  } catch {
+    throw new Error('NEXT_PUBLIC_SUPABASE_URL must be a valid URL')
+  }
+  
   return {
     url: env.NEXT_PUBLIC_SUPABASE_URL,
     anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
