@@ -100,16 +100,16 @@ export default function ProductPerformanceChart({ data, title = "Product Perform
           <Package className="w-5 h-5 text-gray-400" />
         </div>
         
-        <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height={320}>
+        <div className="w-full" style={{ height: '200px', minHeight: '200px' }}>
+          <ResponsiveContainer width="100%" height={200}>
             <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
               <Pie
                 data={pieData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percentage }: any) => `${name}: ${percentage.toFixed(1)}%`}
-                outerRadius={80}
+                label={({ segment, percentage }) => `${segment}: ${percentage}%`}
+                outerRadius={60}
                 fill="#8884d8"
                 dataKey="value"
               >
@@ -139,8 +139,8 @@ export default function ProductPerformanceChart({ data, title = "Product Perform
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="w-full h-full">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           <p className="text-sm text-gray-500">Top performing products</p>
@@ -148,22 +148,18 @@ export default function ProductPerformanceChart({ data, title = "Product Perform
         <Package className="w-5 h-5 text-gray-400" />
       </div>
       
-      <div className="h-80 w-full">
+      <div className="w-full" style={{ height: '280px' }}>
         {data.length > 0 ? (
-          <ResponsiveContainer width="100%" height={320}>
-            <BarChart data={data} margin={{ top: 20, right: 30, left: 30, bottom: 80 }}>
+          <ResponsiveContainer width="100%" height={280}>
+            <BarChart data={data} margin={{ top: 20, right: 30, left: 30, bottom: 60 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis 
-                dataKey="name"
-                tick={{ fill: '#374151', fontSize: 11, fontWeight: '500' }}
+                dataKey="name" 
+                tick={{ fill: '#6b7280', fontSize: 11 }}
                 tickLine={{ stroke: '#e5e7eb' }}
-                textAnchor="middle"
-                height={100}
-                interval={0}
-                tickFormatter={(value) => {
-                  // Truncate long names to prevent overlap
-                  return value.length > 15 ? `${value.substring(0, 15)}...` : value
-                }}
+                angle={-45}
+                textAnchor="end"
+                height={60}
               />
               <YAxis 
                 tick={{ fill: '#6b7280', fontSize: 12 }}

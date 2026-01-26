@@ -120,7 +120,7 @@ export default function ExportButton({ data, filename, title = "Report", type = 
           }
           
           doc.text((item.Product || '').substring(0, 25), 25, yPosition)
-          doc.text((item['Units Sold'] || 0).toString(), 100, yPosition)
+          doc.text((item['Total Sold'] || 0).toString(), 100, yPosition)
           doc.text(`₹${(item.Revenue || 0).toLocaleString('en-IN')}`, 150, yPosition)
           yPosition += 10
         })
@@ -197,7 +197,7 @@ export default function ExportButton({ data, filename, title = "Report", type = 
           doc.text((item['Customer Segment'] || '').substring(0, 20), 25, yPosition)
           doc.text((item.Count || 0).toString(), 80, yPosition)
           doc.text(`₹${(item.Revenue || 0).toLocaleString('en-IN')}`, 120, yPosition)
-          doc.text((item.Percentage || '0%'), 160, yPosition)
+          doc.text((item.Percentage || 0).toString() + '%', 160, yPosition)
           yPosition += 10
         })
       }

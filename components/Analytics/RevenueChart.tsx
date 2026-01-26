@@ -16,6 +16,9 @@ interface RevenueChartProps {
 }
 
 export default function RevenueChart({ data, title = "Revenue Trend", type = 'line' }: RevenueChartProps) {
+  console.log('🔍 RevenueChart received data:', data)
+  console.log('🔍 RevenueChart data length:', data?.length)
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -48,8 +51,8 @@ export default function RevenueChart({ data, title = "Revenue Trend", type = 'li
   const DataComponent = type === 'area' ? Area : Line
 
   return (
-    <div className="bg-white rounded-2xl shadow-lg p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="w-full h-full">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
           <p className="text-sm text-gray-500">Monthly performance overview</p>
@@ -65,8 +68,8 @@ export default function RevenueChart({ data, title = "Revenue Trend", type = 'li
         </div>
       </div>
       
-      <div className="h-80 w-full">
-        <ResponsiveContainer width="100%" height={320}>
+      <div className="w-full" style={{ height: '180px' }}>
+        <ResponsiveContainer width="100%" height={180}>
           <ChartComponent data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis 
@@ -92,28 +95,6 @@ export default function RevenueChart({ data, title = "Revenue Trend", type = 'li
             />
           </ChartComponent>
         </ResponsiveContainer>
-      </div>
-      
-      {/* Summary Stats */}
-      <div className="grid grid-cols-3 gap-4 mt-6 pt-6 border-t border-gray-200">
-        <div className="text-center">
-          <p className="text-sm text-gray-500">Total Revenue</p>
-          <p className="text-lg font-semibold text-gray-900">
-            {formatCurrency(data.reduce((sum, item) => sum + item.revenue, 0))}
-          </p>
-        </div>
-        <div className="text-center">
-          <p className="text-sm text-gray-500">Average Monthly</p>
-          <p className="text-lg font-semibold text-gray-900">
-            {formatCurrency(data.reduce((sum, item) => sum + item.revenue, 0) / data.length)}
-          </p>
-        </div>
-        <div className="text-center">
-          <p className="text-sm text-gray-500">Best Month</p>
-          <p className="text-lg font-semibold text-gray-900">
-            {data.length > 0 ? formatCurrency(Math.max(...data.map(item => item.revenue))) : '₹0'}
-          </p>
-        </div>
       </div>
     </div>
   )
