@@ -15,25 +15,25 @@ const rateLimitStore = new Map<string, RateLimitStore>()
 
 // Rate limit configurations
 const RATE_LIMITS = {
-  // General API endpoints
+  // General API endpoints (more restrictive for testing)
   default: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 100, // 100 requests per 15 minutes
+    maxRequests: 10, // 10 requests per 15 minutes (reduced from 100)
   },
   // Authentication endpoints (more restrictive)
   auth: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 20, // 20 requests per 15 minutes
+    maxRequests: 5, // 5 requests per 15 minutes (reduced from 20)
   },
   // Admin endpoints (very restrictive)
   admin: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 50, // 50 requests per 15 minutes
+    maxRequests: 5, // 5 requests per 15 minutes (reduced from 50)
   },
-  // Public endpoints (less restrictive)
+  // Public endpoints (more restrictive for testing)
   public: {
     windowMs: 15 * 60 * 1000, // 15 minutes
-    maxRequests: 200, // 200 requests per 15 minutes
+    maxRequests: 15, // 15 requests per 15 minutes (reduced from 200)
   },
 }
 

@@ -6,7 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:security": "playwright test tests/security/",
+    "test:e2e": "playwright test tests/e2e/",
+    "test:phase1": "playwright test tests/security/phase1-security.test.ts",
+    "test:ci": "playwright test --reporter=json --reporter=html",
+    "test:install": "playwright install",
+    "test:report": "playwright show-report"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.8",
@@ -33,6 +43,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

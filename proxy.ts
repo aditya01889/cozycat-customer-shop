@@ -10,13 +10,13 @@ import { rateLimitMiddleware } from './lib/middleware/rate-limiter'
  * Main proxy function
  */
 export function proxy(request: NextRequest) {
-  const response = NextResponse.next()
-
-  // Apply rate limiting to API routes
+  // Apply rate limiting to API routes first
   const rateLimitResponse = rateLimitMiddleware(request)
   if (rateLimitResponse) {
     return rateLimitResponse
   }
+
+  const response = NextResponse.next()
 
   // Add security headers
   addSecurityHeaders(response)
