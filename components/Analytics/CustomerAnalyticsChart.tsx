@@ -97,8 +97,8 @@ export default function CustomerAnalyticsChart({ data, segments, title = "Custom
         
         <div className="h-80 w-full">
           {data.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={data}>
+            <ResponsiveContainer width="100%" height={320}>
+              <LineChart data={data} margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                 <XAxis 
                   dataKey="month" 
@@ -149,17 +149,55 @@ export default function CustomerAnalyticsChart({ data, segments, title = "Custom
           
           <div className="h-64 w-full">
             {segments.length > 0 ? (
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+              <ResponsiveContainer width="100%" height={256}>
+                <PieChart margin={{ top: 20, right: 120, left: 120, bottom: 20 }}>
                   <Pie
                     data={segments}
                     cx="50%"
                     cy="50%"
                     labelLine={false}
-                    label={({ segment, percentage }: any) => `${segment}: ${percentage.toFixed(1)}%`}
-                    outerRadius={80}
+                    outerRadius={60}
                     fill="#8884d8"
                     dataKey="count"
+                    label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, segment }: any) => {
+                      const RADIAN = Math.PI / 180
+                      const radius = outerRadius + 30 // Move labels further away from the chart
+                      const x = cx + radius * Math.cos(-midAngle * RADIAN)
+                      const y = cy + radius * Math.sin(-midAngle * RADIAN)
+                      
+                      if (segment === 'Inactive') {
+                        // Position 'Inactive' label on the left side, further away
+                        return (
+                          <text 
+                            x={cx - 100} 
+                            y={y} 
+                            fill="#1f2937" // Darker color for better readability
+                            textAnchor="middle" 
+                            dominantBaseline="middle"
+                            fontSize="13"
+                            fontWeight="500"
+                          >
+                            {`${segment}: ${(percent * 100).toFixed(1)}%`}
+                          </text>
+                        )
+                      } else if (index < 2) {
+                        // Keep other labels on the right, further away
+                        return (
+                          <text 
+                            x={cx + 100} 
+                            y={y} 
+                            fill="#1f2937" // Darker color for better readability
+                            textAnchor="middle" 
+                            dominantBaseline="middle"
+                            fontSize="13"
+                            fontWeight="500"
+                          >
+                            {`${segment}: ${(percent * 100).toFixed(1)}%`}
+                          </text>
+                        )
+                      }
+                      return null
+                    }}
                   >
                     {segments.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

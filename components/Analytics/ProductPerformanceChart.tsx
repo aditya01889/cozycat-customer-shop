@@ -26,6 +26,11 @@ interface ProductPerformanceChartProps {
 const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444', '#f59e0b', '#06b6d4', '#84cc16']
 
 export default function ProductPerformanceChart({ data, title = "Product Performance", view = 'bar' }: ProductPerformanceChartProps) {
+  // Debug: Log the data to see what we're working with
+  console.log('ProductPerformanceChart data:', data)
+  console.log('First product data:', data[0])
+  console.log('Product revenue values:', data.map(d => d.revenue))
+  
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -96,8 +101,8 @@ export default function ProductPerformanceChart({ data, title = "Product Perform
         </div>
         
         <div className="h-80 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+          <ResponsiveContainer width="100%" height={320}>
+            <PieChart margin={{ top: 20, right: 30, left: 30, bottom: 20 }}>
               <Pie
                 data={pieData}
                 cx="50%"
@@ -144,30 +149,40 @@ export default function ProductPerformanceChart({ data, title = "Product Perform
       </div>
       
       <div className="h-80 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} layout="horizontal">
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-            <XAxis 
-              type="number"
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              tickLine={{ stroke: '#e5e7eb' }}
-              tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
-            />
-            <YAxis 
-              type="category"
-              dataKey="name"
-              tick={{ fill: '#6b7280', fontSize: 12 }}
-              tickLine={{ stroke: '#e5e7eb' }}
-              width={100}
-            />
-            <Tooltip content={<CustomTooltip />} />
-            <Bar 
-              dataKey="revenue" 
-              fill="#f97316"
-              radius={[0, 8, 8, 0]}
-            />
-          </BarChart>
-        </ResponsiveContainer>
+        {data.length > 0 ? (
+          <ResponsiveContainer width="100%" height={320}>
+            <BarChart data={data} margin={{ top: 20, right: 30, left: 30, bottom: 80 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis 
+                dataKey="name"
+                tick={{ fill: '#374151', fontSize: 11, fontWeight: '500' }}
+                tickLine={{ stroke: '#e5e7eb' }}
+                textAnchor="middle"
+                height={100}
+                interval={0}
+                tickFormatter={(value) => {
+                  // Truncate long names to prevent overlap
+                  return value.length > 15 ? `${value.substring(0, 15)}...` : value
+                }}
+              />
+              <YAxis 
+                tick={{ fill: '#6b7280', fontSize: 12 }}
+                tickLine={{ stroke: '#e5e7eb' }}
+                tickFormatter={(value) => `₹${(value / 1000).toFixed(0)}k`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar 
+                dataKey="revenue" 
+                fill="#f97316"
+                radius={[8, 8, 0, 0]}
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-full flex items-center justify-center text-gray-500">
+            <p className="text-center">No product data available</p>
+          </div>
+        )}
       </div>
       
       {/* Product List */}

@@ -66,7 +66,7 @@ export default function RevenueChart({ data, title = "Revenue Trend", type = 'li
       </div>
       
       <div className="h-80 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height={320}>
           <ChartComponent data={data}>
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
             <XAxis 

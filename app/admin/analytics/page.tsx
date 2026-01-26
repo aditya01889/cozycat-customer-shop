@@ -367,6 +367,12 @@ function AdminAnalyticsContent() {
                   ...analytics.orderStatusBreakdown.map(item => ({
                     Status: item.status,
                     Count: item.count
+                  })),
+                  ...analytics.customerSegments.map(item => ({
+                    'Customer Segment': item.segment,
+                    Count: item.count,
+                    Revenue: item.revenue,
+                    Percentage: `${item.percentage}%`
                   }))
                 ]}
                 filename={`analytics_report_${timeRange}_${new Date().toISOString().split('T')[0]}`}
