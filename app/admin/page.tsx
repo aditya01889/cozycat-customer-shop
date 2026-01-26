@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase/client'
+import { useDashboardStats } from '@/lib/react-query/hooks'
 import AdminAuth from '@/components/AdminAuth'
 import Link from 'next/link'
 import { 
@@ -35,91 +35,15 @@ export default function AdminDashboard() {
 
 function AdminDashboardContent() {
   const { user, signOut } = useAuth()
-  const [stats, setStats] = useState<DashboardStats>({
+  const { data: dashboardData, isLoading, error, refetch } = useDashboardStats()
+
+  const stats = (dashboardData as any)?.data?.dashboardStats || {
     totalProducts: 0,
     totalOrders: 0,
     totalUsers: 0,
     recentOrders: [],
     totalRevenue: 0,
     pendingOrders: 0
-  })
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    fetchDashboardStats()
-  }, [])
-
-  const fetchDashboardStats = async () => {
-    try {
-      console.log('Fetching dashboard stats...')
-      
-      // Fetch products count
-      const { count: productsCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true })
-
-      console.log('Products count:', productsCount)
-
-      // Fetch total orders count (excluding cancelled orders)
-      const { count: ordersCount } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .neq('status', 'cancelled')
-
-      console.log('Orders count:', ordersCount)
-
-      // Fetch recent orders (limited to 5, excluding cancelled)
-      const { data: orders } = await supabase
-        .from('orders')
-        .select('*')
-        .neq('status', 'cancelled')
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      console.log('Recent orders data:', orders)
-
-      // Fetch pending orders count
-      const { count: pendingCount } = await supabase
-        .from('orders')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending')
-
-      console.log('Pending count:', pendingCount)
-
-      // Calculate total revenue (from all non-cancelled orders)
-      const { data: allOrders } = await supabase
-        .from('orders')
-        .select('total_amount')
-        .neq('status', 'cancelled')
-
-      console.log('All orders for revenue:', allOrders)
-
-      const revenue = allOrders?.reduce((sum, order) => {
-        const amount = parseFloat(order.total_amount) || 0
-        return sum + amount
-      }, 0) || 0
-      console.log('Total revenue:', revenue)
-
-      // Fetch users count (from profiles table)
-      const { count: usersCount } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true })
-
-      console.log('Users count:', usersCount)
-
-      setStats({
-        totalProducts: productsCount || 0,
-        totalOrders: ordersCount || 0,
-        totalUsers: usersCount || 0,
-        recentOrders: orders || [],
-        totalRevenue: revenue,
-        pendingOrders: pendingCount || 0
-      })
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error)
-    } finally {
-      setLoading(false)
-    }
   }
 
   const getStatusColor = (status: string) => {
@@ -134,7 +58,7 @@ function AdminDashboardContent() {
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 flex items-center justify-center">
         <div className="text-center">
@@ -142,6 +66,24 @@ function AdminDashboardContent() {
             <span className="text-2xl">🔄</span>
           </div>
           <p className="text-gray-600">Loading dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-500 text-6xl mb-4">⚠️</div>
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">Dashboard Error</h2>
+          <p className="text-gray-600 mb-4">Failed to load dashboard data</p>
+          <button
+            onClick={() => refetch()}
+            className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       </div>
     )
@@ -310,7 +252,7 @@ function AdminDashboardContent() {
 
               <div className="space-y-4">
                 {stats.recentOrders.length > 0 ? (
-                  stats.recentOrders.map((order) => (
+                  stats.recentOrders.map((order: any) => (
                     <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">

@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/Toast/ToastProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ReactQueryProvider } from "@/lib/react-query/provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -33,15 +34,17 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ErrorBoundary>
-          <ToastProvider>
-            <AuthProvider>
-              <Navbar />
-              <main className="min-h-screen bg-gray-50">
-                {children}
-              </main>
-              <Footer />
-            </AuthProvider>
-          </ToastProvider>
+          <ReactQueryProvider>
+            <ToastProvider>
+              <AuthProvider>
+                <Navbar />
+                <main className="min-h-screen bg-gray-50">
+                  {children}
+                </main>
+                <Footer />
+              </AuthProvider>
+            </ToastProvider>
+          </ReactQueryProvider>
         </ErrorBoundary>
       </body>
     </html>
