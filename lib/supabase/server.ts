@@ -1,13 +1,15 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
+import { getSupabaseConfig } from '../env-validation'
 
 export const createClient = async () => {
   const cookieStore = await cookies()
+  const { url, anonKey } = getSupabaseConfig()
   
   return createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         get(name: string) {
@@ -26,7 +28,13 @@ export const createClient = async () => {
         autoRefreshToken: true,
         detectSessionInUrl: true,
         persistSession: true
-      }
+      },
+      // Add timeout configuration
+      global: {
+        headers: {
+          'X-Client-Info': 'cozycat-kitchen/1.0.0',
+        },
+      },
     }
   )
 }
