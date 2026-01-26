@@ -34,17 +34,39 @@ export default function AdminDashboard() {
 }
 
 function AdminDashboardContent() {
+  console.log('🚀 AdminDashboardContent component rendered')
+  
   const { user, signOut } = useAuth()
   const { data: dashboardData, isLoading, error, refetch } = useDashboardStats()
 
+  console.log('🔍 Admin Dashboard - Data:', {
+    isLoading,
+    hasError: !!error,
+    hasData: !!dashboardData,
+    dataKeys: dashboardData ? Object.keys(dashboardData) : null,
+    error: error?.message
+  })
+
   const stats = (dashboardData as any)?.data?.dashboardStats || {
-    totalProducts: 0,
-    totalOrders: 0,
-    totalUsers: 0,
-    recentOrders: [],
-    totalRevenue: 0,
-    pendingOrders: 0
+    total_products: 0,
+    total_orders: 0,
+    total_users: 0,
+    recent_orders: [],
+    total_revenue: 0,
+    pending_orders: 0
   }
+
+  // Additional safety check - convert snake_case to camelCase for UI
+  const safeStats = {
+    totalProducts: stats.total_products || 0,
+    totalOrders: stats.total_orders || 0,
+    totalUsers: stats.total_users || 0,
+    totalRevenue: stats.total_revenue || 0,
+    pendingOrders: stats.pending_orders || 0,
+    recentOrders: Array.isArray(stats.recent_orders) ? stats.recent_orders : []
+  }
+
+  console.log('🔍 Admin Dashboard - Stats:', safeStats)
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -128,7 +150,7 @@ function AdminDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Products</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalProducts}</p>
+                <p className="text-2xl font-bold text-gray-900">{safeStats.totalProducts}</p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
                 <Package className="w-6 h-6 text-orange-600" />
@@ -140,7 +162,7 @@ function AdminDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalOrders}</p>
+                <p className="text-2xl font-bold text-gray-900">{safeStats.totalOrders}</p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
                 <ShoppingCart className="w-6 h-6 text-blue-600" />
@@ -152,7 +174,7 @@ function AdminDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">₹{stats.totalRevenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-gray-900">₹{(safeStats.totalRevenue || 0).toLocaleString()}</p>
               </div>
               <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                 <DollarSign className="w-6 h-6 text-green-600" />
@@ -164,7 +186,7 @@ function AdminDashboardContent() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600 mb-1">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.totalUsers}</p>
+                <p className="text-2xl font-bold text-gray-900">{safeStats.totalUsers}</p>
               </div>
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
                 <Users className="w-6 h-6 text-purple-600" />
@@ -223,12 +245,12 @@ function AdminDashboardContent() {
               </div>
 
               {/* Pending Orders Alert */}
-              {stats.pendingOrders > 0 && (
+              {safeStats.pendingOrders > 0 && (
                 <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
                   <div className="flex items-center">
                     <Clock className="w-5 h-5 text-orange-600 mr-2" />
                     <div>
-                      <p className="font-medium text-orange-900">{stats.pendingOrders} Pending Orders</p>
+                      <p className="font-medium text-orange-900">{safeStats.pendingOrders} Pending Orders</p>
                       <p className="text-sm text-orange-700">Needs your attention</p>
                     </div>
                   </div>
@@ -251,29 +273,29 @@ function AdminDashboardContent() {
               </div>
 
               <div className="space-y-4">
-                {stats.recentOrders.length > 0 ? (
-                  stats.recentOrders.map((order: any) => (
+                {(safeStats.recentOrders?.length || 0) > 0 ? (
+                  safeStats.recentOrders?.map((order: any) => (
                     <div key={order.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
                       <div className="flex items-center space-x-4">
                         <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
                           <ShoppingCart className="w-5 h-5 text-orange-600" />
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">#{order.order_number}</p>
+                          <p className="font-medium text-gray-900">#{order.order_number || 'Unknown'}</p>
                           <p className="text-sm text-gray-500">
-                            {new Date(order.created_at).toLocaleDateString('en-IN', {
+                            {order.created_at ? new Date(order.created_at).toLocaleDateString('en-IN', {
                               day: 'numeric',
                               month: 'short',
                               year: 'numeric'
-                            })}
+                            }) : 'No date'}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-3">
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
-                          {order.status}
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status || 'unknown')}`}>
+                          {order.status || 'Unknown'}
                         </span>
-                        <span className="font-semibold text-gray-900">₹{order.total_amount}</span>
+                        <span className="font-semibold text-gray-900">₹{order.total_amount || 0}</span>
                       </div>
                     </div>
                   ))

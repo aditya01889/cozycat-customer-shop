@@ -1,28 +1,53 @@
 'use client'
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { supabase } from '@/lib/supabase/client'
 
 // API base URL
 const API_BASE = '/api'
 
-// Generic fetch function
+// Generic fetch function with proper authentication
 async function apiFetch<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
   const url = `${API_BASE}${endpoint}`
   
+  // Get the current session token
+  const { data: { session } } = await supabase.auth.getSession()
+  
+  console.log('🔍 API Fetch - Session:', {
+    hasSession: !!session,
+    hasToken: !!session?.access_token,
+    userEmail: session?.user?.email,
+    endpoint
+  })
+  
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...options.headers as Record<string, string>,
+  }
+
+  // Add authorization header if session exists
+  if (session?.access_token) {
+    headers['Authorization'] = `Bearer ${session.access_token}`
+    console.log('✅ Authorization header added')
+  } else {
+    console.log('⚠️  No session token available')
+  }
+  
   const response = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      ...options.headers,
-    },
+    credentials: 'include', // Include cookies for authentication
+    headers,
     ...options,
   })
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ error: 'Unknown error' }))
+    console.error('❌ API Error:', error)
     throw new Error(error.error || `API error: ${response.status}`)
   }
 
-  return response.json()
+  const result = await response.json()
+  console.log('✅ API Response:', { success: result.success, hasData: !!result.data })
+  return result
 }
 
 // Products hooks
@@ -58,18 +83,64 @@ export function useProduct(id: string) {
 export function useDashboardStats() {
   return useQuery({
     queryKey: ['dashboard', 'stats'],
-    queryFn: () => apiFetch('/admin/dashboard', {
-      method: 'POST',
-      body: JSON.stringify({
-        includeRecentOrders: true,
-        includeOrderStats: false,
-        includeProductPerformance: false,
-        includeRecentActivity: false,
-        activityLimit: 10
+    queryFn: () => {
+      console.log('🚀 Dashboard Query Function Called')
+      
+      // Get session first
+      return supabase.auth.getSession().then(({ data: { session } }) => {
+        console.log('🔍 Session in queryFn:', {
+          hasSession: !!session,
+          hasToken: !!session?.access_token,
+          userEmail: session?.user?.email
+        })
+        
+        if (!session?.access_token) {
+          throw new Error('No session token available')
+        }
+        
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        }
+        
+        return fetch('/api/admin/dashboard/client', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            includeRecentOrders: true,
+            includeOrderStats: false,
+            includeProductPerformance: false,
+            includeRecentActivity: false,
+            activityLimit: 10
+          })
+        }).then(response => {
+          console.log('📊 API Response status:', response.status)
+          
+          if (!response.ok) {
+            return response.json().then(error => {
+              console.error('❌ API Error:', error)
+              throw new Error(error.error || `API error: ${response.status}`)
+            })
+          }
+          
+          return response.json().then(result => {
+            console.log('✅ Dashboard Query Result:', { 
+              success: result.success, 
+              hasData: !!result.data,
+              dataKeys: result.data ? Object.keys(result.data) : null
+            })
+            return result
+          })
+        })
       })
-    }),
+    },
     staleTime: 2 * 60 * 1000, // 2 minutes for dashboard stats
     gcTime: 5 * 60 * 1000, // 5 minutes cache
+    retry: (failureCount, error) => {
+      console.log(`🔄 Dashboard Query Retry ${failureCount}:`, error.message)
+      return failureCount < 3
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   })
 }
 

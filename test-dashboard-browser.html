@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Test</title>
+</head>
+<body>
+    <h1>Dashboard API Test</h1>
+    <button onclick="testDashboard()">Test Dashboard API</button>
+    <div id="result"></div>
+
+    <script>
+        async function testDashboard() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<p>Testing...</p>';
+            
+            try {
+                const response = await fetch('/api/admin/dashboard', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        includeRecentOrders: true,
+                        includeOrderStats: false,
+                        includeProductPerformance: false,
+                        includeRecentActivity: false,
+                        activityLimit: 10
+                    })
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
+                const result = await response.json();
+                console.log('Response data:', result);
+
+                if (response.ok && result.success) {
+                    resultDiv.innerHTML = `
+                        <h2>✅ Dashboard API Working!</h2>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <h2>❌ Dashboard API Failed</h2>
+                        <p>Status: ${response.status}</p>
+                        <p>Error: ${result.error || 'Unknown error'}</p>
+                        <pre>${JSON.stringify(result, null, 2)}</pre>
+                    `;
+                }
+            } catch (error) {
+                console.error('Test failed:', error);
+                resultDiv.innerHTML = `
+                    <h2>❌ Test Failed</h2>
+                    <p>Error: ${error.message}</p>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>

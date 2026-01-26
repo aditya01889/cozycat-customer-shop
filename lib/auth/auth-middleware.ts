@@ -24,6 +24,13 @@ export class AuthMiddleware {
       const supabase = await createClient()
       const { data: { session }, error } = await supabase.auth.getSession()
 
+      console.log('🔍 Auth verification - Session:', {
+        hasSession: !!session,
+        userId: session?.user?.id,
+        userEmail: session?.user?.email,
+        error: error?.message
+      })
+
       if (error) {
         console.error('Auth verification error:', error)
         return {
@@ -35,6 +42,7 @@ export class AuthMiddleware {
       }
 
       if (!session) {
+        console.log('🔍 No session found in auth verification')
         return {
           user: null,
           session: null,
@@ -53,6 +61,11 @@ export class AuthMiddleware {
           .single()
 
         isAdmin = (profile as any)?.role === 'admin'
+        console.log('🔍 Admin role check:', {
+          userId: session.user.id,
+          profileRole: (profile as any)?.role,
+          isAdmin
+        })
       } catch (error) {
         console.warn('Admin role check failed:', error)
       }

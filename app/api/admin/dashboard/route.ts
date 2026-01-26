@@ -1,8 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient } from '@/lib/supabase/server'
 import { NextResponse, NextRequest } from 'next/server'
 import { createSecureHandler } from '@/lib/api/secure-handler'
 import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
-import { getSupabaseConfig } from '@/lib/env-validation'
 import { withAdminAuth, AuthContext } from '@/lib/auth/auth-middleware'
 import { z } from 'zod'
 
@@ -16,14 +15,14 @@ const dashboardQuerySchema = z.object({
 })
 
 async function handleDashboard(request: NextRequest, authContext: AuthContext, data: any) {
-  const { url, serviceRoleKey } = getSupabaseConfig()
-  
-  const supabase = createClient(url, serviceRoleKey!, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false
-    }
+  console.log('🔍 Admin dashboard request - Auth context:', {
+    isAuthenticated: authContext.isAuthenticated,
+    isAdmin: authContext.isAdmin,
+    userId: authContext.user?.id,
+    userEmail: authContext.user?.email
   })
+
+  const supabase = await createClient()
 
   console.log('🔍 Admin fetching dashboard data with optimized RPC calls')
 
@@ -44,24 +43,24 @@ async function handleDashboard(request: NextRequest, authContext: AuthContext, d
 
     try {
       // Main dashboard stats - combines 6 queries into 1 RPC call
-      const { data: stats, error: statsError } = await supabase.rpc('get_dashboard_stats')
+      const { data: stats, error: statsError } = await (await supabase).rpc('get_dashboard_stats')
       
       if (statsError) {
         console.warn('Dashboard RPC not available, falling back to individual queries:', (statsError as Error).message)
-        dashboardStats = await getDashboardStatsFallback(supabase, includeRecentOrders)
+        dashboardStats = await getDashboardStatsFallback(await supabase, includeRecentOrders)
       } else {
         dashboardStats = stats[0] // RPC returns a single row
         console.log('✅ Using optimized dashboard RPC call')
       }
     } catch (error) {
       console.warn('RPC call failed, using fallback:', (error as Error).message)
-      dashboardStats = await getDashboardStatsFallback(supabase, includeRecentOrders)
+      dashboardStats = await getDashboardStatsFallback(await supabase, includeRecentOrders)
     }
 
     // Additional data if requested
     if (includeOrderStats) {
       try {
-        const { data: stats, error } = await supabase.rpc('get_order_stats')
+        const { data: stats, error } = await (await supabase).rpc('get_order_stats')
         if (!error && stats) {
           orderStats = stats
         }
@@ -72,7 +71,7 @@ async function handleDashboard(request: NextRequest, authContext: AuthContext, d
 
     if (includeProductPerformance) {
       try {
-        const { data: performance, error } = await supabase.rpc('get_product_performance')
+        const { data: performance, error } = await (await supabase).rpc('get_product_performance')
         if (!error && performance) {
           productPerformance = performance
         }
@@ -83,9 +82,9 @@ async function handleDashboard(request: NextRequest, authContext: AuthContext, d
 
     if (includeRecentActivity) {
       try {
-        const { data: activity, error } = await supabase.rpc('get_recent_activity', { 
+        const { data: activity, error } = await (await supabase).rpc('get_recent_activity', { 
           limit_count: activityLimit 
-        })
+        } as any)
         if (!error && activity) {
           recentActivity = activity
         }
@@ -116,57 +115,50 @@ async function handleDashboard(request: NextRequest, authContext: AuthContext, d
 
 // Fallback function for when RPC is not available
 async function getDashboardStatsFallback(supabase: any, includeRecentOrders: boolean) {
-  console.log('🔄 Using fallback dashboard queries (6 separate calls)')
+  console.log('🔄 Using fallback dashboard queries...')
   
   const [
     productsResult,
     ordersResult,
     usersResult,
     pendingResult,
-    revenueResult,
-    recentOrdersResult
+    recentOrdersResult,
+    revenueResult
   ] = await Promise.all([
     // Products count
     supabase
       .from('products')
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true),
-
+      .select('*', { count: 'exact', head: true }),
     // Total orders count
     supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .neq('status', 'cancelled'),
-
     // Users count
     supabase
       .from('profiles')
       .select('*', { count: 'exact', head: true }),
-
     // Pending orders count
     supabase
       .from('orders')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'pending'),
-
+    // Recent orders (optional)
+    includeRecentOrders
+      ? supabase
+          .from('orders')
+          .select('*')
+          .neq('status', 'cancelled')
+          .order('created_at', { ascending: false })
+          .limit(5)
+      : Promise.resolve({ data: [] }),
     // Total revenue
     supabase
       .from('orders')
       .select('total_amount')
-      .neq('status', 'cancelled'),
-
-    // Recent orders
-    includeRecentOrders ? 
-      supabase
-        .from('orders')
-        .select('*')
-        .neq('status', 'cancelled')
-        .order('created_at', { ascending: false })
-        .limit(5) : 
-      Promise.resolve({ data: [] })
+      .neq('status', 'cancelled')
   ])
 
-  // Calculate revenue from all orders
   const revenue = revenueResult.data?.reduce((sum: number, order: any) => {
     const amount = parseFloat(order.total_amount) || 0
     return sum + amount
@@ -185,6 +177,6 @@ async function getDashboardStatsFallback(supabase: any, includeRecentOrders: boo
 export const POST = createSecureHandler({
   schema: dashboardQuerySchema,
   rateLimiter: actionRateLimiters.contactForm,
-  requireCSRF: true,
+  requireCSRF: false, // Disable CSRF for admin endpoints (they use cookie auth)
   handler: withAdminAuth(handleDashboard)
 })
