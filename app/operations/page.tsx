@@ -188,167 +188,167 @@ export default function OperationsDashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-orange-500">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-orange-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Pending Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.pendingOrders}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Pending Orders</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.pendingOrders}</p>
               </div>
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
-                <Clock className="w-6 h-6 text-orange-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-full flex items-center justify-center">
+                <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-purple-500">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-purple-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">In Production</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.inProductionOrders}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">In Production</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.inProductionOrders}</p>
               </div>
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                <Factory className="w-6 h-6 text-purple-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                <Factory className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-green-500">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-green-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Ready for Delivery</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.readyOrders}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Ready for Delivery</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.readyOrders}</p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                <Truck className="w-6 h-6 text-green-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center">
+                <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-blue-500">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-blue-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Pending Deliveries</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.pendingDeliveries}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Pending Deliveries</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.pendingDeliveries}</p>
               </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                <Truck className="w-6 h-6 text-blue-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <Truck className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6 border-l-4 border-red-500">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-red-500">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600 mb-1">Low Stock Items</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.lowStockIngredients}</p>
+                <p className="text-xs sm:text-sm text-gray-600 mb-1">Low Stock Items</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{stats.lowStockIngredients}</p>
               </div>
-              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
-                <InventoryIcon className="w-6 h-6 text-red-600" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <InventoryIcon className="w-5 h-5 sm:w-6 sm:h-6 text-red-600" />
               </div>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Factory className="w-5 h-5 text-purple-600 mr-2" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-8">
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center">
+              <Factory className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-2" />
               Production Management
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Link
                 href="/operations/recipes"
-                className="flex items-center justify-between p-3 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors group"
+                className="flex items-center justify-between p-3 sm:p-3 bg-orange-50 rounded-xl hover:bg-orange-100 transition-colors group"
               >
                 <div className="flex items-center">
-                  <ChefHat className="w-5 h-5 text-orange-600 mr-3" />
-                  <span className="font-medium text-gray-900">Recipe Management</span>
+                  <ChefHat className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 mr-2 sm:mr-3" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">Recipe Management</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-600" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-orange-600" />
               </Link>
 
               <Link
                 href="/operations/production-queue"
-                className="flex items-center justify-between p-3 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors group"
+                className="flex items-center justify-between p-3 sm:p-3 bg-purple-50 rounded-xl hover:bg-purple-100 transition-colors group"
               >
                 <div className="flex items-center">
-                  <Package className="w-5 h-5 text-purple-600 mr-3" />
-                  <span className="font-medium text-gray-900">Production Queue</span>
+                  <Package className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600 mr-2 sm:mr-3" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">Production Queue</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-purple-600" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-purple-600" />
               </Link>
 
               <Link
                 href="/operations/batches"
-                className="flex items-center justify-between p-3 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors group"
+                className="flex items-center justify-between p-3 sm:p-3 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors group"
               >
                 <div className="flex items-center">
-                  <Package className="w-5 h-5 text-indigo-600 mr-3" />
-                  <span className="font-medium text-gray-900">Manage Batches</span>
+                  <Package className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-600 mr-2 sm:mr-3" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">Manage Batches</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-indigo-600" />
               </Link>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <Truck className="w-5 h-5 text-green-600 mr-2" />
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center">
+              <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2" />
               Delivery Management
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Link
                 href="/operations/deliveries"
-                className="flex items-center justify-between p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors group"
+                className="flex items-center justify-between p-3 sm:p-3 bg-green-50 rounded-xl hover:bg-green-100 transition-colors group"
               >
                 <div className="flex items-center">
-                  <Truck className="w-5 h-5 text-green-600 mr-3" />
-                  <span className="font-medium text-gray-900">Manage Deliveries</span>
+                  <Truck className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 mr-2 sm:mr-3" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">Manage Deliveries</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-green-600" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-green-600" />
               </Link>
 
               <Link
                 href="/operations/delivery-partners"
-                className="flex items-center justify-between p-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors group"
+                className="flex items-center justify-between p-3 sm:p-3 bg-emerald-50 rounded-xl hover:bg-emerald-100 transition-colors group"
               >
                 <div className="flex items-center">
-                  <Users2 className="w-5 h-5 text-emerald-600 mr-3" />
-                  <span className="font-medium text-gray-900">Delivery Partners</span>
+                  <Users2 className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 mr-2 sm:mr-3" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">Delivery Partners</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-emerald-600" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-emerald-600" />
               </Link>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-              <InventoryIcon className="w-5 h-5 text-blue-600 mr-2" />
+          <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+            <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4 flex items-center">
+              <InventoryIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2" />
               Inventory & Vendors
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <Link
                 href="/operations/inventory"
-                className="flex items-center justify-between p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors group"
+                className="flex items-center justify-between p-3 sm:p-3 bg-blue-50 rounded-xl hover:bg-blue-100 transition-colors group"
               >
                 <div className="flex items-center">
-                  <InventoryIcon className="w-5 h-5 text-blue-600 mr-3" />
-                  <span className="font-medium text-gray-900">Inventory Management</span>
+                  <InventoryIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mr-2 sm:mr-3" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">Inventory Management</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-blue-600" />
               </Link>
 
               <Link
                 href="/operations/vendors"
-                className="flex items-center justify-between p-3 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors group"
+                className="flex items-center justify-between p-3 sm:p-3 bg-cyan-50 rounded-xl hover:bg-cyan-100 transition-colors group"
               >
                 <div className="flex items-center">
-                  <Users2 className="w-5 h-5 text-cyan-600 mr-3" />
-                  <span className="font-medium text-gray-900">Vendor Management</span>
+                  <Users2 className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 mr-2 sm:mr-3" />
+                  <span className="font-medium text-gray-900 text-sm sm:text-base">Vendor Management</span>
                 </div>
-                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-cyan-600" />
+                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-cyan-600" />
               </Link>
             </div>
           </div>

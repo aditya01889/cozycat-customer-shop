@@ -4,10 +4,10 @@ import { useAuth } from '@/contexts/AuthContext'
 import dynamic from 'next/dynamic'
 import AdminAuth from '@/components/AdminAuth'
 
-// Dynamically import the dashboard content to reduce initial bundle size
+// Dynamically import the optimized dashboard content to reduce initial bundle size
 // This component will only be loaded when the admin dashboard is accessed
 const AdminDashboardContent = dynamic(
-  () => import('@/components/admin/AdminDashboardContent').then(mod => mod.default),
+  () => import('@/components/admin/AdminDashboardContentOptimized').then(mod => mod.default),
   { 
     loading: () => (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">

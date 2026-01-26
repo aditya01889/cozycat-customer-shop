@@ -10,7 +10,8 @@ export default defineConfig({
   testMatch: [
     '**/*.e2e.test.ts',
     '**/*.spec.ts',
-    '**/security/*.test.ts'
+    '**/security/*.test.ts',
+    '**/mobile/*.test.ts'
   ],
   
   /* Run tests in files in parallel */
@@ -71,14 +72,34 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
     
-    /* Test against mobile viewports. */
+    /* Mobile-specific projects */
     {
       name: 'Mobile Chrome',
-      use: { ...devices['Pixel 5'] },
+      use: { 
+        ...devices['Pixel 5'],
+        viewport: { width: 393, height: 851 },
+        userAgent: 'Mozilla/5.0 (Linux; Android 12; SM-G991B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.120 Mobile Safari/537.36'
+      },
+      testMatch: '**/mobile/*.test.ts',
     },
     {
       name: 'Mobile Safari',
-      use: { ...devices['iPhone 12'] },
+      use: { 
+        ...devices['iPhone 12'],
+        viewport: { width: 390, height: 844 },
+        userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 15_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 Mobile/15E148 Safari/604.1'
+      },
+      testMatch: '**/mobile/*.test.ts',
+    },
+    
+    /* Tablet testing */
+    {
+      name: 'Tablet',
+      use: { 
+        ...devices['iPad Pro'],
+        viewport: { width: 768, height: 1024 },
+      },
+      testMatch: '**/mobile/*.test.ts',
     },
     
     /* Test against branded browsers. */
@@ -102,5 +123,11 @@ export default defineConfig({
   /* Expect timeout */
   expect: {
     timeout: 10000
+  },
+
+  /* Optimize for mobile testing */
+  metadata: {
+    'test-type': 'e2e',
+    'mobile-optimized': 'true'
   }
 })

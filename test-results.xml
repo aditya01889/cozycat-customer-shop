@@ -1,0 +1,1976 @@
+<testsuites id="" name="" tests="72" failures="40" skipped="0" errors="0" time="579.3907929999999">
+<testsuite name="mobile\responsiveness.test.ts" timestamp="2026-01-26T22:41:17.488Z" hostname="chromium" tests="9" failures="5" skipped="0" time="137.802" errors="0">
+<testcase name="Mobile Responsiveness Tests › Mobile navigation functionality" classname="mobile\responsiveness.test.ts" time="17.383">
+<failure message="responsiveness.test.ts:5:7 Mobile navigation functionality" type="FAILURE">
+<![CDATA[  [chromium] › mobile\responsiveness.test.ts:5:7 › Mobile Responsiveness Tests › Mobile navigation functionality 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.md\\:hidden')
+    Expected substring: "Products"
+    Error: strict mode violation: locator('.md\\:hidden') resolved to 2 elements:
+        1) <div class="md:hidden flex items-center space-x-2">…</div> aka getByText('🛒❌')
+        2) <div class="md:hidden py-4 space-y-2 border-t border-orange-400">…</div> aka getByText('🍽️Products📦Track Order🔑Sign In🛒Cart')
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.md\\:hidden')
+
+
+      17 |     const menuButton = page.locator('button').filter({ hasText: /🐾/ }).first();
+      18 |     await menuButton.click();
+    > 19 |     await expect(page.locator('.md\\:hidden')).toContainText('Products');
+         |                                                ^
+      20 |     
+      21 |     // Check cart is visible in mobile menu
+      22 |     await expect(page.locator('a[href="/cart"]')).toBeVisible();
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:19:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-chromium\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-chromium\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-chromium\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Admin menu visibility on mobile" classname="mobile\responsiveness.test.ts" time="26.869">
+<failure message="responsiveness.test.ts:25:7 Admin menu visibility on mobile" type="FAILURE">
+<![CDATA[  [chromium] › mobile\responsiveness.test.ts:25:7 › Mobile Responsiveness Tests › Admin menu visibility on mobile 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('a[href="/admin"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('a[href="/admin"]')
+
+
+      42 |     
+      43 |     // Check if Admin link is visible
+    > 44 |     await expect(page.locator('a[href="/admin"]')).toBeVisible();
+         |                                                    ^
+      45 |   });
+      46 |
+      47 |   test('Cart functionality on mobile', async ({ page }) => {
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:44:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-chromium\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-chromium\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-chromium\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Cart functionality on mobile" classname="mobile\responsiveness.test.ts" time="26.634">
+<failure message="responsiveness.test.ts:47:7 Cart functionality on mobile" type="FAILURE">
+<![CDATA[  [chromium] › mobile\responsiveness.test.ts:47:7 › Mobile Responsiveness Tests › Cart functionality on mobile 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        18 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      51 |
+      52 |     // Navigate to products
+    > 53 |     await page.click('a[href="/products"]');
+         |                ^
+      54 |     await page.waitForLoadState('networkidle');
+      55 |
+      56 |     // Click on first product
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:53:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-chromium\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-chromium\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-chromium\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Product detail responsiveness" classname="mobile\responsiveness.test.ts" time="26.537">
+<failure message="responsiveness.test.ts:69:7 Product detail responsiveness" type="FAILURE">
+<![CDATA[  [chromium] › mobile\responsiveness.test.ts:69:7 › Mobile Responsiveness Tests › Product detail responsiveness 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        17 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      73 |
+      74 |     // Navigate to a product
+    > 75 |     await page.click('a[href="/products"]');
+         |                ^
+      76 |     await page.waitForLoadState('networkidle');
+      77 |     await page.locator('a[href*="/products/"]').first().click();
+      78 |     await page.waitForLoadState('networkidle');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:75:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-chromium\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-chromium\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-chromium\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Operations dashboard responsiveness" classname="mobile\responsiveness.test.ts" time="15.405">
+<failure message="responsiveness.test.ts:94:7 Operations dashboard responsiveness" type="FAILURE">
+<![CDATA[  [chromium] › mobile\responsiveness.test.ts:94:7 › Mobile Responsiveness Tests › Operations dashboard responsiveness 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('h1:has-text("CozyCat Operations")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('h1:has-text("CozyCat Operations")')
+
+
+      107 |
+      108 |     // Check dashboard loads
+    > 109 |     await expect(page.locator('h1:has-text("CozyCat Operations")')).toBeVisible();
+          |                                                                     ^
+      110 |
+      111 |     // Check stats grid is responsive
+      112 |     const statsCards = page.locator('.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-5 > div');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:109:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-chromium\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-chromium\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-chromium\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-chromium\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-chromium\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Forms are touch-friendly" classname="mobile\responsiveness.test.ts" time="7.49">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › No horizontal overflow on mobile" classname="mobile\responsiveness.test.ts" time="7.269">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Tablet responsive layout" classname="mobile\responsiveness.test.ts" time="6.78">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Small desktop responsive layout" classname="mobile\responsiveness.test.ts" time="3.435">
+</testcase>
+</testsuite>
+<testsuite name="mobile\responsiveness.test.ts" timestamp="2026-01-26T22:41:17.488Z" hostname="firefox" tests="9" failures="5" skipped="0" time="207.319" errors="0">
+<testcase name="Mobile Responsiveness Tests › Mobile navigation functionality" classname="mobile\responsiveness.test.ts" time="21.698">
+<failure message="responsiveness.test.ts:5:7 Mobile navigation functionality" type="FAILURE">
+<![CDATA[  [firefox] › mobile\responsiveness.test.ts:5:7 › Mobile Responsiveness Tests › Mobile navigation functionality 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.md\\:hidden')
+    Expected substring: "Products"
+    Error: strict mode violation: locator('.md\\:hidden') resolved to 2 elements:
+        1) <div class="md:hidden flex items-center space-x-2">…</div> aka getByText('🛒❌')
+        2) <div class="md:hidden py-4 space-y-2 border-t border-orange-400">…</div> aka getByText('🍽️Products📦Track Order🔑Sign In🛒Cart')
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.md\\:hidden')
+
+
+      17 |     const menuButton = page.locator('button').filter({ hasText: /🐾/ }).first();
+      18 |     await menuButton.click();
+    > 19 |     await expect(page.locator('.md\\:hidden')).toContainText('Products');
+         |                                                ^
+      20 |     
+      21 |     // Check cart is visible in mobile menu
+      22 |     await expect(page.locator('a[href="/cart"]')).toBeVisible();
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:19:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-firefox\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-firefox\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Admin menu visibility on mobile" classname="mobile\responsiveness.test.ts" time="21.84">
+<failure message="responsiveness.test.ts:25:7 Admin menu visibility on mobile" type="FAILURE">
+<![CDATA[  [firefox] › mobile\responsiveness.test.ts:25:7 › Mobile Responsiveness Tests › Admin menu visibility on mobile 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('a[href="/admin"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('a[href="/admin"]')
+
+
+      42 |     
+      43 |     // Check if Admin link is visible
+    > 44 |     await expect(page.locator('a[href="/admin"]')).toBeVisible();
+         |                                                    ^
+      45 |   });
+      46 |
+      47 |   test('Cart functionality on mobile', async ({ page }) => {
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:44:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-firefox\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-firefox\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Cart functionality on mobile" classname="mobile\responsiveness.test.ts" time="23.805">
+<failure message="responsiveness.test.ts:47:7 Cart functionality on mobile" type="FAILURE">
+<![CDATA[  [firefox] › mobile\responsiveness.test.ts:47:7 › Mobile Responsiveness Tests › Cart functionality on mobile 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        11 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      51 |
+      52 |     // Navigate to products
+    > 53 |     await page.click('a[href="/products"]');
+         |                ^
+      54 |     await page.waitForLoadState('networkidle');
+      55 |
+      56 |     // Click on first product
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:53:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-firefox\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-firefox\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Product detail responsiveness" classname="mobile\responsiveness.test.ts" time="27.45">
+<failure message="responsiveness.test.ts:69:7 Product detail responsiveness" type="FAILURE">
+<![CDATA[  [firefox] › mobile\responsiveness.test.ts:69:7 › Mobile Responsiveness Tests › Product detail responsiveness 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        9 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 500ms
+
+
+      73 |
+      74 |     // Navigate to a product
+    > 75 |     await page.click('a[href="/products"]');
+         |                ^
+      76 |     await page.waitForLoadState('networkidle');
+      77 |     await page.locator('a[href*="/products/"]').first().click();
+      78 |     await page.waitForLoadState('networkidle');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:75:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-firefox\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-firefox\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Operations dashboard responsiveness" classname="mobile\responsiveness.test.ts" time="37.188">
+<failure message="responsiveness.test.ts:94:7 Operations dashboard responsiveness" type="FAILURE">
+<![CDATA[  [firefox] › mobile\responsiveness.test.ts:94:7 › Mobile Responsiveness Tests › Operations dashboard responsiveness 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('h1:has-text("CozyCat Operations")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('h1:has-text("CozyCat Operations")')
+        - waiting for" http://localhost:3000/" navigation to finish...
+        - navigated to "http://localhost:3000/"
+
+
+      107 |
+      108 |     // Check dashboard loads
+    > 109 |     await expect(page.locator('h1:has-text("CozyCat Operations")')).toBeVisible();
+          |                                                                     ^
+      110 |
+      111 |     // Check stats grid is responsive
+      112 |     const statsCards = page.locator('.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-5 > div');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:109:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-firefox\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-firefox\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-firefox\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-firefox\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-firefox\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-firefox\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Forms are touch-friendly" classname="mobile\responsiveness.test.ts" time="22.693">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › No horizontal overflow on mobile" classname="mobile\responsiveness.test.ts" time="24.214">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Tablet responsive layout" classname="mobile\responsiveness.test.ts" time="16.053">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Small desktop responsive layout" classname="mobile\responsiveness.test.ts" time="12.378">
+</testcase>
+</testsuite>
+<testsuite name="mobile\responsiveness.test.ts" timestamp="2026-01-26T22:41:17.488Z" hostname="webkit" tests="9" failures="5" skipped="0" time="261.371" errors="0">
+<testcase name="Mobile Responsiveness Tests › Mobile navigation functionality" classname="mobile\responsiveness.test.ts" time="37.939">
+<failure message="responsiveness.test.ts:5:7 Mobile navigation functionality" type="FAILURE">
+<![CDATA[  [webkit] › mobile\responsiveness.test.ts:5:7 › Mobile Responsiveness Tests › Mobile navigation functionality 
+
+    TimeoutError: page.goto: Timeout 30000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+       5 |   test('Mobile navigation functionality', async ({ page }) => {
+       6 |     await page.setViewportSize({ width: 390, height: 844 });
+    >  7 |     await page.goto('/');
+         |                ^
+       8 |     await page.waitForLoadState('networkidle');
+       9 |
+      10 |     // Check navbar is responsive
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:7:16
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-webkit\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-webkit\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-webkit\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Admin menu visibility on mobile" classname="mobile\responsiveness.test.ts" time="38.157">
+<failure message="responsiveness.test.ts:25:7 Admin menu visibility on mobile" type="FAILURE">
+<![CDATA[  [webkit] › mobile\responsiveness.test.ts:25:7 › Mobile Responsiveness Tests › Admin menu visibility on mobile 
+
+    TimeoutError: page.goto: Timeout 30000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      34 |     });
+      35 |
+    > 36 |     await page.goto('/');
+         |                ^
+      37 |     await page.waitForLoadState('networkidle');
+      38 |
+      39 |     // Open mobile menu
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:36:16
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-webkit\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-webkit\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-webkit\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Cart functionality on mobile" classname="mobile\responsiveness.test.ts" time="19.644">
+<failure message="responsiveness.test.ts:47:7 Cart functionality on mobile" type="FAILURE">
+<![CDATA[  [webkit] › mobile\responsiveness.test.ts:47:7 › Mobile Responsiveness Tests › Cart functionality on mobile 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        5 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      51 |
+      52 |     // Navigate to products
+    > 53 |     await page.click('a[href="/products"]');
+         |                ^
+      54 |     await page.waitForLoadState('networkidle');
+      55 |
+      56 |     // Click on first product
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:53:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-webkit\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-webkit\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-webkit\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Product detail responsiveness" classname="mobile\responsiveness.test.ts" time="41.55">
+<failure message="responsiveness.test.ts:69:7 Product detail responsiveness" type="FAILURE">
+<![CDATA[  [webkit] › mobile\responsiveness.test.ts:69:7 › Mobile Responsiveness Tests › Product detail responsiveness 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        - waiting for element to be visible, enabled and stable
+        - element is not visible
+      - retrying click action
+        - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      73 |
+      74 |     // Navigate to a product
+    > 75 |     await page.click('a[href="/products"]');
+         |                ^
+      76 |     await page.waitForLoadState('networkidle');
+      77 |     await page.locator('a[href*="/products/"]').first().click();
+      78 |     await page.waitForLoadState('networkidle');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:75:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-webkit\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-webkit\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-webkit\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Operations dashboard responsiveness" classname="mobile\responsiveness.test.ts" time="34.441">
+<failure message="responsiveness.test.ts:94:7 Operations dashboard responsiveness" type="FAILURE">
+<![CDATA[  [webkit] › mobile\responsiveness.test.ts:94:7 › Mobile Responsiveness Tests › Operations dashboard responsiveness 
+
+    TimeoutError: page.goto: Timeout 30000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:3000/operations", waiting until "load"
+
+
+      103 |     });
+      104 |
+    > 105 |     await page.goto('/operations');
+          |                ^
+      106 |     await page.waitForLoadState('networkidle');
+      107 |
+      108 |     // Check dashboard loads
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:105:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-webkit\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-webkit\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-webkit\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-webkit\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-webkit\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-webkit\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Forms are touch-friendly" classname="mobile\responsiveness.test.ts" time="23.999">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › No horizontal overflow on mobile" classname="mobile\responsiveness.test.ts" time="21.011">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Tablet responsive layout" classname="mobile\responsiveness.test.ts" time="22.989">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Small desktop responsive layout" classname="mobile\responsiveness.test.ts" time="21.641">
+</testcase>
+</testsuite>
+<testsuite name="mobile\responsiveness.test.ts" timestamp="2026-01-26T22:41:17.488Z" hostname="Mobile Chrome" tests="9" failures="5" skipped="0" time="210.441" errors="0">
+<testcase name="Mobile Responsiveness Tests › Mobile navigation functionality" classname="mobile\responsiveness.test.ts" time="42.598">
+<failure message="responsiveness.test.ts:5:7 Mobile navigation functionality" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › mobile\responsiveness.test.ts:5:7 › Mobile Responsiveness Tests › Mobile navigation functionality 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.md\\:hidden')
+    Expected substring: "Products"
+    Error: strict mode violation: locator('.md\\:hidden') resolved to 2 elements:
+        1) <div class="md:hidden flex items-center space-x-2">…</div> aka getByText('🛒❌')
+        2) <div class="md:hidden py-4 space-y-2 border-t border-orange-400">…</div> aka getByText('🍽️Products📦Track Order🔑Sign In🛒Cart')
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.md\\:hidden')
+
+
+      17 |     const menuButton = page.locator('button').filter({ hasText: /🐾/ }).first();
+      18 |     await menuButton.click();
+    > 19 |     await expect(page.locator('.md\\:hidden')).toContainText('Products');
+         |                                                ^
+      20 |     
+      21 |     // Check cart is visible in mobile menu
+      22 |     await expect(page.locator('a[href="/cart"]')).toBeVisible();
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:19:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Admin menu visibility on mobile" classname="mobile\responsiveness.test.ts" time="49.216">
+<failure message="responsiveness.test.ts:25:7 Admin menu visibility on mobile" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › mobile\responsiveness.test.ts:25:7 › Mobile Responsiveness Tests › Admin menu visibility on mobile 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('a[href="/admin"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('a[href="/admin"]')
+
+
+      42 |     
+      43 |     // Check if Admin link is visible
+    > 44 |     await expect(page.locator('a[href="/admin"]')).toBeVisible();
+         |                                                    ^
+      45 |   });
+      46 |
+      47 |   test('Cart functionality on mobile', async ({ page }) => {
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:44:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Cart functionality on mobile" classname="mobile\responsiveness.test.ts" time="39.754">
+<failure message="responsiveness.test.ts:47:7 Cart functionality on mobile" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › mobile\responsiveness.test.ts:47:7 › Mobile Responsiveness Tests › Cart functionality on mobile 
+
+    TimeoutError: page.goto: Timeout 30000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      47 |   test('Cart functionality on mobile', async ({ page }) => {
+      48 |     await page.setViewportSize({ width: 375, height: 667 });
+    > 49 |     await page.goto('/');
+         |                ^
+      50 |     await page.waitForLoadState('networkidle');
+      51 |
+      52 |     // Navigate to products
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:49:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Product detail responsiveness" classname="mobile\responsiveness.test.ts" time="42.899">
+<failure message="responsiveness.test.ts:69:7 Product detail responsiveness" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › mobile\responsiveness.test.ts:69:7 › Mobile Responsiveness Tests › Product detail responsiveness 
+
+    TimeoutError: page.goto: Timeout 30000ms exceeded.
+    Call log:
+      - navigating to "http://localhost:3000/", waiting until "load"
+
+
+      69 |   test('Product detail responsiveness', async ({ page }) => {
+      70 |     await page.setViewportSize({ width: 414, height: 896 });
+    > 71 |     await page.goto('/');
+         |                ^
+      72 |     await page.waitForLoadState('networkidle');
+      73 |
+      74 |     // Navigate to a product
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:71:16
+
+    attachment #1: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Operations dashboard responsiveness" classname="mobile\responsiveness.test.ts" time="16.735">
+<failure message="responsiveness.test.ts:94:7 Operations dashboard responsiveness" type="FAILURE">
+<![CDATA[  [Mobile Chrome] › mobile\responsiveness.test.ts:94:7 › Mobile Responsiveness Tests › Operations dashboard responsiveness 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('h1:has-text("CozyCat Operations")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('h1:has-text("CozyCat Operations")')
+
+
+      107 |
+      108 |     // Check dashboard loads
+    > 109 |     await expect(page.locator('h1:has-text("CozyCat Operations")')).toBeVisible();
+          |                                                                     ^
+      110 |
+      111 |     // Check stats grid is responsive
+      112 |     const statsCards = page.locator('.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-5 > div');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:109:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Forms are touch-friendly" classname="mobile\responsiveness.test.ts" time="4.901">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › No horizontal overflow on mobile" classname="mobile\responsiveness.test.ts" time="4.012">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Tablet responsive layout" classname="mobile\responsiveness.test.ts" time="5.062">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Small desktop responsive layout" classname="mobile\responsiveness.test.ts" time="5.264">
+</testcase>
+</testsuite>
+<testsuite name="mobile\responsiveness.test.ts" timestamp="2026-01-26T22:41:17.488Z" hostname="Mobile Safari" tests="9" failures="5" skipped="0" time="112.145" errors="0">
+<testcase name="Mobile Responsiveness Tests › Mobile navigation functionality" classname="mobile\responsiveness.test.ts" time="10.905">
+<failure message="responsiveness.test.ts:5:7 Mobile navigation functionality" type="FAILURE">
+<![CDATA[  [Mobile Safari] › mobile\responsiveness.test.ts:5:7 › Mobile Responsiveness Tests › Mobile navigation functionality 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.md\\:hidden')
+    Expected substring: "Products"
+    Error: strict mode violation: locator('.md\\:hidden') resolved to 2 elements:
+        1) <div class="md:hidden flex items-center space-x-2">…</div> aka getByText('🛒❌')
+        2) <div class="md:hidden py-4 space-y-2 border-t border-orange-400">…</div> aka getByText('🍽️Products📦Track Order🔑Sign In🛒Cart')
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.md\\:hidden')
+
+
+      17 |     const menuButton = page.locator('button').filter({ hasText: /🐾/ }).first();
+      18 |     await menuButton.click();
+    > 19 |     await expect(page.locator('.md\\:hidden')).toContainText('Products');
+         |                                                ^
+      20 |     
+      21 |     // Check cart is visible in mobile menu
+      22 |     await expect(page.locator('a[href="/cart"]')).toBeVisible();
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:19:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Safari\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Mobile-Safari\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Admin menu visibility on mobile" classname="mobile\responsiveness.test.ts" time="17.43">
+<failure message="responsiveness.test.ts:25:7 Admin menu visibility on mobile" type="FAILURE">
+<![CDATA[  [Mobile Safari] › mobile\responsiveness.test.ts:25:7 › Mobile Responsiveness Tests › Admin menu visibility on mobile 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('a[href="/admin"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('a[href="/admin"]')
+
+
+      42 |     
+      43 |     // Check if Admin link is visible
+    > 44 |     await expect(page.locator('a[href="/admin"]')).toBeVisible();
+         |                                                    ^
+      45 |   });
+      46 |
+      47 |   test('Cart functionality on mobile', async ({ page }) => {
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:44:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Safari\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Mobile-Safari\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Cart functionality on mobile" classname="mobile\responsiveness.test.ts" time="15.321">
+<failure message="responsiveness.test.ts:47:7 Cart functionality on mobile" type="FAILURE">
+<![CDATA[  [Mobile Safari] › mobile\responsiveness.test.ts:47:7 › Mobile Responsiveness Tests › Cart functionality on mobile 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 500ms
+        - waiting for element to be visible, enabled and stable
+
+
+      51 |
+      52 |     // Navigate to products
+    > 53 |     await page.click('a[href="/products"]');
+         |                ^
+      54 |     await page.waitForLoadState('networkidle');
+      55 |
+      56 |     // Click on first product
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:53:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Safari\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Mobile-Safari\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Product detail responsiveness" classname="mobile\responsiveness.test.ts" time="16.102">
+<failure message="responsiveness.test.ts:69:7 Product detail responsiveness" type="FAILURE">
+<![CDATA[  [Mobile Safari] › mobile\responsiveness.test.ts:69:7 › Mobile Responsiveness Tests › Product detail responsiveness 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        - waiting for element to be visible, enabled and stable
+
+
+      73 |
+      74 |     // Navigate to a product
+    > 75 |     await page.click('a[href="/products"]');
+         |                ^
+      76 |     await page.waitForLoadState('networkidle');
+      77 |     await page.locator('a[href*="/products/"]').first().click();
+      78 |     await page.waitForLoadState('networkidle');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:75:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Safari\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Mobile-Safari\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Operations dashboard responsiveness" classname="mobile\responsiveness.test.ts" time="17.184">
+<failure message="responsiveness.test.ts:94:7 Operations dashboard responsiveness" type="FAILURE">
+<![CDATA[  [Mobile Safari] › mobile\responsiveness.test.ts:94:7 › Mobile Responsiveness Tests › Operations dashboard responsiveness 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('h1:has-text("CozyCat Operations")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('h1:has-text("CozyCat Operations")')
+
+
+      107 |
+      108 |     // Check dashboard loads
+    > 109 |     await expect(page.locator('h1:has-text("CozyCat Operations")')).toBeVisible();
+          |                                                                     ^
+      110 |
+      111 |     // Check stats grid is responsive
+      112 |     const statsCards = page.locator('.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-5 > div');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:109:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Safari\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Safari\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Safari\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Safari\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Safari\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Mobile-Safari\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Forms are touch-friendly" classname="mobile\responsiveness.test.ts" time="8.682">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › No horizontal overflow on mobile" classname="mobile\responsiveness.test.ts" time="8.086">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Tablet responsive layout" classname="mobile\responsiveness.test.ts" time="10.387">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Small desktop responsive layout" classname="mobile\responsiveness.test.ts" time="8.048">
+</testcase>
+</testsuite>
+<testsuite name="mobile\responsiveness.test.ts" timestamp="2026-01-26T22:41:17.488Z" hostname="Tablet" tests="9" failures="5" skipped="0" time="104.864" errors="0">
+<testcase name="Mobile Responsiveness Tests › Mobile navigation functionality" classname="mobile\responsiveness.test.ts" time="7.185">
+<failure message="responsiveness.test.ts:5:7 Mobile navigation functionality" type="FAILURE">
+<![CDATA[  [Tablet] › mobile\responsiveness.test.ts:5:7 › Mobile Responsiveness Tests › Mobile navigation functionality 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.md\\:hidden')
+    Expected substring: "Products"
+    Error: strict mode violation: locator('.md\\:hidden') resolved to 2 elements:
+        1) <div class="md:hidden flex items-center space-x-2">…</div> aka getByText('🛒❌')
+        2) <div class="md:hidden py-4 space-y-2 border-t border-orange-400">…</div> aka getByText('🍽️Products📦Track Order🔑Sign In🛒Cart')
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.md\\:hidden')
+
+
+      17 |     const menuButton = page.locator('button').filter({ hasText: /🐾/ }).first();
+      18 |     await menuButton.click();
+    > 19 |     await expect(page.locator('.md\\:hidden')).toContainText('Products');
+         |                                                ^
+      20 |     
+      21 |     // Check cart is visible in mobile menu
+      22 |     await expect(page.locator('a[href="/cart"]')).toBeVisible();
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:19:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Tablet\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Tablet\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Tablet\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Tablet\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Tablet\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Tablet\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Admin menu visibility on mobile" classname="mobile\responsiveness.test.ts" time="18.013">
+<failure message="responsiveness.test.ts:25:7 Admin menu visibility on mobile" type="FAILURE">
+<![CDATA[  [Tablet] › mobile\responsiveness.test.ts:25:7 › Mobile Responsiveness Tests › Admin menu visibility on mobile 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('a[href="/admin"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('a[href="/admin"]')
+
+
+      42 |     
+      43 |     // Check if Admin link is visible
+    > 44 |     await expect(page.locator('a[href="/admin"]')).toBeVisible();
+         |                                                    ^
+      45 |   });
+      46 |
+      47 |   test('Cart functionality on mobile', async ({ page }) => {
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:44:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Tablet\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Tablet\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Tablet\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Tablet\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Tablet\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Tablet\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Cart functionality on mobile" classname="mobile\responsiveness.test.ts" time="13.814">
+<failure message="responsiveness.test.ts:47:7 Cart functionality on mobile" type="FAILURE">
+<![CDATA[  [Tablet] › mobile\responsiveness.test.ts:47:7 › Mobile Responsiveness Tests › Cart functionality on mobile 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        18 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      51 |
+      52 |     // Navigate to products
+    > 53 |     await page.click('a[href="/products"]');
+         |                ^
+      54 |     await page.waitForLoadState('networkidle');
+      55 |
+      56 |     // Click on first product
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:53:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Tablet\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Tablet\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Tablet\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Tablet\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Tablet\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Tablet\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Product detail responsiveness" classname="mobile\responsiveness.test.ts" time="15.338">
+<failure message="responsiveness.test.ts:69:7 Product detail responsiveness" type="FAILURE">
+<![CDATA[  [Tablet] › mobile\responsiveness.test.ts:69:7 › Mobile Responsiveness Tests › Product detail responsiveness 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        18 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      73 |
+      74 |     // Navigate to a product
+    > 75 |     await page.click('a[href="/products"]');
+         |                ^
+      76 |     await page.waitForLoadState('networkidle');
+      77 |     await page.locator('a[href*="/products/"]').first().click();
+      78 |     await page.waitForLoadState('networkidle');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:75:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Tablet\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Tablet\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Tablet\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Tablet\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Tablet\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Tablet\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Operations dashboard responsiveness" classname="mobile\responsiveness.test.ts" time="16.496">
+<failure message="responsiveness.test.ts:94:7 Operations dashboard responsiveness" type="FAILURE">
+<![CDATA[  [Tablet] › mobile\responsiveness.test.ts:94:7 › Mobile Responsiveness Tests › Operations dashboard responsiveness 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('h1:has-text("CozyCat Operations")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('h1:has-text("CozyCat Operations")')
+
+
+      107 |
+      108 |     // Check dashboard loads
+    > 109 |     await expect(page.locator('h1:has-text("CozyCat Operations")')).toBeVisible();
+          |                                                                     ^
+      110 |
+      111 |     // Check stats grid is responsive
+      112 |     const statsCards = page.locator('.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-5 > div');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:109:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Tablet\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Tablet\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Tablet\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Tablet\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Tablet\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Tablet\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Forms are touch-friendly" classname="mobile\responsiveness.test.ts" time="5.551">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › No horizontal overflow on mobile" classname="mobile\responsiveness.test.ts" time="5.803">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Tablet responsive layout" classname="mobile\responsiveness.test.ts" time="12.878">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Small desktop responsive layout" classname="mobile\responsiveness.test.ts" time="9.786">
+</testcase>
+</testsuite>
+<testsuite name="mobile\responsiveness.test.ts" timestamp="2026-01-26T22:41:17.488Z" hostname="Microsoft Edge" tests="9" failures="5" skipped="0" time="143.179" errors="0">
+<testcase name="Mobile Responsiveness Tests › Mobile navigation functionality" classname="mobile\responsiveness.test.ts" time="6.319">
+<failure message="responsiveness.test.ts:5:7 Mobile navigation functionality" type="FAILURE">
+<![CDATA[  [Microsoft Edge] › mobile\responsiveness.test.ts:5:7 › Mobile Responsiveness Tests › Mobile navigation functionality 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.md\\:hidden')
+    Expected substring: "Products"
+    Error: strict mode violation: locator('.md\\:hidden') resolved to 2 elements:
+        1) <div class="md:hidden flex items-center space-x-2">…</div> aka getByText('🛒❌')
+        2) <div class="md:hidden py-4 space-y-2 border-t border-orange-400">…</div> aka getByText('🍽️Products📦Track Order🔑Sign In🛒Cart')
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.md\\:hidden')
+
+
+      17 |     const menuButton = page.locator('button').filter({ hasText: /🐾/ }).first();
+      18 |     await menuButton.click();
+    > 19 |     await expect(page.locator('.md\\:hidden')).toContainText('Products');
+         |                                                ^
+      20 |     
+      21 |     // Check cart is visible in mobile menu
+      22 |     await expect(page.locator('a[href="/cart"]')).toBeVisible();
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:19:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Microsoft-Edge\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Microsoft-Edge\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Microsoft-Edge\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Microsoft-Edge\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Microsoft-Edge\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Microsoft-Edge\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Admin menu visibility on mobile" classname="mobile\responsiveness.test.ts" time="25.098">
+<failure message="responsiveness.test.ts:25:7 Admin menu visibility on mobile" type="FAILURE">
+<![CDATA[  [Microsoft Edge] › mobile\responsiveness.test.ts:25:7 › Mobile Responsiveness Tests › Admin menu visibility on mobile 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('a[href="/admin"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('a[href="/admin"]')
+
+
+      42 |     
+      43 |     // Check if Admin link is visible
+    > 44 |     await expect(page.locator('a[href="/admin"]')).toBeVisible();
+         |                                                    ^
+      45 |   });
+      46 |
+      47 |   test('Cart functionality on mobile', async ({ page }) => {
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:44:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Microsoft-Edge\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Microsoft-Edge\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Microsoft-Edge\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Microsoft-Edge\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Microsoft-Edge\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Microsoft-Edge\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Cart functionality on mobile" classname="mobile\responsiveness.test.ts" time="22.118">
+<failure message="responsiveness.test.ts:47:7 Cart functionality on mobile" type="FAILURE">
+<![CDATA[  [Microsoft Edge] › mobile\responsiveness.test.ts:47:7 › Mobile Responsiveness Tests › Cart functionality on mobile 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        13 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      51 |
+      52 |     // Navigate to products
+    > 53 |     await page.click('a[href="/products"]');
+         |                ^
+      54 |     await page.waitForLoadState('networkidle');
+      55 |
+      56 |     // Click on first product
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:53:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Microsoft-Edge\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Microsoft-Edge\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Microsoft-Edge\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Microsoft-Edge\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Microsoft-Edge\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Microsoft-Edge\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Product detail responsiveness" classname="mobile\responsiveness.test.ts" time="19.326">
+<failure message="responsiveness.test.ts:69:7 Product detail responsiveness" type="FAILURE">
+<![CDATA[  [Microsoft Edge] › mobile\responsiveness.test.ts:69:7 › Mobile Responsiveness Tests › Product detail responsiveness 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        9 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 500ms
+
+
+      73 |
+      74 |     // Navigate to a product
+    > 75 |     await page.click('a[href="/products"]');
+         |                ^
+      76 |     await page.waitForLoadState('networkidle');
+      77 |     await page.locator('a[href*="/products/"]').first().click();
+      78 |     await page.waitForLoadState('networkidle');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:75:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Microsoft-Edge\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Microsoft-Edge\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Microsoft-Edge\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Microsoft-Edge\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Microsoft-Edge\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Microsoft-Edge\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Operations dashboard responsiveness" classname="mobile\responsiveness.test.ts" time="25.146">
+<failure message="responsiveness.test.ts:94:7 Operations dashboard responsiveness" type="FAILURE">
+<![CDATA[  [Microsoft Edge] › mobile\responsiveness.test.ts:94:7 › Mobile Responsiveness Tests › Operations dashboard responsiveness 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('h1:has-text("CozyCat Operations")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('h1:has-text("CozyCat Operations")')
+
+
+      107 |
+      108 |     // Check dashboard loads
+    > 109 |     await expect(page.locator('h1:has-text("CozyCat Operations")')).toBeVisible();
+          |                                                                     ^
+      110 |
+      111 |     // Check stats grid is responsive
+      112 |     const statsCards = page.locator('.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-5 > div');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:109:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Microsoft-Edge\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Microsoft-Edge\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Microsoft-Edge\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Microsoft-Edge\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Microsoft-Edge\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Microsoft-Edge\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Forms are touch-friendly" classname="mobile\responsiveness.test.ts" time="6.58">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › No horizontal overflow on mobile" classname="mobile\responsiveness.test.ts" time="14.015">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Tablet responsive layout" classname="mobile\responsiveness.test.ts" time="14.575">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Small desktop responsive layout" classname="mobile\responsiveness.test.ts" time="10.002">
+</testcase>
+</testsuite>
+<testsuite name="mobile\responsiveness.test.ts" timestamp="2026-01-26T22:41:17.488Z" hostname="Google Chrome" tests="9" failures="5" skipped="0" time="99.882" errors="0">
+<testcase name="Mobile Responsiveness Tests › Mobile navigation functionality" classname="mobile\responsiveness.test.ts" time="10.291">
+<failure message="responsiveness.test.ts:5:7 Mobile navigation functionality" type="FAILURE">
+<![CDATA[  [Google Chrome] › mobile\responsiveness.test.ts:5:7 › Mobile Responsiveness Tests › Mobile navigation functionality 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.md\\:hidden')
+    Expected substring: "Products"
+    Error: strict mode violation: locator('.md\\:hidden') resolved to 2 elements:
+        1) <div class="md:hidden flex items-center space-x-2">…</div> aka getByText('🛒❌')
+        2) <div class="md:hidden py-4 space-y-2 border-t border-orange-400">…</div> aka getByText('🍽️Products📦Track Order🔑Sign In🛒Cart')
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.md\\:hidden')
+
+
+      17 |     const menuButton = page.locator('button').filter({ hasText: /🐾/ }).first();
+      18 |     await menuButton.click();
+    > 19 |     await expect(page.locator('.md\\:hidden')).toContainText('Products');
+         |                                                ^
+      20 |     
+      21 |     // Check cart is visible in mobile menu
+      22 |     await expect(page.locator('a[href="/cart"]')).toBeVisible();
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:19:48
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Google-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Google-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Google-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Google-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Google-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-e96f8-le-navigation-functionality-Google-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Admin menu visibility on mobile" classname="mobile\responsiveness.test.ts" time="20.139">
+<failure message="responsiveness.test.ts:25:7 Admin menu visibility on mobile" type="FAILURE">
+<![CDATA[  [Google Chrome] › mobile\responsiveness.test.ts:25:7 › Mobile Responsiveness Tests › Admin menu visibility on mobile 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('a[href="/admin"]')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('a[href="/admin"]')
+
+
+      42 |     
+      43 |     // Check if Admin link is visible
+    > 44 |     await expect(page.locator('a[href="/admin"]')).toBeVisible();
+         |                                                    ^
+      45 |   });
+      46 |
+      47 |   test('Cart functionality on mobile', async ({ page }) => {
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:44:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Google-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Google-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Google-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Google-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Google-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-7f8d5-n-menu-visibility-on-mobile-Google-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Cart functionality on mobile" classname="mobile\responsiveness.test.ts" time="20.249">
+<failure message="responsiveness.test.ts:47:7 Cart functionality on mobile" type="FAILURE">
+<![CDATA[  [Google Chrome] › mobile\responsiveness.test.ts:47:7 › Mobile Responsiveness Tests › Cart functionality on mobile 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        14 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      51 |
+      52 |     // Navigate to products
+    > 53 |     await page.click('a[href="/products"]');
+         |                ^
+      54 |     await page.waitForLoadState('networkidle');
+      55 |
+      56 |     // Click on first product
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:53:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Google-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Google-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Google-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Google-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Google-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9018c-art-functionality-on-mobile-Google-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Product detail responsiveness" classname="mobile\responsiveness.test.ts" time="13.921">
+<failure message="responsiveness.test.ts:69:7 Product detail responsiveness" type="FAILURE">
+<![CDATA[  [Google Chrome] › mobile\responsiveness.test.ts:69:7 › Mobile Responsiveness Tests › Product detail responsiveness 
+
+    TimeoutError: page.click: Timeout 10000ms exceeded.
+    Call log:
+      - waiting for locator('a[href="/products"]')
+        - locator resolved to 4 elements. Proceeding with the first one: <a href="/products" class="text-white hover:text-orange-100 transition-colors flex items-center gap-1">…</a>
+      - attempting click action
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+        - waiting 20ms
+        2 × waiting for element to be visible, enabled and stable
+          - element is not visible
+        - retrying click action
+          - waiting 100ms
+        13 × waiting for element to be visible, enabled and stable
+           - element is not visible
+         - retrying click action
+           - waiting 500ms
+
+
+      73 |
+      74 |     // Navigate to a product
+    > 75 |     await page.click('a[href="/products"]');
+         |                ^
+      76 |     await page.waitForLoadState('networkidle');
+      77 |     await page.locator('a[href*="/products/"]').first().click();
+      78 |     await page.waitForLoadState('networkidle');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:75:16
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Google-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Google-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Google-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Google-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Google-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-eb5a3-oduct-detail-responsiveness-Google-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Operations dashboard responsiveness" classname="mobile\responsiveness.test.ts" time="16.768">
+<failure message="responsiveness.test.ts:94:7 Operations dashboard responsiveness" type="FAILURE">
+<![CDATA[  [Google Chrome] › mobile\responsiveness.test.ts:94:7 › Mobile Responsiveness Tests › Operations dashboard responsiveness 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('h1:has-text("CozyCat Operations")')
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for locator('h1:has-text("CozyCat Operations")')
+
+
+      107 |
+      108 |     // Check dashboard loads
+    > 109 |     await expect(page.locator('h1:has-text("CozyCat Operations")')).toBeVisible();
+          |                                                                     ^
+      110 |
+      111 |     // Check stats grid is responsive
+      112 |     const statsCards = page.locator('.grid-cols-1.sm\\:grid-cols-2.lg\\:grid-cols-3.xl\\:grid-cols-5 > div');
+        at C:\Users\Work\CascadeProjects\cozycat-system\customer-shop\tests\mobile\responsiveness.test.ts:109:69
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Google-Chrome\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Google-Chrome\video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Google-Chrome\error-context.md
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Google-Chrome\test-failed-1.png]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Google-Chrome\video.webm]]
+
+[[ATTACHMENT|test-results\mobile-responsiveness-Mobi-9c34a-ns-dashboard-responsiveness-Google-Chrome\error-context.md]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Forms are touch-friendly" classname="mobile\responsiveness.test.ts" time="7.96">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › No horizontal overflow on mobile" classname="mobile\responsiveness.test.ts" time="3.098">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Tablet responsive layout" classname="mobile\responsiveness.test.ts" time="3.687">
+</testcase>
+<testcase name="Mobile Responsiveness Tests › Small desktop responsive layout" classname="mobile\responsiveness.test.ts" time="3.769">
+</testcase>
+</testsuite>
+</testsuites>

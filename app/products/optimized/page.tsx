@@ -4,20 +4,29 @@ import OptimizedProductGrid from '@/components/OptimizedProductGrid'
 import OptimizedProductFilters from '@/components/OptimizedProductFilters'
 import { Suspense } from 'react'
 
+type Product = Database['public']['Tables']['products']['Row']
+type Category = Database['public']['Tables']['categories']['Row']
+
 // Server component for initial data loading
 async function getInitialData() {
   const supabase = await createClient()
 
-  // Get categories with product counts (optimized)
-  const { data: categories } = await supabase.rpc('get_categories_with_product_count')
-
-  // Get popular products (from materialized view)
-  const { data: popularProducts } = await supabase
-    .from('popular_products')
+  // Get categories (simple query)
+  const { data: categories } = await supabase
+    .from('categories')
     .select('*')
+    .eq('is_active', true)
+    .order('display_order')
+
+  // Get popular products (simple query)
+  const { data: popularProducts } = await supabase
+    .from('products')
+    .select('*')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false })
     .limit(8)
 
-  return { categories, popularProducts }
+  return { categories: categories || [], popularProducts: popularProducts || [] }
 }
 
 // Loading component for Suspense

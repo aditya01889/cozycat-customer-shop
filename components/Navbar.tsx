@@ -112,13 +112,21 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile menu button */}
-          <div className="md:hidden">
+          {/* Mobile menu button and cart */}
+          <div className="md:hidden flex items-center space-x-2">
+            <Link href="/cart" className="relative p-2 text-white hover:text-orange-100 transition-colors">
+              <span className="text-xl">🛒</span>
+              {isClient && totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center animate-pulse">
+                  {totalItems}
+                </span>
+              )}
+            </Link>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 rounded-md text-white hover:text-orange-100 hover:bg-orange-700"
             >
-              {isMenuOpen ? <span className="text-2xl">❌</span> : <span className="text-2xl">🐾</span>}
+              {isMenuOpen ? <span className="text-xl">❌</span> : <span className="text-xl">🐾</span>}
             </button>
           </div>
         </div>
@@ -144,7 +152,7 @@ export default function Navbar() {
             </Link>
             {user ? (
               <>
-                {user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin') && (
+                {(user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin')) && (
                   <Link
                     href="/admin"
                     className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"

@@ -184,21 +184,21 @@ export default function ProductDetail({ product }: ProductDetailProps) {
           </div>
 
           {/* Add to Cart */}
-          <div className="flex space-x-4">
+          <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
             <button
               onClick={handleAddToCart}
               disabled={!selectedVariant}
-              className={`flex-1 py-3 px-6 rounded-full font-medium flex items-center justify-center transition-colors ${
+              className={`flex-1 py-4 px-6 rounded-full font-medium flex items-center justify-center transition-all transform active:scale-95 min-h-[56px] text-base sm:text-sm ${
                 selectedVariant
-                  ? 'bg-orange-500 text-white hover:bg-orange-600'
+                  ? 'bg-orange-500 text-white hover:bg-orange-600 shadow-lg hover:shadow-xl'
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               }`}
             >
-              <ShoppingCart className="w-5 h-5 mr-2" />
+              <ShoppingCart className="w-6 h-6 mr-2 sm:w-5 sm:h-5" />
               {selectedVariant ? 'Add to Cart' : 'Select a variant'}
             </button>
-            <button className="p-3 rounded-full border border-gray-300 hover:bg-gray-50">
-              <Heart className="w-5 h-5" />
+            <button className="p-4 rounded-full border border-gray-300 hover:bg-gray-50 min-h-[56px] min-w-[56px] flex items-center justify-center">
+              <Heart className="w-6 h-6" />
             </button>
           </div>
 
