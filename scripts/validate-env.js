@@ -36,27 +36,38 @@ const PLACEHOLDER_PATTERNS = [
 function validateEnvironment() {
   console.log('🔍 Validating environment variables...\n');
   
-  const envPath = path.join(__dirname, '..', '.env.local');
+  // Check if we're in production/CI environment (Vercel, etc.)
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.CI || process.env.VERCEL;
   
-  if (!fs.existsSync(envPath)) {
-    console.error('❌ .env.local file not found!');
-    console.log('💡 Please create .env.local from .env.example');
-    process.exit(1);
-  }
+  let envVars = {};
   
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  const envVars = {};
-  
-  // Parse .env.local content
-  envContent.split('\n').forEach(line => {
-    const trimmed = line.trim();
-    if (trimmed && !trimmed.startsWith('#')) {
-      const [key, ...valueParts] = trimmed.split('=');
-      if (key && valueParts.length > 0) {
-        envVars[key] = valueParts.join('=');
-      }
+  if (isProduction) {
+    // In production, use process.env directly
+    console.log('🏭 Production environment detected - validating process.env variables');
+    envVars = process.env;
+  } else {
+    // In development, check for .env.local file
+    const envPath = path.join(__dirname, '..', '.env.local');
+    
+    if (!fs.existsSync(envPath)) {
+      console.error('❌ .env.local file not found!');
+      console.log('💡 Please create .env.local from .env.example');
+      process.exit(1);
     }
-  });
+    
+    const envContent = fs.readFileSync(envPath, 'utf8');
+    
+    // Parse .env.local content
+    envContent.split('\n').forEach(line => {
+      const trimmed = line.trim();
+      if (trimmed && !trimmed.startsWith('#')) {
+        const [key, ...valueParts] = trimmed.split('=');
+        if (key && valueParts.length > 0) {
+          envVars[key] = valueParts.join('=');
+        }
+      }
+    });
+  }
   
   let hasIssues = false;
   
@@ -124,11 +135,21 @@ function validateEnvironment() {
   
   if (hasIssues) {
     console.log('\n❌ Environment validation failed!');
-    console.log('\n🔧 To fix:');
-    console.log('1. Update .env.local with correct values');
-    console.log('2. Copy from Vercel environment variables if available');
-    console.log('3. Or restore from .env.backup: cp .env.backup .env.local');
-    console.log('4. Restart development server');
+    
+    if (isProduction) {
+      console.log('\n🔧 Production Environment - To fix:');
+      console.log('1. Check Vercel environment variables in dashboard');
+      console.log('2. Ensure all critical variables are set');
+      console.log('3. Verify no placeholder values are present');
+      console.log('4. Redeploy after fixing variables');
+    } else {
+      console.log('\n🔧 Development Environment - To fix:');
+      console.log('1. Update .env.local with correct values');
+      console.log('2. Copy from Vercel environment variables if available');
+      console.log('3. Or restore from .env.backup: cp .env.backup .env.local');
+      console.log('4. Restart development server');
+    }
+    
     process.exit(1);
   }
   
@@ -136,8 +157,15 @@ function validateEnvironment() {
   console.log('🛡️ Your environment variables are properly configured.');
 }
 
-// Create backup if it doesn't exist
+// Create backup if it doesn't exist (development only)
 function createBackup() {
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.CI || process.env.VERCEL;
+  
+  if (isProduction) {
+    // Skip backup in production
+    return;
+  }
+  
   const envPath = path.join(__dirname, '..', '.env.local');
   const backupPath = path.join(__dirname, '..', '.env.backup');
   
