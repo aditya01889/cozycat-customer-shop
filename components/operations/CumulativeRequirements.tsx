@@ -28,6 +28,33 @@ export default function CumulativeRequirements({
 }: CumulativeRequirementsProps) {
   const [expandedIngredients, setExpandedIngredients] = useState<Set<string>>(new Set())
 
+  // Helper function to display quantities in correct units
+  const displayQuantity = (ingredientName: string, quantity: number, currentStock: number) => {
+    if (!ingredientName || quantity === undefined || quantity === null || currentStock === undefined || currentStock === null) {
+      return {
+        required: '0g',
+        stock: '0g', 
+        shortage: '0g'
+      }
+    }
+    
+    if (ingredientName.toLowerCase().includes('egg')) {
+      // For eggs, convert grams to pieces for display
+      const piecesRequired = (quantity / 50).toFixed(1)
+      const piecesInStock = (currentStock / 50).toFixed(1)
+      return {
+        required: `${piecesRequired} pieces`,
+        stock: `${piecesInStock} pieces`,
+        shortage: `${Math.max(0, (quantity - currentStock) / 50).toFixed(1)} pieces`
+      }
+    }
+    return {
+      required: `${quantity.toFixed(1)}g`,
+      stock: `${currentStock.toFixed(1)}g`,
+      shortage: `${Math.max(0, quantity - currentStock).toFixed(1)}g`
+    }
+  }
+
   const toggleExpanded = (ingredientId: string) => {
     const newExpanded = new Set(expandedIngredients)
     if (newExpanded.has(ingredientId)) {
@@ -130,11 +157,11 @@ export default function CumulativeRequirements({
                       {requirement.ingredient_name}
                     </h3>
                     <div className="flex items-center space-x-4 text-sm text-gray-600">
-                      <span>Required: {formatWeight(requirement.total_required)}</span>
-                      <span>Current: {formatWeight(requirement.current_stock)}</span>
+                      <span>Required: {displayQuantity(requirement.ingredient_name, requirement.total_required, requirement.current_stock).required}</span>
+                      <span>Current: {displayQuantity(requirement.ingredient_name, requirement.total_required, requirement.current_stock).stock}</span>
                       {requirement.shortage > 0 && (
                         <span className="font-medium text-red-600">
-                          Shortage: {formatWeight(requirement.shortage)}
+                          Shortage: {displayQuantity(requirement.ingredient_name, requirement.total_required, requirement.current_stock).shortage}
                         </span>
                       )}
                     </div>

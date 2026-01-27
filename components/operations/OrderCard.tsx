@@ -88,6 +88,15 @@ export default function OrderCard({
   updatingOrder,
   createdPOs
 }: OrderCardProps) {
+  // Helper function to display quantities with proper unit conversion
+  const displayQuantity = (quantity: number, ingredientName: string) => {
+    if (ingredientName.toLowerCase().includes('egg')) {
+      // Convert grams to pieces for eggs (50g per piece)
+      const pieces = Math.round(quantity / 50 * 10) / 10
+      return `${pieces} pieces`
+    }
+    return `${quantity}g`
+  }
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'pending':
@@ -119,6 +128,7 @@ export default function OrderCard({
   }
 
   const formatCurrency = (amount: number) => {
+    if (amount === undefined || amount === null) return '₹0'
     return `₹${amount.toLocaleString()}`
   }
 
@@ -241,8 +251,8 @@ export default function OrderCard({
             <div className="mb-4">
               <h4 className="text-sm font-semibold text-gray-900 mb-2">Order Items</h4>
               <div className="space-y-2">
-                {order.order_items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                {order.order_items.map((item, index) => (
+                  <div key={`${item.id}-${index}`} className="flex justify-between items-center p-2 bg-gray-50 rounded">
                     <div>
                       <span className="text-sm font-medium text-gray-900">
                         {item.product_name}
@@ -264,9 +274,9 @@ export default function OrderCard({
               <div>
                 <h4 className="text-sm font-semibold text-gray-900 mb-2">Ingredient Requirements</h4>
                 <div className="space-y-2">
-                  {order.ingredient_requirements.map((ingredient) => (
+                  {order.ingredient_requirements.map((ingredient, index) => (
                     <div 
-                      key={ingredient.ingredient_id}
+                      key={`${ingredient.ingredient_id}-${index}`}
                       className={`p-3 rounded-lg border ${
                         ingredient.stock_status === 'sufficient' 
                           ? 'bg-green-50 border-green-200'
@@ -281,8 +291,8 @@ export default function OrderCard({
                             {ingredient.ingredient_name}
                           </span>
                           <div className="text-xs text-gray-500">
-                            Required: {ingredient.required_quantity}g • 
-                            Current: {ingredient.current_stock}g
+                            Required: {displayQuantity(ingredient.required_quantity, ingredient.ingredient_name)} • 
+                            Current: {displayQuantity(ingredient.current_stock, ingredient.ingredient_name)}
                           </div>
                         </div>
                         <span className={`text-xs font-medium ${
