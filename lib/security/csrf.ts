@@ -8,6 +8,23 @@ import { cookies } from 'next/headers'
 const CSRF_TOKEN_NAME = 'csrf-token'
 const CSRF_HEADER_NAME = 'x-csrf-token'
 
+// Define RequestInit interface for compatibility
+interface RequestInit {
+  method?: string;
+  headers?: HeadersInit;
+  body?: BodyInit | null;
+  mode?: RequestMode;
+  credentials?: RequestCredentials;
+  cache?: RequestCache;
+  redirect?: RequestRedirect;
+  referrer?: string;
+  referrerPolicy?: ReferrerPolicy;
+  integrity?: string;
+  keepalive?: boolean;
+  signal?: AbortSignal | null;
+  window?: null;
+}
+
 /**
  * Generate a random CSRF token
  */

@@ -25,7 +25,7 @@
     "test:ci": "playwright test tests/critical/ --reporter=json --reporter=html",
     "test:install": "playwright install",
     "test:report": "playwright show-report",
-    "test:quick": "bash scripts/quick-test.sh",
+    "test:quick": "bash scripts/quick-test.sh"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.8",
