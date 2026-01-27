@@ -116,14 +116,16 @@ export default function Home() {
                 Browse Products
                 <ArrowRight className="w-4 h-4" />
               </Link>
-              <Link
-                href="/track-order"
-                className="inline-flex items-center px-8 py-3 bg-orange-600 text-white rounded-full font-semibold hover:bg-orange-700 transition-colors"
+              <a
+                href="https://wa.me/919873648122"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-8 py-3 bg-green-600 text-white rounded-full font-semibold hover:bg-green-700 transition-colors"
               >
-                <span className="mr-2">📦</span>
-                Track Order
+                <span className="mr-2">�</span>
+                WhatsApp Order
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </a>
             </div>
           </div>
         </div>

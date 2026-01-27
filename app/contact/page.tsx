@@ -123,7 +123,8 @@ export default function ContactPage() {
                   </h3>
                   <div className="space-y-2 text-gray-700">
                     <p>CozyCatKitchen Headquarters</p>
-                    <p>123 Cat Street, Purrsville, CA 90210</p>
+                    <p>Jaypee Klassic, Sector 134</p>
+                    <p>Noida, Uttar Pradesh - 201304</p>
                     <p className="text-sm text-gray-500">Come say hi to our office cats!</p>
                   </div>
                 </div>
@@ -156,18 +157,11 @@ export default function ContactPage() {
                   </h3>
                   <div className="space-y-3">
                     <a
-                      href="tel:+919873648122"
-                      className="flex items-center text-orange-500 hover:text-orange-600 transition-colors"
-                    >
-                      <span className="mr-2">📞</span>
-                      +91-98736-48122
-                    </a>
-                    <a
-                      href="mailto:hello@cozycatkitchen.com"
+                      href="mailto:cozycatkitchen@gmail.com"
                       className="flex items-center text-orange-500 hover:text-orange-600 transition-colors"
                     >
                       <span className="mr-2">📧</span>
-                      hello@cozycatkitchen.com
+                      cozycatkitchen@gmail.com
                     </a>
                     <a
                       href="https://wa.me/919873648122"
@@ -176,7 +170,7 @@ export default function ContactPage() {
                       className="flex items-center text-green-600 hover:text-green-700 transition-colors"
                     >
                       <span className="mr-2">💬</span>
-                      WhatsApp Us
+                      +91-98736-48122 (WhatsApp)
                     </a>
                   </div>
                 </div>
@@ -228,7 +222,7 @@ export default function ContactPage() {
                   What payment methods do you accept?
                 </h3>
                 <p className="text-sm text-gray-600">
-                  We accept cash on delivery and online payments for your convenience.
+                  We accept secure online payments through Razorpay including Credit/Debit Cards, UPI, Net Banking, and Digital Wallets.
                 </p>
               </div>
               <div className="bg-gray-50 rounded-lg p-4">

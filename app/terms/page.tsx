@@ -69,7 +69,7 @@ export default function TermsOfService() {
                 </div>
                 <div className="flex items-start space-x-3">
                   <span className="text-purple-500 mt-1">🔄</span>
-                  <span className="text-gray-700">We accept cash on delivery and online payments</span>
+                  <span className="text-gray-700">We accept secure online payments through Razorpay including Credit/Debit Cards, UPI, Net Banking, and Digital Wallets</span>
                 </div>
                 <div className="flex items-start space-x-3">
                   <span className="text-purple-500 mt-1">📈</span>
@@ -189,21 +189,23 @@ export default function TermsOfService() {
               <p className="text-gray-700 mb-4">
                 For questions about these Terms of Service, please contact us:
               </p>
-              <div className="grid md:grid-cols-3 gap-4 text-center">
+              <div className="grid md:grid-cols-2 gap-4 text-center">
                 <div className="bg-white rounded-lg p-4">
                   <span className="text-2xl mb-2 block">📧</span>
                   <p className="font-semibold text-gray-800">Email</p>
-                  <p className="text-sm text-gray-600">support@cozycatkitchen.com</p>
+                  <p className="text-sm text-gray-600">cozycatkitchen@gmail.com</p>
                 </div>
                 <div className="bg-white rounded-lg p-4">
-                  <span className="text-2xl mb-2 block">📱</span>
-                  <p className="font-semibold text-gray-800">Phone</p>
-                  <p className="text-sm text-gray-600">+91-98736-48122</p>
-                </div>
-                <div className="bg-white rounded-lg p-4">
-                  <span className="text-2xl mb-2 block">💬</span>
+                  <span className="text-2xl mb-2 block">�</span>
                   <p className="font-semibold text-gray-800">WhatsApp</p>
-                  <p className="text-sm text-gray-600">+91-98736-48122</p>
+                  <a 
+                    href="https://wa.me/919873648122"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-green-600 hover:text-green-700 hover:underline"
+                  >
+                    +91-98736-48122
+                  </a>
                 </div>
               </div>
             </section>

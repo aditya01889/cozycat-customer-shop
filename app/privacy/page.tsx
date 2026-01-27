@@ -140,21 +140,23 @@ export default function PrivacyPolicy() {
               <p className="text-gray-700 mb-4">
                 If you have any questions about this Privacy Policy, please contact us:
               </p>
-              <div className="grid md:grid-cols-3 gap-4 text-center">
+              <div className="grid md:grid-cols-2 gap-4 text-center">
                 <div className="bg-white rounded-lg p-4">
                   <span className="text-2xl mb-2 block">📧</span>
                   <p className="font-semibold text-gray-800">Email</p>
-                  <p className="text-sm text-gray-600">privacy@cozycatkitchen.com</p>
+                  <p className="text-sm text-gray-600">cozycatkitchen@gmail.com</p>
                 </div>
                 <div className="bg-white rounded-lg p-4">
-                  <span className="text-2xl mb-2 block">📱</span>
-                  <p className="font-semibold text-gray-800">Phone</p>
-                  <p className="text-sm text-gray-600">+91-98736-48122</p>
-                </div>
-                <div className="bg-white rounded-lg p-4">
-                  <span className="text-2xl mb-2 block">💬</span>
+                  <span className="text-2xl mb-2 block">�</span>
                   <p className="font-semibold text-gray-800">WhatsApp</p>
-                  <p className="text-sm text-gray-600">+91-98736-48122</p>
+                  <a 
+                    href="https://wa.me/919873648122"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-green-600 hover:text-green-700 hover:underline"
+                  >
+                    +91-98736-48122
+                  </a>
                 </div>
               </div>
             </section>

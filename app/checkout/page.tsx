@@ -51,7 +51,7 @@ export default function CheckoutPage() {
     deliveryNotes: ''
   })
 
-  const [paymentMethod, setPaymentMethod] = useState<'cod' | 'online'>('cod')
+  const [paymentMethod, setPaymentMethod] = useState<'online'>('online')
   const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null)
 
   const subtotal = getTotalPrice()
@@ -558,22 +558,7 @@ export default function CheckoutPage() {
             </h2>
             
             <div className="space-y-3">
-              <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
-                <input
-                  type="radio"
-                  name="payment"
-                  value="cod"
-                  checked={paymentMethod === 'cod'}
-                  onChange={(e) => setPaymentMethod(e.target.value as 'cod')}
-                  className="mr-3"
-                />
-                <div>
-                  <div className="font-medium">Cash on Delivery (COD)</div>
-                  <div className="text-sm text-gray-600">Pay when you receive your order</div>
-                </div>
-              </label>
-              
-              <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50">
+              <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50 bg-orange-50 border-orange-200">
                 <input
                   type="radio"
                   name="payment"
@@ -583,10 +568,44 @@ export default function CheckoutPage() {
                   className="mr-3"
                 />
                 <div>
-                  <div className="font-medium">Online Payment</div>
-                  <div className="text-sm text-gray-600">Pay securely with UPI, Cards, Wallets</div>
+                  <div className="font-medium">Secure Online Payment via Razorpay</div>
+                  <div className="text-sm text-gray-600">Pay securely with Credit/Debit Cards, UPI, Net Banking, Wallets</div>
+                  <div className="flex items-center mt-2 space-x-2">
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">✓ Secure</span>
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">✓ Instant</span>
+                    <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">✓ Multiple Options</span>
+                  </div>
                 </div>
               </label>
+            </div>
+
+            {/* Payment Methods Showcase */}
+            <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-pink-50 rounded-lg">
+              <h3 className="text-sm font-semibold text-gray-800 mb-3 flex items-center">
+                <span className="mr-2">🎯</span>
+                Supported Payment Methods
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="flex items-center space-x-2 bg-white p-2 rounded-lg">
+                  <div className="w-6 h-4 bg-blue-600 rounded"></div>
+                  <span className="text-xs text-gray-700">Cards</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-white p-2 rounded-lg">
+                  <div className="w-6 h-4 bg-green-600 rounded"></div>
+                  <span className="text-xs text-gray-700">UPI</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-white p-2 rounded-lg">
+                  <div className="w-6 h-4 bg-purple-600 rounded"></div>
+                  <span className="text-xs text-gray-700">Wallets</span>
+                </div>
+                <div className="flex items-center space-x-2 bg-white p-2 rounded-lg">
+                  <div className="w-6 h-4 bg-orange-600 rounded"></div>
+                  <span className="text-xs text-gray-700">Net Banking</span>
+                </div>
+              </div>
+              <div className="mt-3 text-xs text-gray-600">
+                <span className="font-medium">Popular Options:</span> Visa, Mastercard, RuPay, Google Pay, PhonePe, Paytm, Amazon Pay + 100+ more
+              </div>
             </div>
           </div>
         </div>
