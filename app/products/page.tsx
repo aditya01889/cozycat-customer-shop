@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/database'
-import ProductGrid from '@/components/ProductGrid'
-import ProductFilters from '@/components/ProductFilters'
+import ProductGridEnhanced from '@/components/ProductGridEnhanced'
+import ProductFiltersEnhanced from '@/components/ProductFiltersEnhanced'
 import SearchInput from '@/components/SearchInput'
 
 type Product = Database['public']['Tables']['products']['Row']
@@ -109,7 +109,7 @@ export default async function ProductsPage({
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
             {resolvedParams.category 
-              ? categories?.find((c: any) => c.slug === resolvedParams.category)?.name || 'Products'
+              ? (categories as Category[])?.find((c: Category) => c.slug === resolvedParams.category)?.name || 'Products'
               : 'All Products'
             }
           </h1>
@@ -122,7 +122,7 @@ export default async function ProductsPage({
           {/* Filters Sidebar */}
           <div className="w-full lg:w-64 flex-shrink-0">
             <SearchInput />
-            <ProductFilters 
+            <ProductFiltersEnhanced 
               categories={categories || []}
               selectedCategory={resolvedParams.category}
             />
@@ -130,7 +130,7 @@ export default async function ProductsPage({
 
           {/* Products Grid */}
           <div className="flex-1">
-            <ProductGrid products={filteredProducts} />
+            <ProductGridEnhanced products={filteredProducts} />
           </div>
         </div>
       </div>
