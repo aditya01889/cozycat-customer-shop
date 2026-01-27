@@ -46,6 +46,12 @@ export function validateEnv(): EnvSchema {
     throw new Error('SUPABASE_SERVICE_ROLE_KEY is required but not set')
   }
 
+  // Validate Node environment
+  const nodeEnv = env.NODE_ENV || 'development'
+  if (!['development', 'production', 'test'].includes(nodeEnv)) {
+    throw new Error('NODE_ENV must be one of: development, production, test')
+  }
+
   // Validate Supabase URL format
   try {
     new URL(env.NEXT_PUBLIC_SUPABASE_URL)
@@ -53,28 +59,26 @@ export function validateEnv(): EnvSchema {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL must be a valid URL')
   }
 
-  // Required Razorpay configuration
-  if (!env.NEXT_PUBLIC_RAZORPAY_KEY_ID) {
-    throw new Error('NEXT_PUBLIC_RAZORPAY_KEY_ID is required but not set')
+  // Required Razorpay configuration - only validate in production
+  if (nodeEnv === 'production') {
+    if (!env.NEXT_PUBLIC_RAZORPAY_KEY_ID) {
+      throw new Error('NEXT_PUBLIC_RAZORPAY_KEY_ID is required but not set')
+    }
+
+    if (!env.RAZORPAY_KEY_ID) {
+      throw new Error('RAZORPAY_KEY_ID is required but not set')
+    }
+
+    if (!env.RAZORPAY_KEY_SECRET) {
+      throw new Error('RAZORPAY_KEY_SECRET is required but not set')
+    }
   }
 
-  if (!env.RAZORPAY_KEY_ID) {
-    throw new Error('RAZORPAY_KEY_ID is required but not set')
-  }
-
-  if (!env.RAZORPAY_KEY_SECRET) {
-    throw new Error('RAZORPAY_KEY_SECRET is required but not set')
-  }
-
-  // Required Google Maps configuration
-  if (!env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
-    throw new Error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is required but not set')
-  }
-
-  // Validate Node environment
-  const nodeEnv = env.NODE_ENV || 'development'
-  if (!['development', 'production', 'test'].includes(nodeEnv)) {
-    throw new Error('NODE_ENV must be one of: development, production, test')
+  // Required Google Maps configuration - only validate in production
+  if (nodeEnv === 'production') {
+    if (!env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY) {
+      throw new Error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is required but not set')
+    }
   }
 
   // Optional email configuration - warn if missing in production
@@ -85,18 +89,18 @@ export function validateEnv(): EnvSchema {
   }
 
   return {
-    NEXT_PUBLIC_SUPABASE_URL: env.NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY: env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-    SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY,
-    GMAIL_USER: env.GMAIL_USER,
-    GMAIL_APP_PASSWORD: env.GMAIL_APP_PASSWORD,
-    RESEND_API_KEY: env.RESEND_API_KEY,
-    NEXT_PUBLIC_RAZORPAY_KEY_ID: env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-    RAZORPAY_KEY_SECRET: env.RAZORPAY_KEY_SECRET,
-    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
+    NEXT_PUBLIC_SUPABASE_URL: env.NEXT_PUBLIC_SUPABASE_URL!,
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY!,
+    GMAIL_USER: env.GMAIL_USER || '',
+    GMAIL_APP_PASSWORD: env.GMAIL_APP_PASSWORD || '',
+    RESEND_API_KEY: env.RESEND_API_KEY || '',
+    NEXT_PUBLIC_RAZORPAY_KEY_ID: env.NEXT_PUBLIC_RAZORPAY_KEY_ID || '',
+    RAZORPAY_KEY_SECRET: env.RAZORPAY_KEY_SECRET || '',
+    NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
     NODE_ENV: nodeEnv as 'development' | 'production' | 'test',
-    NEXTAUTH_URL: env.NEXTAUTH_URL,
-    NEXTAUTH_SECRET: env.NEXTAUTH_SECRET,
+    NEXTAUTH_URL: env.NEXTAUTH_URL || '',
+    NEXTAUTH_SECRET: env.NEXTAUTH_SECRET || '',
   }
 }
 
