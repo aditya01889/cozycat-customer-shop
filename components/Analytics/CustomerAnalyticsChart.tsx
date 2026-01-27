@@ -120,6 +120,7 @@ export default function CustomerAnalyticsChart({ data, segments, title = "Custom
                     dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
                     activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
                     name="New Customers"
+                    isAnimationActive={false}
                   />
                   <Line 
                     type="monotone" 
@@ -129,6 +130,7 @@ export default function CustomerAnalyticsChart({ data, segments, title = "Custom
                     dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
                     activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
                     name="Returning Customers"
+                    isAnimationActive={false}
                   />
                 </LineChart>
               </ResponsiveContainer>
@@ -163,6 +165,7 @@ export default function CustomerAnalyticsChart({ data, segments, title = "Custom
                     outerRadius={60}
                     fill="#8884d8"
                     dataKey="count"
+                    isAnimationActive={false}
                   >
                     {segments.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -215,6 +218,7 @@ export default function CustomerAnalyticsChart({ data, segments, title = "Custom
                       dot={{ fill: '#3b82f6', strokeWidth: 2, r: 4 }}
                       activeDot={{ r: 6, stroke: '#3b82f6', strokeWidth: 2 }}
                       name="New Customers"
+                      isAnimationActive={false}
                     />
                     <Line 
                       type="monotone" 
@@ -224,6 +228,7 @@ export default function CustomerAnalyticsChart({ data, segments, title = "Custom
                       dot={{ fill: '#10b981', strokeWidth: 2, r: 4 }}
                       activeDot={{ r: 6, stroke: '#10b981', strokeWidth: 2 }}
                       name="Returning Customers"
+                      isAnimationActive={false}
                     />
                   </LineChart>
                 </ResponsiveContainer>
@@ -257,6 +262,7 @@ export default function CustomerAnalyticsChart({ data, segments, title = "Custom
                       outerRadius={60}
                       fill="#8884d8"
                       dataKey="count"
+                      isAnimationActive={false}
                     >
                       {segments.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />

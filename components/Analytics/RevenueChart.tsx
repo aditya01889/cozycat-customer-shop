@@ -18,6 +18,27 @@ interface RevenueChartProps {
 export default function RevenueChart({ data, title = "Revenue Trend", type = 'line' }: RevenueChartProps) {
   console.log('🔍 RevenueChart received data:', data)
   console.log('🔍 RevenueChart data length:', data?.length)
+  console.log('🔍 RevenueChart type:', type)
+  
+  // Fallback for empty data
+  if (!data || data.length === 0) {
+    return (
+      <div className="w-full h-full">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <p className="text-sm text-gray-500">No data available</p>
+          </div>
+          <TrendingUp className="w-5 h-5 text-gray-400" />
+        </div>
+        <div className="w-full" style={{ height: '180px' }}>
+          <div className="h-full flex items-center justify-center text-gray-500 border border-gray-200 rounded-lg">
+            <p className="text-center">No revenue data to display</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -92,6 +113,7 @@ export default function RevenueChart({ data, title = "Revenue Trend", type = 'li
               fillOpacity={type === 'area' ? 0.3 : undefined}
               dot={{ fill: '#f97316', strokeWidth: 2, r: 4 }}
               activeDot={{ r: 6, stroke: '#f97316', strokeWidth: 2 }}
+              isAnimationActive={false}
             />
           </ChartComponent>
         </ResponsiveContainer>

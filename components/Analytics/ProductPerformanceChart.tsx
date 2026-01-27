@@ -108,10 +108,11 @@ export default function ProductPerformanceChart({ data, title = "Product Perform
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ segment, percentage }) => `${segment}: ${percentage}%`}
+                label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(1)}%`}
                 outerRadius={60}
                 fill="#8884d8"
                 dataKey="value"
+                isAnimationActive={false}
               >
                 {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -171,6 +172,7 @@ export default function ProductPerformanceChart({ data, title = "Product Perform
                 dataKey="revenue" 
                 fill="#f97316"
                 radius={[8, 8, 0, 0]}
+                isAnimationActive={false}
               />
             </BarChart>
           </ResponsiveContainer>

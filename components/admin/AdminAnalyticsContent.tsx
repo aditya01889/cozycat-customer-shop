@@ -8,6 +8,7 @@ import RevenueChart from '@/components/Analytics/RevenueChart'
 import ProductPerformanceChart from '@/components/Analytics/ProductPerformanceChart'
 import CustomerAnalyticsChart from '@/components/Analytics/CustomerAnalyticsChart'
 import ExportButton from '@/components/Analytics/ExportButton'
+import MobileChart from '@/components/Analytics/MobileChart'
 
 interface AnalyticsData {
   revenue: { month: string; revenue: number; orders: number }[]
@@ -37,6 +38,18 @@ export default function AdminAnalyticsContent() {
   const [dateRange, setDateRange] = useState('30days')
   const [selectedMetric, setSelectedMetric] = useState('revenue')
   const [activeCategory, setActiveCategory] = useState<AnalyticsCategory>('revenue')
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768
+      setIsMobile(isMobileDevice)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     fetchAnalyticsData()
@@ -45,8 +58,6 @@ export default function AdminAnalyticsContent() {
   const fetchAnalyticsData = async () => {
     try {
       setLoading(true)
-      
-      console.log('🔍 Fetching analytics data with fallback...')
 
       // Fallback: Use basic queries instead of RPC functions
       const [ordersResult, productsResult, profilesResult] = await Promise.all([
@@ -67,10 +78,6 @@ export default function AdminAnalyticsContent() {
       if (ordersResult.error) throw ordersResult.error
       if (productsResult.error) throw productsResult.error
       if (profilesResult.error) throw profilesResult.error
-
-      console.log('🔍 Orders data:', ordersResult.data?.length)
-      console.log('🔍 Products data:', productsResult.data?.length)
-      console.log('🔍 Profiles data:', profilesResult.data?.length)
 
       // Process revenue data - convert to expected format for charts
       const revenueByDay = ordersResult.data?.reduce((acc: any, order) => {
@@ -122,11 +129,6 @@ export default function AdminAnalyticsContent() {
         totalCustomers: profilesResult.data?.length || 0
       }
 
-      console.log('🔍 Processed analytics data:', analyticsData)
-      console.log('🔍 Revenue data sample:', revenueData.slice(0, 2))
-      console.log('🔍 Product data sample:', productData.slice(0, 2))
-      console.log('🔍 Customer data sample:', customerData.slice(0, 2))
-      console.log('🔍 Customer segments sample:', customerSegments.slice(0, 2))
       setAnalyticsData(analyticsData)
 
     } catch (error) {
@@ -422,7 +424,19 @@ export default function AdminAnalyticsContent() {
 
             {/* Revenue Chart */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <RevenueChart data={analyticsData.revenue} />
+              {isMobile ? (
+                <MobileChart 
+                  data={analyticsData.revenue.map(item => ({
+                    label: item.month,
+                    value: item.revenue
+                  }))} 
+                  title="Revenue Trend" 
+                  type="line" 
+                  height={200} 
+                />
+              ) : (
+                <RevenueChart data={analyticsData.revenue} />
+              )}
             </div>
           </div>
         )}
@@ -486,7 +500,20 @@ export default function AdminAnalyticsContent() {
 
             {/* Product Performance Chart */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <ProductPerformanceChart data={analyticsData.productPerformance.slice(0, 10)} />
+              {isMobile ? (
+                <MobileChart 
+                  data={analyticsData.productPerformance.slice(0, 5).map((item, index) => ({
+                    label: item.name,
+                    value: item.revenue,
+                    color: ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ef4444'][index % 5]
+                  }))} 
+                  title="Product Performance" 
+                  type="bar" 
+                  height={250} 
+                />
+              ) : (
+                <ProductPerformanceChart data={analyticsData.productPerformance.slice(0, 10)} />
+              )}
             </div>
           </div>
         )}
@@ -551,19 +578,44 @@ export default function AdminAnalyticsContent() {
             {/* Customer Analytics Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <CustomerAnalyticsChart 
-                  data={analyticsData.customerGrowth} 
-                  segments={analyticsData.customerSegments}
-                  showOnlyGrowth={true}
-                />
+                {isMobile ? (
+                  <MobileChart 
+                    data={analyticsData.customerGrowth.slice(0, 5).map(item => ({
+                      label: item.date,
+                      value: item.new_customers + item.returning_customers
+                    }))} 
+                    title="Customer Growth" 
+                    type="line" 
+                    height={180} 
+                  />
+                ) : (
+                  <CustomerAnalyticsChart 
+                    data={analyticsData.customerGrowth} 
+                    segments={analyticsData.customerSegments}
+                    showOnlyGrowth={true}
+                  />
+                )}
               </div>
               
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <CustomerAnalyticsChart 
-                  data={analyticsData.customerGrowth} 
-                  segments={analyticsData.customerSegments}
-                  showOnlySegments={true}
-                />
+                {isMobile ? (
+                  <MobileChart 
+                    data={analyticsData.customerSegments.map((item, index) => ({
+                      label: item.segment,
+                      value: item.count,
+                      color: ['#f97316', '#3b82f6', '#10b981', '#ef4444'][index % 4]
+                    }))} 
+                    title="Customer Segments" 
+                    type="pie" 
+                    height={180} 
+                  />
+                ) : (
+                  <CustomerAnalyticsChart 
+                    data={analyticsData.customerGrowth} 
+                    segments={analyticsData.customerSegments}
+                    showOnlySegments={true}
+                  />
+                )}
               </div>
             </div>
           </div>
