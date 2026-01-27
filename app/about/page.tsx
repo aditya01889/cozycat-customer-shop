@@ -10,8 +10,12 @@ export default function AboutPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header with Cat Theme */}
         <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-4">
-            <span className="text-3xl">�</span>
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-4 overflow-hidden">
+            <img 
+              src="/logo.png" 
+              alt="Cozy Cat Kitchen Logo" 
+              className="w-full h-full object-cover rounded-full"
+            />
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
             About Cozy Cat Kitchen

@@ -14,10 +14,16 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Company Info */}
           <div className="space-y-4">
-            <h3 className="text-lg font-bold mb-4 flex items-center text-white">
-              <span className="mr-2">🐱</span>
-              CozyCatKitchen
-            </h3>
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center overflow-hidden">
+                <img 
+                  src="/logo.png" 
+                  alt="CozyCatKitchen Logo" 
+                  className="w-full h-full object-cover rounded-full"
+                />
+              </div>
+              <h3 className="text-lg font-bold text-white">CozyCatKitchen</h3>
+            </div>
             <p className="text-gray-400">
               Your cozy kitchen for happy cats and delicious meals
             </p>

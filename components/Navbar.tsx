@@ -52,9 +52,13 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2 group">
-            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-              <span className="text-2xl">🐱</span>
+          <Link href="/" className="flex items-center space-x-3 group">
+            <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform overflow-hidden">
+              <img 
+                src="/logo.png" 
+                alt="CozyCatKitchen Logo" 
+                className="w-full h-full object-cover rounded-full"
+              />
             </div>
             <span className="font-bold text-xl text-white">CozyCatKitchen</span>
           </Link>

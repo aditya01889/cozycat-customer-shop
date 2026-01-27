@@ -264,7 +264,12 @@ export default function AdminUsersContent() {
                   >
                     <div className="flex items-center">
                       Name
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'full_name' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'full_name' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th 
@@ -273,7 +278,12 @@ export default function AdminUsersContent() {
                   >
                     <div className="flex items-center">
                       Email
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'email' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'email' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th 
@@ -282,7 +292,12 @@ export default function AdminUsersContent() {
                   >
                     <div className="flex items-center">
                       Role
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'role' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'role' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -294,7 +309,12 @@ export default function AdminUsersContent() {
                   >
                     <div className="flex items-center">
                       Joined
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'created_at' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'created_at' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">

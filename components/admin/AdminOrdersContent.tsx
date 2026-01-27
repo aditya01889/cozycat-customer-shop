@@ -103,6 +103,17 @@ export default function AdminOrdersContent() {
     }
   }
 
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      // If same column, toggle sort order
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
+    } else {
+      // If different column, set new column and default to asc
+      setSortBy(column)
+      setSortOrder('asc')
+    }
+  }
+
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'N/A'
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -208,7 +219,12 @@ export default function AdminOrdersContent() {
                   >
                     <div className="flex items-center">
                       Order
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'order_number' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'order_number' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th 
@@ -217,7 +233,12 @@ export default function AdminOrdersContent() {
                   >
                     <div className="flex items-center">
                       Customer
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'customer_name' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'customer_name' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th 
@@ -226,7 +247,12 @@ export default function AdminOrdersContent() {
                   >
                     <div className="flex items-center">
                       Status
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'order_status' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'order_status' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th 
@@ -235,7 +261,12 @@ export default function AdminOrdersContent() {
                   >
                     <div className="flex items-center">
                       Amount
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'total_amount' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'total_amount' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th 
@@ -244,7 +275,12 @@ export default function AdminOrdersContent() {
                   >
                     <div className="flex items-center">
                       Date
-                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                      {sortBy === 'order_created_at' && (
+                        sortOrder === 'asc' ? 
+                          <span className="ml-1 text-blue-600">↑</span> : 
+                          <span className="ml-1 text-blue-600">↓</span>
+                      )}
+                      {sortBy !== 'order_created_at' && <ArrowUpDown className="ml-1 h-3 w-3" />}
                     </div>
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -446,10 +482,4 @@ export default function AdminOrdersContent() {
       )}
     </div>
   )
-}
-
-// Helper function for sorting
-function handleSort(column: string) {
-  // This would be implemented with state management
-  console.log('Sort by:', column)
 }
