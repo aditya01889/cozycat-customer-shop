@@ -18,7 +18,9 @@ import {
   ArrowLeft,
   Package,
   Clock,
-  X
+  X,
+  ShoppingCart,
+  AlertCircle
 } from 'lucide-react'
 
 interface Vendor {
@@ -44,6 +46,14 @@ interface PurchaseOrder {
   sent_at: string | null
   confirmed_at: string | null
   received_at: string | null
+}
+
+interface Ingredient {
+  id: string
+  name: string
+  unit: string
+  current_stock: number
+  unit_cost: number
 }
 
 function VendorPurchaseOrders({ vendorId, showSuccess, showError, showWarning, showInfo }: { 
@@ -288,7 +298,10 @@ export default function VendorManagement() {
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showCustomPOModal, setShowCustomPOModal] = useState(false)
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null)
+  const [ingredients, setIngredients] = useState<Ingredient[]>([])
+  const [loadingIngredients, setLoadingIngredients] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     contact_person: '',
@@ -296,6 +309,13 @@ export default function VendorManagement() {
     email: '',
     address: '',
     payment_terms: ''
+  })
+  const [customPOData, setCustomPOData] = useState({
+    vendor_id: '',
+    ingredient_id: '',
+    quantity: '',
+    unit_cost: '',
+    notes: ''
   })
 
   useEffect(() => {
@@ -494,6 +514,114 @@ export default function VendorManagement() {
       address: '',
       payment_terms: ''
     })
+  }
+
+  const fetchIngredients = async () => {
+    try {
+      setLoadingIngredients(true)
+      const { data, error } = await supabase
+        .from('ingredients')
+        .select('id, name, unit, current_stock, unit_cost')
+        .order('name')
+
+      if (error) throw error
+      setIngredients(data || [])
+    } catch (error) {
+      console.error('Error fetching ingredients:', error)
+      showError(error instanceof Error ? error : new Error('Failed to fetch ingredients'))
+    } finally {
+      setLoadingIngredients(false)
+    }
+  }
+
+  const openCustomPOModal = (vendor: Vendor) => {
+    setSelectedVendor(vendor)
+    setCustomPOData({
+      vendor_id: vendor.id,
+      ingredient_id: '',
+      quantity: '',
+      unit_cost: '',
+      notes: ''
+    })
+    fetchIngredients()
+    setShowCustomPOModal(true)
+  }
+
+  const handleCreateCustomPO = async () => {
+    try {
+      // Validate required fields
+      if (!customPOData.vendor_id || !customPOData.ingredient_id || !customPOData.quantity || !customPOData.unit_cost) {
+        showWarning('Please fill in all required fields', 'Validation Error')
+        return
+      }
+
+      const quantity = parseFloat(customPOData.quantity)
+      const unitCost = parseFloat(customPOData.unit_cost)
+
+      if (isNaN(quantity) || quantity <= 0) {
+        showWarning('Please enter a valid quantity', 'Validation Error')
+        return
+      }
+
+      if (isNaN(unitCost) || unitCost <= 0) {
+        showWarning('Please enter a valid unit cost', 'Validation Error')
+        return
+      }
+
+      // Generate PO number
+      const poNumber = `PO-${Date.now()}`
+
+      // Get ingredient details
+      const ingredient = ingredients.find(i => i.id === customPOData.ingredient_id)
+      if (!ingredient) {
+        showWarning('Selected ingredient not found', 'Error')
+        return
+      }
+
+      // Create PO
+      const { data: poData, error: poError } = await supabase
+        .from('purchase_orders')
+        .insert({
+          order_number: poNumber,
+          vendor_id: customPOData.vendor_id,
+          status: 'draft',
+          total_amount: quantity * unitCost,
+          notes: customPOData.notes || `Custom PO for ${quantity} ${ingredient.unit} of ${ingredient.name} at ₹${unitCost}/${ingredient.unit}`
+        })
+        .select()
+        .single()
+
+      if (poError) throw poError
+
+      // Create PO item
+      const { error: itemError } = await supabase
+        .from('purchase_order_items')
+        .insert({
+          purchase_order_id: poData.id,
+          ingredient_id: customPOData.ingredient_id,
+          quantity: quantity,
+          unit_price: unitCost,
+          status: 'ordered'
+        })
+
+      if (itemError) throw itemError
+
+      showSuccess(`Custom PO ${poNumber} created successfully!`, 'PO Created')
+      setShowCustomPOModal(false)
+      setCustomPOData({
+        vendor_id: '',
+        ingredient_id: '',
+        quantity: '',
+        unit_cost: '',
+        notes: ''
+      })
+      
+      // Refresh vendor purchase orders
+      window.location.reload()
+    } catch (error) {
+      console.error('Error creating custom PO:', error)
+      showError(error instanceof Error ? error : new Error('Failed to create custom PO'))
+    }
   }
 
   const filteredVendors = vendors.filter(vendor => {
@@ -738,6 +866,13 @@ export default function VendorManagement() {
                 <div className="px-6 pb-6 border-t bg-gray-50">
                   <div className="flex items-center justify-between pt-4">
                     <div className="flex items-center space-x-2">
+                      <button 
+                        onClick={() => openCustomPOModal(vendor)}
+                        className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+                        title="Create Custom PO"
+                      >
+                        <ShoppingCart className="w-4 h-4" />
+                      </button>
                       <button 
                         onClick={() => openEditModal(vendor)}
                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -1041,6 +1176,140 @@ export default function VendorManagement() {
                 className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
               >
                 Delete Vendor
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom PO Modal */}
+      {showCustomPOModal && selectedVendor && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6 border-b">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-2xl font-bold text-gray-900">Create Custom Purchase Order</h2>
+                  <p className="text-sm text-gray-600 mt-1">Vendor: {selectedVendor.name}</p>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowCustomPOModal(false)
+                    setCustomPOData({
+                      vendor_id: '',
+                      ingredient_id: '',
+                      quantity: '',
+                      unit_cost: '',
+                      notes: ''
+                    })
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Ingredient *</label>
+                  <select
+                    value={customPOData.ingredient_id}
+                    onChange={(e) => setCustomPOData({...customPOData, ingredient_id: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    disabled={loadingIngredients}
+                  >
+                    <option value="">Select an ingredient</option>
+                    {ingredients.map((ingredient) => (
+                      <option key={ingredient.id} value={ingredient.id}>
+                        {ingredient.name} ({ingredient.unit}) - Current Stock: {ingredient.current_stock}
+                      </option>
+                    ))}
+                  </select>
+                  {loadingIngredients && (
+                    <p className="text-xs text-gray-500 mt-1">Loading ingredients...</p>
+                  )}
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Quantity *</label>
+                  <input
+                    type="number"
+                    value={customPOData.quantity}
+                    onChange={(e) => setCustomPOData({...customPOData, quantity: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter quantity"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit Cost (₹) *</label>
+                  <input
+                    type="number"
+                    value={customPOData.unit_cost}
+                    onChange={(e) => setCustomPOData({...customPOData, unit_cost: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                    placeholder="Enter unit cost"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Total Amount</label>
+                  <div className="w-full px-3 py-2 bg-gray-100 border border-gray-300 rounded-lg">
+                    ₹{(parseFloat(customPOData.quantity || '0') * parseFloat(customPOData.unit_cost || '0')).toFixed(2)}
+                  </div>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                <textarea
+                  value={customPOData.notes}
+                  onChange={(e) => setCustomPOData({...customPOData, notes: e.target.value})}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  rows={3}
+                  placeholder="Optional notes for this purchase order"
+                />
+              </div>
+              
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <div className="flex items-start">
+                  <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 mr-2 flex-shrink-0" />
+                  <div className="text-sm text-blue-800">
+                    <p className="font-medium mb-1">Custom Purchase Order</p>
+                    <p>This will create a custom purchase order that is not blocked by any existing POs. The order will be created in "draft" status and can be sent to the vendor when ready.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-6 border-t bg-gray-50 flex justify-end space-x-3">
+              <button
+                onClick={() => {
+                  setShowCustomPOModal(false)
+                  setCustomPOData({
+                    vendor_id: '',
+                    ingredient_id: '',
+                    quantity: '',
+                    unit_cost: '',
+                    notes: ''
+                  })
+                }}
+                className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateCustomPO}
+                disabled={!customPOData.ingredient_id || !customPOData.quantity || !customPOData.unit_cost || loadingIngredients}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Create Custom PO
               </button>
             </div>
           </div>
