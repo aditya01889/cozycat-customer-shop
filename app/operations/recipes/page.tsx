@@ -145,6 +145,13 @@ export default function RecipeManagement() {
         icon={<ChefHat className="h-8 w-8 text-orange-600" />}
         actions={
           <div className="flex items-center space-x-4">
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="flex items-center space-x-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              Add Recipe Ingredient
+            </button>
             <Link
               href="/operations/inventory"
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
@@ -158,18 +165,6 @@ export default function RecipeManagement() {
           </div>
         }
       />
-
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-          >
-            <Plus className="w-5 h-5" />
-            Add Recipe Ingredient
-          </button>
-        </div>
-      </div>
 
       {(showAddForm || editingRecipe) && (
         <>

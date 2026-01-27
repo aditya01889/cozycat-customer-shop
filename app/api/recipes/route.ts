@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { product_id, ingredient_id, percentage, notes } = body
+    const { product_id, ingredient_id, percentage } = body
 
     // Validate required fields
     if (!product_id || !ingredient_id || percentage === undefined) {
@@ -83,8 +83,7 @@ export async function POST(request: NextRequest) {
       .insert([{
         product_id,
         ingredient_id,
-        percentage: parseFloat(percentage),
-        notes: notes || null
+        percentage: parseFloat(percentage)
       }])
       .select()
       .single()

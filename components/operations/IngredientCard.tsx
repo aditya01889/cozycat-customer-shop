@@ -18,8 +18,6 @@ interface Ingredient {
   reorder_level: number
   unit_cost: number
   supplier: string | null
-  last_updated: string
-  material_type?: 'ingredient' | 'packaging' | 'label'
 }
 
 interface IngredientCardProps {
@@ -66,17 +64,6 @@ export default function IngredientCard({
     }
   }
 
-  const getMaterialTypeIcon = () => {
-    switch (ingredient.material_type) {
-      case 'packaging':
-        return <Package className="h-4 w-4 text-blue-600" />
-      case 'label':
-        return <Package className="h-4 w-4 text-purple-600" />
-      default:
-        return <Package className="h-4 w-4 text-green-600" />
-    }
-  }
-
   const handleStockUpdate = () => {
     const stock = parseFloat(newStock)
     if (!isNaN(stock) && stock >= 0) {
@@ -89,25 +76,17 @@ export default function IngredientCard({
     return `₹${amount.toLocaleString()}`
   }
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric'
-    })
-  }
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center space-x-3">
-          {getMaterialTypeIcon()}
+          <Package className="h-4 w-4 text-green-600" />
           <div>
             <h3 className="text-lg font-semibold text-gray-900">
               {ingredient.name}
             </h3>
             <div className="flex items-center space-x-2 text-sm text-gray-500">
-              <span>{ingredient.material_type || 'ingredient'}</span>
+              <span>ingredient</span>
               {ingredient.supplier && (
                 <>
                   <span>•</span>
@@ -205,12 +184,6 @@ export default function IngredientCard({
           <p className="text-gray-500">Total Value</p>
           <p className="font-medium text-gray-900">
             {formatCurrency(ingredient.current_stock * ingredient.unit_cost)}
-          </p>
-        </div>
-        <div>
-          <p className="text-gray-500">Last Updated</p>
-          <p className="font-medium text-gray-900">
-            {formatDate(ingredient.last_updated)}
           </p>
         </div>
       </div>

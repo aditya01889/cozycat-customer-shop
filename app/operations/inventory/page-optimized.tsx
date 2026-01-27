@@ -6,7 +6,7 @@ import { useToast } from '@/components/Toast/ToastProvider'
 import { supabase } from '@/lib/supabase/client'
 import { getOperationsUserClient } from '@/lib/middleware/operations-client'
 import dynamic from 'next/dynamic'
-import { Search, Filter, Plus, Package as InventoryIcon } from 'lucide-react'
+import { Search, Filter, Plus, Package as InventoryIcon, Link } from 'lucide-react'
 import OperationsPageHeader from '@/components/operations/OperationsPageHeader'
 
 // Dynamically import components for better code splitting
@@ -22,9 +22,9 @@ const IngredientCard = dynamic(() => import('@/components/operations/IngredientC
   )
 })
 
-const VendorCard = dynamic(() => import('@/components/operations/VendorCard'), {
+const IngredientForm = dynamic(() => import('@/components/operations/IngredientForm'), {
   loading: () => (
-    <div className="animate-pulse bg-gray-200 h-40 rounded-lg mb-4"></div>
+    <div className="animate-pulse bg-gray-200 h-96 rounded-lg"></div>
   )
 })
 
@@ -37,21 +37,6 @@ interface Ingredient {
   reorder_level: number
   unit_cost: number
   supplier: string | null
-  last_updated: string
-  material_type?: 'ingredient' | 'packaging' | 'label'
-}
-
-interface Vendor {
-  id: string
-  name: string
-  contact_person: string | null
-  phone: string | null
-  email: string | null
-  address: string | null
-  is_active: boolean
-  payment_terms: string | null
-  created_at: string
-  last_order_date: string | null
 }
 
 export default function InventoryOptimized() {
@@ -60,11 +45,11 @@ export default function InventoryOptimized() {
   
   // State management
   const [ingredients, setIngredients] = useState<Ingredient[]>([])
-  const [vendors, setVendors] = useState<Vendor[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [activeTab, setActiveTab] = useState<'ingredients' | 'vendors'>('ingredients')
   const [operationsUser, setOperationsUser] = useState<any>(null)
+  const [showIngredientForm, setShowIngredientForm] = useState(false)
+  const [editingIngredient, setEditingIngredient] = useState<Ingredient | null>(null)
 
   // Initialize operations user
   useEffect(() => {
@@ -99,19 +84,6 @@ export default function InventoryOptimized() {
         setIngredients(ingredientsData || [])
       }
 
-      // Fetch vendors
-      const { data: vendorsData, error: vendorsError } = await supabase
-        .from('vendors')
-        .select('*')
-        .order('name')
-
-      if (vendorsError) {
-        console.error('Error fetching vendors:', vendorsError)
-        showError('Failed to fetch vendors')
-      } else {
-        setVendors(vendorsData || [])
-      }
-
     } catch (error) {
       console.error('Error in fetchInventoryData:', error)
       showError('Failed to load inventory data')
@@ -133,20 +105,13 @@ export default function InventoryOptimized() {
     ingredient.supplier?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const filteredVendors = vendors.filter(vendor =>
-    vendor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    vendor.contact_person?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    vendor.email?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
   // Handle ingredient updates
   const handleUpdateStock = async (ingredientId: string, newStock: number) => {
     try {
       const { error } = await supabase
         .from('ingredients')
         .update({ 
-          current_stock: newStock,
-          last_updated: new Date().toISOString()
+          current_stock: newStock
         })
         .eq('id', ingredientId)
 
@@ -162,29 +127,6 @@ export default function InventoryOptimized() {
     } catch (error) {
       console.error('Error in handleUpdateStock:', error)
       showError('Failed to update stock')
-    }
-  }
-
-  // Handle vendor status toggle
-  const handleToggleVendorStatus = async (vendorId: string, isActive: boolean) => {
-    try {
-      const { error } = await supabase
-        .from('vendors')
-        .update({ is_active: isActive })
-        .eq('id', vendorId)
-
-      if (error) {
-        console.error('Error updating vendor status:', error)
-        showError('Failed to update vendor status')
-        return
-      }
-
-      showSuccess(`Vendor ${isActive ? 'activated' : 'deactivated'} successfully`)
-      await fetchInventoryData() // Refresh data
-
-    } catch (error) {
-      console.error('Error in handleToggleVendorStatus:', error)
-      showError('Failed to update vendor status')
     }
   }
 
@@ -215,47 +157,27 @@ export default function InventoryOptimized() {
     }
   }
 
-  const handleDeleteVendor = async (vendorId: string) => {
-    if (!confirm('Are you sure you want to delete this vendor? This action cannot be undone.')) {
-      return
-    }
-
-    try {
-      const { error } = await supabase
-        .from('vendors')
-        .delete()
-        .eq('id', vendorId)
-
-      if (error) {
-        console.error('Error deleting vendor:', error)
-        showError('Failed to delete vendor')
-        return
-      }
-
-      showSuccess('Vendor deleted successfully')
-      await fetchInventoryData() // Refresh data
-
-    } catch (error) {
-      console.error('Error in handleDeleteVendor:', error)
-      showError('Failed to delete vendor')
-    }
-  }
-
-  // Placeholder functions for edit operations
-  const handleEditIngredient = (ingredient: Ingredient) => {
-    showInfo('Edit ingredient functionality to be implemented')
-  }
-
-  const handleEditVendor = (vendor: Vendor) => {
-    showInfo('Edit vendor functionality to be implemented')
-  }
-
+  // Handle add/edit operations
   const handleAddIngredient = () => {
-    showInfo('Add ingredient functionality to be implemented')
+    setEditingIngredient(null)
+    setShowIngredientForm(true)
   }
 
-  const handleAddVendor = () => {
-    showInfo('Add vendor functionality to be implemented')
+  const handleEditIngredient = (ingredient: Ingredient) => {
+    setEditingIngredient(ingredient)
+    setShowIngredientForm(true)
+  }
+
+  const handleIngredientSaved = () => {
+    fetchInventoryData()
+    setShowIngredientForm(false)
+    setEditingIngredient(null)
+    showSuccess('Ingredient saved successfully')
+  }
+
+  const handleCancelIngredientForm = () => {
+    setShowIngredientForm(false)
+    setEditingIngredient(null)
   }
 
   // Loading state
@@ -275,7 +197,7 @@ export default function InventoryOptimized() {
       {/* Header */}
       <OperationsPageHeader
         title="Inventory Management"
-        description="Manage ingredients, packaging materials, and vendors"
+        description="Manage ingredients and packaging materials"
         icon={<InventoryIcon className="h-8 w-8 text-blue-600" />}
         actions={
           <div className="flex items-center space-x-3">
@@ -286,47 +208,20 @@ export default function InventoryOptimized() {
               <Plus className="h-4 w-4" />
               <span>Add Ingredient</span>
             </button>
-            
-            <button
-              onClick={handleAddVendor}
-              className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
-            >
-              <Plus className="h-4 w-4" />
-              <span>Add Vendor</span>
-            </button>
           </div>
         }
       >
-        {/* Search and Tabs */}
+        {/* Search */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 space-y-4 sm:space-y-0 border-t border-gray-200">
-          <div className="flex items-center space-x-1">
-            <button
-              onClick={() => setActiveTab('ingredients')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'ingredients'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Ingredients
-            </button>
-            <button
-              onClick={() => setActiveTab('vendors')}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                activeTab === 'vendors'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
-            >
-              Vendors
-            </button>
+          <div className="text-sm text-gray-600">
+            {ingredients.length} ingredients
           </div>
           
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder={`Search ${activeTab}...`}
+              placeholder="Search ingredients..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-64"
@@ -337,56 +232,40 @@ export default function InventoryOptimized() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeTab === 'ingredients' ? (
-          /* Ingredients Tab */
-          <div>
-            {filteredIngredients.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No ingredients found</h3>
-                <p className="text-gray-500">
-                  {searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first ingredient'}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredIngredients.map((ingredient) => (
-                  <IngredientCard
-                    key={ingredient.id}
-                    ingredient={ingredient}
-                    onEdit={handleEditIngredient}
-                    onDelete={handleDeleteIngredient}
-                    onUpdateStock={handleUpdateStock}
-                  />
-                ))}
-              </div>
-            )}
+        {filteredIngredients.length === 0 ? (
+          <div className="text-center py-12">
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              No ingredients found
+            </h3>
+            <p className="text-gray-500">
+              {searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first ingredient'}
+            </p>
           </div>
         ) : (
-          /* Vendors Tab */
-          <div>
-            {filteredVendors.length === 0 ? (
-              <div className="text-center py-12">
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No vendors found</h3>
-                <p className="text-gray-500">
-                  {searchTerm ? 'Try adjusting your search terms' : 'Get started by adding your first vendor'}
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {filteredVendors.map((vendor) => (
-                  <VendorCard
-                    key={vendor.id}
-                    vendor={vendor}
-                    onEdit={handleEditVendor}
-                    onDelete={handleDeleteVendor}
-                    onToggleStatus={handleToggleVendorStatus}
-                  />
-                ))}
-              </div>
-            )}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredIngredients.map((ingredient) => (
+              <IngredientCard
+                key={ingredient.id}
+                ingredient={ingredient}
+                onEdit={handleEditIngredient}
+                onDelete={handleDeleteIngredient}
+                onUpdateStock={handleUpdateStock}
+              />
+            ))}
           </div>
         )}
       </div>
+
+      {/* Modal Forms */}
+      {showIngredientForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <IngredientForm
+            ingredient={editingIngredient}
+            onSave={handleIngredientSaved}
+            onCancel={handleCancelIngredientForm}
+          />
+        </div>
+      )}
     </div>
   )
 }
