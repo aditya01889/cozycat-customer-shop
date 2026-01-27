@@ -1,0 +1,18 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://cozycatkitchen.vercel.app/sitemap.xml
+
+# Block admin areas
+Disallow: /admin/
+Disallow: /api/
+
+# Allow important pages
+Allow: /products
+Allow: /about
+Allow: /contact
+Allow: /checkout
+
+# Crawl delay (optional, be respectful)
+Crawl-delay: 1

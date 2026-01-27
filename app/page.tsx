@@ -1,11 +1,101 @@
 import Link from "next/link";
 import { ArrowRight, Star, Heart } from "lucide-react";
+import { Metadata } from 'next'
 import Hero from "@/components/Hero";
+
+export const metadata: Metadata = {
+  title: 'Home - Fresh Homemade Cat Food | CozyCatKitchen',
+  description: 'Discover fresh, homemade cat food at CozyCatKitchen. Complete meals, nutritious broths, healthy treats, and celebration bakes - all made to order with real ingredients. No preservatives, no fillers.',
+  keywords: [
+    'fresh cat food',
+    'homemade cat food delivery', 
+    'natural cat meals',
+    'healthy cat treats',
+    'cat food online',
+    'preservative-free cat food',
+    'cozy cat kitchen products'
+  ],
+  openGraph: {
+    title: 'CozyCatKitchen - Fresh Homemade Cat Food for Your Feline Friend',
+    description: 'Order fresh, homemade cat food made to order. Complete meals, broths, treats & celebration bakes with real ingredients.',
+    url: 'https://cozycatkitchen.vercel.app',
+    images: [
+      {
+        url: '/logo.png',
+        width: 400,
+        height: 400,
+        alt: 'CozyCatKitchen Fresh Cat Food',
+      },
+    ],
+  },
+};
+
+const structuredData = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  "name": "CozyCatKitchen",
+  "description": "Fresh, homemade cat food made to order with real ingredients. No preservatives, no fillers.",
+  "url": "https://cozycatkitchen.vercel.app",
+  "logo": "https://cozycatkitchen.vercel.app/logo.png",
+  "image": "https://cozycatkitchen.vercel.app/logo.png",
+  "telephone": "+91-98736-48122",
+  "email": "cozycatkitchen@gmail.com",
+  "sameAs": [
+    "https://wa.me/919873648122"
+  ],
+  "address": {
+    "@type": "PostalAddress",
+    "addressCountry": "IN"
+  },
+  "hasOfferCatalog": {
+    "@type": "OfferCatalog",
+    "name": "Cat Food Products",
+    "itemListElement": [
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "Complete Meals",
+          "description": "Balanced, protein-rich meals for everyday feeding"
+        }
+      },
+      {
+        "@type": "Offer", 
+        "itemOffered": {
+          "@type": "Product",
+          "name": "Nutritious Broths",
+          "description": "Light, hydrating, and comforting broths"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product", 
+          "name": "Healthy Treats",
+          "description": "Baked treats made with care, not chemicals"
+        }
+      },
+      {
+        "@type": "Offer",
+        "itemOffered": {
+          "@type": "Product",
+          "name": "Celebration Bakes", 
+          "description": "Cupcakes and special treats for special days"
+        }
+      }
+    ]
+  }
+};
 
 export default function Home() {
   return (
-    <div className="bg-white">
-      <Hero />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <div className="bg-white">
+        <Hero />
 
       {/* Product Categories */}
       <section className="py-20 bg-gradient-to-br from-purple-50 to-blue-50">
@@ -239,5 +329,6 @@ export default function Home() {
         </div>
       </section>
     </div>
+    </>
   )
 }

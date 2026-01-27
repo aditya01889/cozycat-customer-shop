@@ -27,7 +27,7 @@ export default function Footer() {
             <p className="text-gray-400">
               Your cozy kitchen for happy cats and delicious meals
             </p>
-            <div className="flex space-x-4 text-sm text-gray-400">
+            <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-400">
               <a href="/about" className="hover:text-orange-400 transition-colors">
                 🏪 About Us
               </a>
@@ -39,6 +39,12 @@ export default function Footer() {
               </a>
               <a href="/terms" className="hover:text-orange-400 transition-colors">
                 📜 Terms
+              </a>
+              <a href="/refund-policy" className="hover:text-orange-400 transition-colors">
+                🔄 Refund Policy
+              </a>
+              <a href="/shipping-policy" className="hover:text-orange-400 transition-colors">
+                🚚 Shipping Policy
               </a>
             </div>
           </div>
