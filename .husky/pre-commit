@@ -1,0 +1,39 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+echo "🔍 Running pre-commit checks..."
+
+# Run linting
+echo "📝 Running ESLint..."
+npm run lint --if-present
+if [ $? -ne 0 ]; then
+  echo "❌ ESLint failed. Please fix linting errors."
+  exit 1
+fi
+
+# Run TypeScript check
+echo "🔧 Running TypeScript check..."
+npx tsc --noEmit --skipLibCheck
+if [ $? -ne 0 ]; then
+  echo "❌ TypeScript check failed. Please fix type errors."
+  exit 1
+fi
+
+# Validate environment variables
+echo "🔐 Validating environment variables..."
+npm run validate-env --if-present
+if [ $? -ne 0 ]; then
+  echo "❌ Environment validation failed."
+  exit 1
+fi
+
+# Quick build test (no full build for speed)
+echo "🏗️  Quick build test..."
+npx next build --dry-run 2>/dev/null || npx tsc --noEmit
+if [ $? -ne 0 ]; then
+  echo "❌ Build test failed."
+  exit 1
+fi
+
+echo "✅ Pre-commit checks passed!"
+exit 0

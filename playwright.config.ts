@@ -8,6 +8,7 @@ import { defineConfig, devices } from '@playwright/test'
 export default defineConfig({
   testDir: './tests',
   testMatch: [
+    '**/critical/*.test.ts',  // Focus on critical tests only
     '**/*.e2e.test.ts',
     '**/*.spec.ts',
     '**/security/*.test.ts',
