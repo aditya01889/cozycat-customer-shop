@@ -31,7 +31,7 @@ interface Vendor {
   is_active: boolean
   payment_terms: string | null
   created_at: string
-  last_order_date: string | null
+  last_ordered: string | null
 }
 
 interface PurchaseOrder {
@@ -600,8 +600,8 @@ export default function VendorManagement() {
                 <p className="text-sm text-gray-600 mb-1">Recent Orders</p>
                 <p className="text-2xl font-bold text-gray-900">
                   {vendors.filter(v => {
-                    if (!v.last_order_date) return false
-                    const daysDiff = (new Date().getTime() - new Date(v.last_order_date).getTime()) / (1000 * 60 * 60 * 24)
+                    if (!v.last_ordered) return false
+                    const daysDiff = (new Date().getTime() - new Date(v.last_ordered).getTime()) / (1000 * 60 * 60 * 24)
                     return daysDiff <= 30
                   }).length}
                 </p>
@@ -720,7 +720,7 @@ export default function VendorManagement() {
                     </div>
                     <div>
                       <span className="text-gray-600">Last Order:</span>
-                      <span className="ml-2 font-medium text-gray-900">{formatDate(vendor.last_order_date)}</span>
+                      <span className="ml-2 font-medium text-gray-900">{formatDate(vendor.last_ordered)}</span>
                     </div>
                   </div>
                 </div>
