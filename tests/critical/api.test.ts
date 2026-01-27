@@ -1,12 +1,6 @@
 import { test, expect } from '@playwright/test'
 
 test.describe('Critical API Tests', () => {
-  let baseUrl: string
-
-  test.beforeAll(async () => {
-    baseUrl = process.env.TEST_BASE_URL || 'http://localhost:3000'
-  })
-
   test('should have valid project structure', async () => {
     // Test that critical files exist
     const fs = require('fs')

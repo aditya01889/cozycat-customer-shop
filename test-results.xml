@@ -1,202 +1,202 @@
-<testsuites id="" name="" tests="90" failures="0" skipped="0" errors="0" time="24.733898999999997">
-<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="chromium" tests="8" failures="0" skipped="0" time="0.168" errors="0">
-<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.028">
+<testsuites id="" name="" tests="90" failures="0" skipped="0" errors="0" time="23.515939">
+<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="chromium" tests="8" failures="0" skipped="0" time="0.219" errors="0">
+<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.035">
 </testcase>
-<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.023">
-</testcase>
-<testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.028">
-</testcase>
-<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.025">
-</testcase>
-<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.024">
-</testcase>
-<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.016">
-</testcase>
-<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.015">
-</testcase>
-<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.009">
-</testcase>
-</testsuite>
-<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="chromium" tests="10" failures="0" skipped="0" time="0.156" errors="0">
-<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.017">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.016">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.013">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.018">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.012">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.014">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.007">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.017">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.016">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.026">
-</testcase>
-</testsuite>
-<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="firefox" tests="8" failures="0" skipped="0" time="0.185" errors="0">
-<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.038">
-</testcase>
-<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.033">
-</testcase>
-<testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.034">
-</testcase>
-<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.014">
-</testcase>
-<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.02">
-</testcase>
-<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.011">
-</testcase>
-<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.016">
-</testcase>
-<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.019">
-</testcase>
-</testsuite>
-<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="firefox" tests="10" failures="0" skipped="0" time="0.184" errors="0">
-<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.024">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.023">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.014">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.028">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.015">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.014">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.01">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.019">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.025">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.012">
-</testcase>
-</testsuite>
-<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="webkit" tests="8" failures="0" skipped="0" time="0.152" errors="0">
-<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.028">
-</testcase>
-<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.016">
-</testcase>
-<testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.029">
-</testcase>
-<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.013">
-</testcase>
-<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.023">
-</testcase>
-<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.009">
-</testcase>
-<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.023">
-</testcase>
-<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.011">
-</testcase>
-</testsuite>
-<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="webkit" tests="10" failures="0" skipped="0" time="0.161" errors="0">
-<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.018">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.021">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.019">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.012">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.012">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.024">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.008">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.017">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.017">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.013">
-</testcase>
-</testsuite>
-<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="Microsoft Edge" tests="8" failures="0" skipped="0" time="0.17" errors="0">
-<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.023">
-</testcase>
-<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.025">
+<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.043">
 </testcase>
 <testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.03">
 </testcase>
-<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.018">
+<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.076">
 </testcase>
-<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.036">
+<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.009">
 </testcase>
-<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.012">
+<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.009">
 </testcase>
-<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.016">
+<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.009">
 </testcase>
-<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.01">
+<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.008">
 </testcase>
 </testsuite>
-<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="Microsoft Edge" tests="10" failures="0" skipped="0" time="0.18" errors="0">
-<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.026">
+<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="chromium" tests="10" failures="0" skipped="0" time="0.181" errors="0">
+<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.024">
 </testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.021">
+<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.02">
 </testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.014">
+<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.031">
 </testcase>
 <testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.012">
 </testcase>
 <testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.013">
 </testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.019">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.008">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.023">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.032">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.012">
-</testcase>
-</testsuite>
-<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="Google Chrome" tests="8" failures="0" skipped="0" time="0.247" errors="0">
-<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.045">
-</testcase>
-<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.03">
-</testcase>
-<testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.04">
-</testcase>
-<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.013">
-</testcase>
-<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.019">
-</testcase>
-<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.029">
-</testcase>
-<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.025">
-</testcase>
-<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.046">
-</testcase>
-</testsuite>
-<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:12:10.754Z" hostname="Google Chrome" tests="10" failures="0" skipped="0" time="0.176" errors="0">
-<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.025">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.019">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.029">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.014">
-</testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.015">
-</testcase>
 <testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.015">
 </testcase>
 <testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.008">
 </testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.021">
+<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.026">
 </testcase>
-<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.014">
+<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.016">
 </testcase>
 <testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.016">
+</testcase>
+</testsuite>
+<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="firefox" tests="8" failures="0" skipped="0" time="0.15" errors="0">
+<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.03">
+</testcase>
+<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.038">
+</testcase>
+<testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.025">
+</testcase>
+<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.023">
+</testcase>
+<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.008">
+</testcase>
+<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.009">
+</testcase>
+<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.009">
+</testcase>
+<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.008">
+</testcase>
+</testsuite>
+<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="firefox" tests="10" failures="0" skipped="0" time="0.185" errors="0">
+<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.015">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.017">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.053">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.014">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.013">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.018">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.009">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.018">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.015">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.013">
+</testcase>
+</testsuite>
+<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="webkit" tests="8" failures="0" skipped="0" time="0.154" errors="0">
+<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.027">
+</testcase>
+<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.031">
+</testcase>
+<testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.033">
+</testcase>
+<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.027">
+</testcase>
+<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.009">
+</testcase>
+<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.008">
+</testcase>
+<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.009">
+</testcase>
+<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.01">
+</testcase>
+</testsuite>
+<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="webkit" tests="10" failures="0" skipped="0" time="0.152" errors="0">
+<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.028">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.016">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.013">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.013">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.014">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.018">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.008">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.016">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.012">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.014">
+</testcase>
+</testsuite>
+<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="Microsoft Edge" tests="8" failures="0" skipped="0" time="0.164" errors="0">
+<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.031">
+</testcase>
+<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.032">
+</testcase>
+<testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.028">
+</testcase>
+<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.022">
+</testcase>
+<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.009">
+</testcase>
+<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.008">
+</testcase>
+<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.008">
+</testcase>
+<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.026">
+</testcase>
+</testsuite>
+<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="Microsoft Edge" tests="10" failures="0" skipped="0" time="0.185" errors="0">
+<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.027">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.017">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.027">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.021">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.015">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.023">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.009">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.017">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.016">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.013">
+</testcase>
+</testsuite>
+<testsuite name="critical\api.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="Google Chrome" tests="8" failures="0" skipped="0" time="0.169" errors="0">
+<testcase name="Critical API Tests › should have valid project structure" classname="critical\api.test.ts" time="0.031">
+</testcase>
+<testcase name="Critical API Tests › should have valid package.json" classname="critical\api.test.ts" time="0.031">
+</testcase>
+<testcase name="Critical API Tests › should have valid Next.js structure" classname="critical\api.test.ts" time="0.03">
+</testcase>
+<testcase name="Critical API Tests › should have critical API routes" classname="critical\api.test.ts" time="0.043">
+</testcase>
+<testcase name="Critical API Tests › should have environment validation" classname="critical\api.test.ts" time="0.008">
+</testcase>
+<testcase name="Critical API Tests › should have valid TypeScript configuration" classname="critical\api.test.ts" time="0.009">
+</testcase>
+<testcase name="Critical API Tests › should have valid ESLint configuration" classname="critical\api.test.ts" time="0.008">
+</testcase>
+<testcase name="Critical API Tests › should have valid Playwright configuration" classname="critical\api.test.ts" time="0.009">
+</testcase>
+</testsuite>
+<testsuite name="critical\smoke.test.ts" timestamp="2026-01-27T19:20:59.523Z" hostname="Google Chrome" tests="10" failures="0" skipped="0" time="0.167" errors="0">
+<testcase name="Smoke Tests - Critical Project Structure › should have required pages" classname="critical\smoke.test.ts" time="0.015">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have policy pages" classname="critical\smoke.test.ts" time="0.024">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have admin pages" classname="critical\smoke.test.ts" time="0.013">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have critical components" classname="critical\smoke.test.ts" time="0.014">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have API routes" classname="critical\smoke.test.ts" time="0.017">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have configuration files" classname="critical\smoke.test.ts" time="0.014">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have scripts" classname="critical\smoke.test.ts" time="0.007">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have valid package.json structure" classname="critical\smoke.test.ts" time="0.031">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have critical dependencies" classname="critical\smoke.test.ts" time="0.017">
+</testcase>
+<testcase name="Smoke Tests - Critical Project Structure › should have development dependencies" classname="critical\smoke.test.ts" time="0.015">
 </testcase>
 </testsuite>
 </testsuites>

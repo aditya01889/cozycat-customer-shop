@@ -11,14 +11,14 @@ const CSRF_HEADER_NAME = 'x-csrf-token'
 // Define RequestInit interface for compatibility
 interface RequestInit {
   method?: string;
-  headers?: HeadersInit;
+  headers?: HeadersInit | Record<string, string>;
   body?: BodyInit | null;
-  mode?: RequestMode;
-  credentials?: RequestCredentials;
-  cache?: RequestCache;
-  redirect?: RequestRedirect;
+  mode?: 'navigate' | 'same-origin' | 'no-cors' | 'cors';
+  credentials?: 'include' | 'same-origin' | 'omit';
+  cache?: 'default' | 'no-store' | 'reload' | 'no-cache' | 'force-cache' | 'only-if-cached';
+  redirect?: 'manual' | 'follow' | 'error';
   referrer?: string;
-  referrerPolicy?: ReferrerPolicy;
+  referrerPolicy?: 'no-referrer' | 'no-referrer-when-downgrade' | 'origin' | 'origin-when-cross-origin' | 'same-origin' | 'strict-origin' | 'strict-origin-when-cross-origin' | 'unsafe-url';
   integrity?: string;
   keepalive?: boolean;
   signal?: AbortSignal | null;
