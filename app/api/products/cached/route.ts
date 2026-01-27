@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
+import { CacheService, CACHE_KEYS, CACHE_TTL, withCache } from '@/lib/redis/cache'
 
 // Product query schema for validation
 const productQuerySchema = z.object({
@@ -10,10 +11,6 @@ const productQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(50).default(20),
   offset: z.coerce.number().int().min(0).default(0),
 })
-
-// Cache configuration
-const CACHE_REVALIDATE_TIME = 300 // 5 minutes for product data
-const SEARCH_CACHE_REVALIDATE_TIME = 60 // 1 minute for search results
 
 export async function GET(request: Request) {
   try {
