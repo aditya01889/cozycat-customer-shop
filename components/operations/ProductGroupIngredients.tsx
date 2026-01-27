@@ -155,9 +155,6 @@ export default function ProductGroupIngredients({
               <h4 className="font-semibold text-gray-900">Ingredient Requirements</h4>
               <p className="text-sm text-gray-600">
                 Total batch: {totalWeight.toFixed(0)}g • {orders.length} order{orders.length > 1 ? 's' : ''}
-                {!productId && (
-                  <span className="text-amber-600 ml-2 font-medium">• Product ID not available</span>
-                )}
               </p>
             </div>
           </div>

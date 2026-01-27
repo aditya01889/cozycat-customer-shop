@@ -35,17 +35,14 @@ interface Order {
   }
   order_items: Array<{
     id: string
-    product_name: string
     quantity: number
-    weight_grams: number
     unit_price: number
     total_price: number
-    product_variant?: {
+    created_at: string
+    product_variants: {
       id: string
       weight_grams: number
-      product_id: string
-      product: {
-        id: string
+      products: {
         name: string
       }
     }
@@ -251,21 +248,25 @@ export default function OrderCard({
             <div className="mb-4">
               <h4 className="text-sm font-semibold text-gray-900 mb-2">Order Items</h4>
               <div className="space-y-2">
-                {order.order_items.map((item, index) => (
-                  <div key={`${item.id}-${index}`} className="flex justify-between items-center p-2 bg-gray-50 rounded">
-                    <div>
+                {order.order_items.map((item, index) => {
+                  // Debug: log the item structure
+                  console.log('Order item data:', item)
+                  return (
+                    <div key={`${item.id}-${index}`} className="flex justify-between items-center p-2 bg-gray-50 rounded">
+                      <div>
+                        <span className="text-sm font-medium text-gray-900">
+                          {item.product_variants?.products?.name || 'Unknown Product'}
+                        </span>
+                        <span className="text-sm text-gray-500 ml-2">
+                          {item.quantity} × {item.product_variants?.weight_grams || 0}g
+                        </span>
+                      </div>
                       <span className="text-sm font-medium text-gray-900">
-                        {item.product_name}
-                      </span>
-                      <span className="text-sm text-gray-500 ml-2">
-                        {item.quantity} × {item.weight_grams}g
+                        {formatCurrency(item.total_price)}
                       </span>
                     </div>
-                    <span className="text-sm font-medium text-gray-900">
-                      {formatCurrency(item.total_price)}
-                    </span>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 

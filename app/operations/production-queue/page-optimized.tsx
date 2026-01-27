@@ -9,6 +9,18 @@ import dynamic from 'next/dynamic'
 import { Package } from 'lucide-react'
 import OperationsPageHeader from '@/components/operations/OperationsPageHeader'
 
+interface CumulativeRequirements {
+  ingredient_id: string
+  ingredient_name: string
+  total_required: number
+  current_stock: number
+  shortage: number
+  affected_orders: string[]
+  supplier_name?: string
+  supplier_phone?: string
+  supplier_email?: string
+}
+
 // Dynamically import components for better code splitting
 const ProductionQueueHeader = dynamic(() => import('@/components/operations/ProductionQueueHeader'), {
   loading: () => (
@@ -179,10 +191,17 @@ export default function ProductionQueueOptimized() {
         .select(`
           *,
           order_items(
-            *,
-            product_variants(
-              *,
-              products(name)
+            id,
+            quantity,
+            unit_price,
+            total_price,
+            created_at,
+            product_variants!inner(
+              id,
+              weight_grams,
+              products!inner(
+                name
+              )
             )
           )
         `)
@@ -218,7 +237,7 @@ export default function ProductionQueueOptimized() {
       setOrders(transformedOrders)
       
       // Calculate cumulative requirements
-      const cumulative = calculateCumulativeRequirements(transformedOrders)
+      const cumulative = await calculateCumulativeRequirements(transformedOrders)
       setCumulativeRequirements(cumulative)
       
     } catch (error) {
@@ -234,9 +253,63 @@ export default function ProductionQueueOptimized() {
   }
 
   // Calculate cumulative ingredient requirements
-  const calculateCumulativeRequirements = (orders: OrderWithIngredients[]) => {
-    // Mock implementation - would calculate actual cumulative requirements
-    return []
+  const calculateCumulativeRequirements = async (orders: OrderWithIngredients[]) => {
+    const ingredientMap = new Map<string, CumulativeRequirements>()
+    
+    // For each order, calculate ingredient requirements
+    for (const order of orders) {
+      try {
+        // Get ingredient requirements for this order using the database function
+        const { data: orderRequirements, error } = await supabase
+          .rpc('calculate_order_ingredient_requirements', {
+            p_order_id: order.id
+          })
+        
+        if (error) {
+          console.error('Error fetching order requirements:', error)
+          continue
+        }
+        
+        if (orderRequirements && Array.isArray(orderRequirements)) {
+          orderRequirements.forEach((req: any) => {
+            const ingredientId = req.ingredient_id
+            const ingredientName = req.ingredient_name
+            const requiredQuantity = req.required_quantity || 0
+            const currentStock = req.current_stock || 0
+            
+            if (!ingredientMap.has(ingredientId)) {
+              ingredientMap.set(ingredientId, {
+                ingredient_id: ingredientId,
+                ingredient_name: ingredientName,
+                total_required: requiredQuantity,
+                current_stock: currentStock,
+                shortage: Math.max(0, requiredQuantity - currentStock),
+                affected_orders: [order.order_number],
+                supplier_name: req.supplier_name,
+                supplier_phone: req.supplier_phone,
+                supplier_email: req.supplier_email
+              })
+            } else {
+              const existing = ingredientMap.get(ingredientId)!
+              existing.total_required += requiredQuantity
+              existing.current_stock = currentStock // Use latest stock
+              existing.shortage = Math.max(0, existing.total_required - existing.current_stock)
+              if (!existing.affected_orders.includes(order.order_number)) {
+                existing.affected_orders.push(order.order_number)
+              }
+              // Update supplier info if available
+              if (req.supplier_name) existing.supplier_name = req.supplier_name
+              if (req.supplier_phone) existing.supplier_phone = req.supplier_phone
+              if (req.supplier_email) existing.supplier_email = req.supplier_email
+            }
+          })
+        }
+      } catch (error) {
+        console.error('Error processing order:', order.id, error)
+      }
+    }
+    
+    return Array.from(ingredientMap.values())
   }
 
   // Start batch production
