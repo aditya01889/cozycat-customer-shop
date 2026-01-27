@@ -81,6 +81,44 @@ const nextConfig = {
           },
         ],
       },
+      // Edge caching for static assets
+      {
+        source: '/_next/static/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      {
+        source: '/images/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+      // Edge caching for API endpoints
+      {
+        source: '/api/products/isr',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=300, s-maxage=300, stale-while-revalidate=30',
+          },
+        ],
+      },
+      {
+        source: '/api/categories/isr',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=600, s-maxage=600, stale-while-revalidate=60',
+          },
+        ],
+      },
     ]
   },
   // Environment-specific configurations
@@ -88,6 +126,10 @@ const nextConfig = {
     // Production optimizations
     poweredByHeader: false,
     compress: true,
+    // Enable edge runtime for better performance
+    experimental: {
+      runtime: 'edge',
+    },
   }),
 }
 

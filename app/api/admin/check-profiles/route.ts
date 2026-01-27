@@ -3,11 +3,15 @@ import { NextResponse, NextRequest } from 'next/server'
 import { createSecureHandler } from '@/lib/api/secure-handler'
 import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
 import { getSupabaseConfig } from '@/lib/env-validation'
+import { requireDevelopmentMode, addProductionWarning } from '@/lib/utils/production-check'
 
 export const GET = createSecureHandler({
   rateLimiter: actionRateLimiters.contactForm,
   requireCSRF: false, // GET requests don't need CSRF
   preCheck: async (req: NextRequest) => {
+    // Block debug endpoints in production
+    requireDevelopmentMode('check-profiles')
+    
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
@@ -30,6 +34,9 @@ export const GET = createSecureHandler({
     return { allowed: true }
   },
   handler: async (req: NextRequest) => {
+    // Add production warning
+    addProductionWarning('check-profiles')
+    
     // Get validated Supabase configuration
     const { url, serviceRoleKey } = getSupabaseConfig()
     
@@ -77,7 +84,7 @@ export const GET = createSecureHandler({
 
     return NextResponse.json({
       success: true,
-      warning: 'This is a debug endpoint - remove from production',
+      warning: 'This is a debug endpoint - not available in production',
       profiles: profiles || [],
       customers: customers || [],
       customersWithProfiles: customersWithProfiles || [],

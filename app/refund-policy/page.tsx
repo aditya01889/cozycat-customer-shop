@@ -33,13 +33,6 @@ export default function RefundPolicy() {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <span className="text-yellow-500 mt-1">⚠️</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">2-6 hours after ordering</p>
-                      <p className="text-gray-600">50% refund (ingredients already purchased)</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
                     <span className="text-red-500 mt-1">❌</span>
                     <div>
                       <p className="font-semibold text-gray-800">After 6 hours</p>
@@ -68,13 +61,6 @@ export default function RefundPolicy() {
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <span className="text-orange-500 mt-1">🕐</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Late delivery (beyond 2 hours)</p>
-                      <p className="text-gray-600">20% discount on current order</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
                     <span className="text-orange-500 mt-1">💔</span>
                     <div>
                       <p className="font-semibold text-gray-800">Damaged packaging</p>
@@ -95,13 +81,6 @@ export default function RefundPolicy() {
                   We understand that cats can be picky! Here's our cat satisfaction guarantee:
                 </p>
                 <div className="bg-white rounded-lg p-4 space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">🍽️</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">First-time customers</p>
-                      <p className="text-gray-600">If your cat refuses the food, contact us within 24 hours for 50% refund on your first order</p>
-                    </div>
-                  </div>
                   <div className="flex items-start space-x-3">
                     <span className="text-green-500 mt-1">🤢</span>
                     <div>

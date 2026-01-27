@@ -1,9 +1,12 @@
 /**
  * Rate limiting middleware for API protection
  * Prevents abuse and DDoS attacks
+ * Automatically uses Redis when available, falls back to in-memory storage
  */
 
 import { NextRequest, NextResponse } from 'next/server'
+import { isRedisConnected } from '@/lib/cache/redis-client'
+import { redisRateLimitMiddleware } from './redis-rate-limiter'
 
 interface RateLimitStore {
   count: number
@@ -89,9 +92,15 @@ export function clearRateLimitStore() {
 }
 
 /**
- * Rate limiting middleware
+ * Rate limiting middleware - automatically chooses Redis or in-memory storage
  */
-export function rateLimitMiddleware(request: NextRequest): NextResponse | null {
+export async function rateLimitMiddleware(request: NextRequest): Promise<NextResponse | null> {
+  // Use Redis-based rate limiting if Redis is available
+  if (isRedisConnected()) {
+    return await redisRateLimitMiddleware(request)
+  }
+  
+  // Fallback to in-memory rate limiting
   const pathname = request.nextUrl.pathname
   
   // Skip rate limiting for static assets and non-API routes
@@ -159,7 +168,7 @@ export function rateLimitMiddleware(request: NextRequest): NextResponse | null {
 }
 
 /**
- * Custom rate limit hook for specific endpoints
+ * Custom rate limiter - automatically chooses Redis or in-memory storage
  */
 export function createRateLimiter(windowMs: number, maxRequests: number) {
   const store = new Map<string, RateLimitStore>()
@@ -188,6 +197,24 @@ export function createRateLimiter(windowMs: number, maxRequests: number) {
 
     rateLimitData.count++
     return { allowed: true }
+  }
+}
+
+/**
+ * Redis-enhanced rate limiter for production
+ */
+export function createRedisEnhancedRateLimiter(windowMs: number, maxRequests: number) {
+  return async (request: NextRequest): Promise<{ allowed: boolean; resetTime?: number }> => {
+    // Use Redis if available
+    if (isRedisConnected()) {
+      const { createRedisRateLimiter } = await import('./redis-rate-limiter')
+      const redisLimiter = createRedisRateLimiter(windowMs, maxRequests)
+      return await redisLimiter(request)
+    }
+    
+    // Fallback to in-memory storage
+    const fallbackLimiter = createRateLimiter(windowMs, maxRequests)
+    return fallbackLimiter(request)
   }
 }
 

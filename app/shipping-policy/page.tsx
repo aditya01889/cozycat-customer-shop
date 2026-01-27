@@ -22,7 +22,7 @@ export default function ShippingPolicy() {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-700">
-                  We currently deliver fresh cat food to the following areas:
+                  We deliver fresh cat food across India:
                 </p>
                 <div className="bg-white rounded-lg p-4">
                   <div className="grid md:grid-cols-2 gap-4">
@@ -37,18 +37,18 @@ export default function ShippingPolicy() {
                       </ul>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-gray-800 mb-2">🌆 Other Cities</h3>
+                      <h3 className="font-semibold text-gray-800 mb-2">🌆 PAN India</h3>
                       <ul className="text-gray-600 space-y-1">
-                        <li>• Mumbai (Limited areas)</li>
-                        <li>• Bengaluru (Limited areas)</li>
-                        <li>• Pune (Limited areas)</li>
-                        <li>• Hyderabad (Limited areas)</li>
+                        <li>• Major Metro Cities</li>
+                        <li>• Tier 1 Cities</li>
+                        <li>• Tier 2 Cities</li>
+                        <li>• All major urban centers</li>
                       </ul>
                     </div>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 italic">
-                  Don't see your area? Contact us - we're expanding our delivery zones!
+                  We deliver to most major cities across India. Contact us for specific area availability!
                 </p>
               </div>
             </section>
@@ -60,41 +60,34 @@ export default function ShippingPolicy() {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-700">
-                  Since we prepare food fresh after ordering, delivery times vary:
+                  Since we prepare food fresh after ordering, delivery timeframes are:
                 </p>
                 <div className="bg-white rounded-lg p-4 space-y-3">
                   <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">🍽️</span>
+                    <span className="text-green-500 mt-1">📅</span>
                     <div>
-                      <p className="font-semibold text-gray-800">Complete Meals</p>
-                      <p className="text-gray-600">Within 2-4 hours after preparation</p>
+                      <p className="font-semibold text-gray-800">Order Cut-off Time</p>
+                      <p className="text-gray-600">Order before 12 PM for same-day dispatch, otherwise next-day dispatch</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">🥣</span>
+                    <span className="text-blue-500 mt-1">�️</span>
                     <div>
-                      <p className="font-semibold text-gray-800">Nutritious Broths</p>
-                      <p className="text-gray-600">Within 1-2 hours after preparation</p>
+                      <p className="font-semibold text-gray-800">Local Orders (Delhi NCR)</p>
+                      <p className="text-gray-600">Delivered within 1-2 hours of dispatch</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">🍪</span>
+                    <span className="text-purple-500 mt-1">🌆</span>
                     <div>
-                      <p className="font-semibold text-gray-800">Healthy Treats</p>
-                      <p className="text-gray-600">Within 4-6 hours (baking time included)</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">🧁</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Celebration Bakes</p>
-                      <p className="text-gray-600">Within 6-8 hours (custom baking time)</p>
+                      <p className="font-semibold text-gray-800">National Orders</p>
+                      <p className="text-gray-600">Delivered within 1-3 days of dispatch</p>
                     </div>
                   </div>
                 </div>
                 <div className="bg-yellow-100 rounded-lg p-4">
                   <p className="text-yellow-800 font-medium">
-                    ⚠️ Order before 6 PM for same-day delivery. Orders after 6 PM will be delivered next day.
+                    ⚠️ All products have the same delivery timeframe. Fresh preparation begins after order confirmation.
                   </p>
                 </div>
               </div>
@@ -107,35 +100,23 @@ export default function ShippingPolicy() {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-700">
-                  Our delivery charges are based on distance and order value:
+                  Our delivery charges are based on location and order value:
                 </p>
                 <div className="bg-white rounded-lg p-4 space-y-3">
                   <div className="flex items-start space-x-3">
-                    <span className="text-blue-500 mt-1">🆓</span>
+                    <span className="text-blue-500 mt-1">�️</span>
                     <div>
-                      <p className="font-semibold text-gray-800">Free Delivery</p>
-                      <p className="text-gray-600">Orders above ₹500 within Delhi NCR</p>
+                      <p className="font-semibold text-gray-800">Local Delivery (Delhi NCR)</p>
+                      <p className="text-gray-600">₹40 for orders below ₹499</p>
+                      <p className="text-green-600 font-medium">Free for orders ₹499 and above</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <span className="text-blue-500 mt-1">💵</span>
+                    <span className="text-purple-500 mt-1">🌆</span>
                     <div>
-                      <p className="font-semibold text-gray-800">Standard Delivery</p>
-                      <p className="text-gray-600">₹40 for orders below ₹500 (Delhi NCR)</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-blue-500 mt-1">🚀</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Express Delivery</p>
-                      <p className="text-gray-600">₹80 extra for delivery within 1 hour (select areas only)</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-blue-500 mt-1">🌆</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Other Cities</p>
-                      <p className="text-gray-600">₹80-120 based on distance and order value</p>
+                      <p className="font-semibold text-gray-800">National Delivery (PAN India)</p>
+                      <p className="text-gray-600">₹50 for orders below ₹799</p>
+                      <p className="text-green-600 font-medium">Free for orders ₹799 and above</p>
                     </div>
                   </div>
                 </div>

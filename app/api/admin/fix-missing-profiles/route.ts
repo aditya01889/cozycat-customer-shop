@@ -3,11 +3,15 @@ import { NextResponse, NextRequest } from 'next/server'
 import { createSecureHandler } from '@/lib/api/secure-handler'
 import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
 import { getSupabaseConfig } from '@/lib/env-validation'
+import { requireDevelopmentMode, addProductionWarning } from '@/lib/utils/production-check'
 
 export const POST = createSecureHandler({
   rateLimiter: actionRateLimiters.contactForm,
   requireCSRF: true,
   preCheck: async (req: NextRequest) => {
+    // Block debug endpoints in production
+    requireDevelopmentMode('admin')
+    
     const { createClient } = await import('@/lib/supabase/server')
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
