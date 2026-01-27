@@ -33,6 +33,7 @@
     "@tanstack/react-query-devtools": "^5.91.2",
     "@types/nodemailer": "^7.0.5",
     "@upstash/redis": "^1.36.1",
+    "@vercel/analytics": "^1.6.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
     "jspdf": "^4.0.0",

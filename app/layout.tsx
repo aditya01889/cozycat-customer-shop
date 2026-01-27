@@ -7,6 +7,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/Toast/ToastProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ReactQueryProvider } from "@/lib/react-query/provider";
+import { Analytics } from "@vercel/analytics/next";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -112,6 +113,7 @@ export default function RootLayout({
             </ToastProvider>
           </ReactQueryProvider>
         </ErrorBoundary>
+        <Analytics />
       </body>
     </html>
   );
