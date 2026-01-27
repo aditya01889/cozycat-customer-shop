@@ -141,51 +141,84 @@ export default function Home() {
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center mb-4">
-                <div className="text-3xl mr-3">😺</div>
-                <div>
-                  <h4 className="font-semibold text-gray-800">Whiskers</h4>
-                  <p className="text-sm text-gray-500">Cat of Sarah M.</p>
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="relative">
+                <img 
+                  src="/testimonials/whatsapp-1.jpg" 
+                  alt="Customer testimonial about cat food excitement"
+                  className="w-full h-auto"
+                />
+                <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                  WhatsApp
                 </div>
               </div>
-              <p className="text-gray-600 italic">"I love the complete meals! My human says I'm healthier and more energetic. Plus, the chicken is delicious!"</p>
-              <div className="flex mt-4">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-yellow-400">⭐</span>
-                ))}
+              <div className="p-4">
+                <div className="flex items-center mb-2">
+                  <div className="text-2xl mr-2">😺</div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800">Happy Customer</h4>
+                    <p className="text-sm text-gray-500">Verified Purchase</p>
+                  </div>
+                </div>
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400">⭐</span>
+                  ))}
+                </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center mb-4">
-                <div className="text-3xl mr-3">😸</div>
-                <div>
-                  <h4 className="font-semibold text-gray-800">Mittens</h4>
-                  <p className="text-sm text-gray-500">Cat of Mike R.</p>
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="relative">
+                <img 
+                  src="/testimonials/whatsapp-2.jpg" 
+                  alt="Customer testimonial about cat food improvement"
+                  className="w-full h-auto"
+                />
+                <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                  WhatsApp
                 </div>
               </div>
-              <p className="text-gray-600 italic">"The broth is my favorite! It's so warm and comforting. I always finish the whole bowl!"</p>
-              <div className="flex mt-4">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-yellow-400">⭐</span>
-                ))}
+              <div className="p-4">
+                <div className="flex items-center mb-2">
+                  <div className="text-2xl mr-2">😸</div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800">Satisfied Owner</h4>
+                    <p className="text-sm text-gray-500">Verified Purchase</p>
+                  </div>
+                </div>
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400">⭐</span>
+                  ))}
+                </div>
               </div>
             </div>
             
-            <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex items-center mb-4">
-                <div className="text-3xl mr-3">😻</div>
-                <div>
-                  <h4 className="font-semibold text-gray-800">Shadow</h4>
-                  <p className="text-sm text-gray-500">Cat of Lisa K.</p>
+            <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
+              <div className="relative">
+                <img 
+                  src="/testimonials/whatsapp-3.jpg" 
+                  alt="Customer conversation about cat eating habits"
+                  className="w-full h-auto"
+                />
+                <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
+                  WhatsApp
                 </div>
               </div>
-              <p className="text-gray-600 italic">"The cookies are the best treats ever! I get one every day when I'm good. My human says they're healthy too!"</p>
-              <div className="flex mt-4">
-                {[...Array(5)].map((_, i) => (
-                  <span key={i} className="text-yellow-400">⭐</span>
-                ))}
+              <div className="p-4">
+                <div className="flex items-center mb-2">
+                  <div className="text-2xl mr-2">😻</div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800">Concerned Owner</h4>
+                    <p className="text-sm text-gray-500">Verified Purchase</p>
+                  </div>
+                </div>
+                <div className="flex">
+                  {[...Array(5)].map((_, i) => (
+                    <span key={i} className="text-yellow-400">⭐</span>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
