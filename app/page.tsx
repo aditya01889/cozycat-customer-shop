@@ -7,91 +7,103 @@ export default function Home() {
     <div className="bg-white">
       <Hero />
 
-      {/* Features Section */}
-      <section className="py-20 bg-gradient-to-br from-orange-50 to-pink-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center">
-              <span className="mr-3">🐾</span>
-              Why Choose CozyCatKitchen?
-            </h2>
-            <p className="text-lg text-gray-600">Fresh, nutritious, and made with love for your feline friends</p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">❤️</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-orange-800">Made Fresh Daily</h3>
-              <p className="text-gray-600">Every order is made fresh after you place it. No preservatives, no shelf life concerns. Your cat deserves the best!</p>
-            </div>
-            
-            <div className="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">⭐</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-pink-800">Premium Ingredients</h3>
-              <p className="text-gray-600">Human-grade ingredients, balanced nutrition, and recipes developed with care.</p>
-            </div>
-            
-            <div className="text-center p-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🚚</span>
-              </div>
-              <h3 className="text-xl font-semibold mb-2 text-purple-800">Delivered Fresh</h3>
-              <p className="text-gray-600">Temperature-controlled delivery ensures your cat's food arrives fresh and safe. We deliver with care!</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Product Categories */}
       <section className="py-20 bg-gradient-to-br from-purple-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center">
-              <span className="mr-3">🍽️</span>
-              Our Products
+              <span className="mr-3">🐾</span>
+              Why Choose Cozy Cat Kitchen
             </h2>
-            <p className="text-lg text-gray-600">Complete meals, broths, cookies, and treats for every cat</p>
+            <p className="text-lg text-gray-600">Thoughtfully prepared meals that cats notice and trust</p>
           </div>
           
-          <div className="grid md:grid-cols-4 gap-6">
-            <Link href="/products?category=meals" className="group bg-white rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">🥘</span>
+              </div>
+              <h3 className="font-semibold mb-4 text-orange-800 text-lg">Real Ingredients</h3>
+              <p className="text-gray-700 leading-relaxed">
+                We make fresh, homemade food for cats using simple, real ingredients — the kind you trust.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">⏰</span>
+              </div>
+              <h3 className="font-semibold mb-4 text-green-800 text-lg">Made Fresh</h3>
+              <p className="text-gray-700 leading-relaxed">
+                Our meals are cooked in small batches only after you place an order. No artificial preservatives. No long shelf life. Just honest food, made thoughtfully.
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-2xl p-8 text-center hover:shadow-xl transition-all duration-300 transform hover:scale-105">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-3xl">💚</span>
+              </div>
+              <h3 className="font-semibold mb-4 text-purple-800 text-lg">Happy Cats</h3>
+              <p className="text-gray-700 leading-relaxed">
+                Many cat parents notice better digestion, steady energy, and calmer mealtimes.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Our Products Section */}
+      <section className="py-20 bg-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">
+              Our Products
+            </h2>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Link href="/products?category=meals" className="text-center p-6 hover:shadow-lg transition-all duration-300 rounded-lg block group">
+              <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-orange-200 transition-colors">
                 <span className="text-3xl">🍽️</span>
               </div>
-              <h3 className="font-semibold mb-2 text-orange-800">Complete Meals</h3>
-              <p className="text-sm text-gray-600">Nutritionally balanced daily meals</p>
-              <div className="mt-2 text-orange-500 font-semibold">Shop Now →</div>
+              <h3 className="font-semibold mb-3 text-gray-800 group-hover:text-orange-600 transition-colors">Complete Meals</h3>
+              <p className="text-sm text-gray-600">Balanced, protein-rich meals for everyday feeding.</p>
+              <div className="mt-3 text-orange-500 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                Shop Now →
+              </div>
             </Link>
             
-            <Link href="/products?category=broths" className="group bg-white rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Link href="/products?category=broths" className="text-center p-6 hover:shadow-lg transition-all duration-300 rounded-lg block group">
+              <div className="w-16 h-16 bg-pink-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-pink-200 transition-colors">
                 <span className="text-3xl">🥣</span>
               </div>
-              <h3 className="font-semibold mb-2 text-pink-800">Nutrient Broths</h3>
-              <p className="text-sm text-gray-600">Hydrating and nutritious broths</p>
-              <div className="mt-2 text-pink-500 font-semibold">Shop Now →</div>
+              <h3 className="font-semibold mb-3 text-gray-800 group-hover:text-pink-600 transition-colors">Nutritious Broths</h3>
+              <p className="text-sm text-gray-600">Light, hydrating, and comforting — great on their own or mixed.</p>
+              <div className="mt-3 text-pink-500 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                Shop Now →
+              </div>
             </Link>
             
-            <Link href="/products?category=cookies" className="group bg-white rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Link href="/products?category=cookies" className="text-center p-6 hover:shadow-lg transition-all duration-300 rounded-lg block group">
+              <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-yellow-200 transition-colors">
                 <span className="text-3xl">🍪</span>
               </div>
-              <h3 className="font-semibold mb-2 text-yellow-800">Cookies</h3>
-              <p className="text-sm text-gray-600">Healthy baked treats</p>
-              <div className="mt-2 text-yellow-600 font-semibold">Shop Now →</div>
+              <h3 className="font-semibold mb-3 text-gray-800 group-hover:text-yellow-600 transition-colors">Healthy Treats</h3>
+              <p className="text-sm text-gray-600">Baked treats made with care, not chemicals.</p>
+              <div className="mt-3 text-yellow-600 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                Shop Now →
+              </div>
             </Link>
             
-            <Link href="/products?category=cupcakes" className="group bg-white rounded-2xl p-6 text-center hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Link href="/products?category=cupcakes" className="text-center p-6 hover:shadow-lg transition-all duration-300 rounded-lg block group">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:bg-purple-200 transition-colors">
                 <span className="text-3xl">🧁</span>
               </div>
-              <h3 className="font-semibold mb-2 text-purple-800">Cupcakes</h3>
-              <p className="text-sm text-gray-600">Special celebration treats</p>
-              <div className="mt-2 text-purple-500 font-semibold">Shop Now →</div>
+              <h3 className="font-semibold mb-3 text-gray-800 group-hover:text-purple-600 transition-colors">Celebration Bakes</h3>
+              <p className="text-sm text-gray-600">Cupcakes and special treats for special days.</p>
+              <div className="mt-3 text-purple-500 text-sm font-medium opacity-0 group-hover:opacity-100 transition-opacity">
+                Shop Now →
+              </div>
             </Link>
           </div>
         </div>

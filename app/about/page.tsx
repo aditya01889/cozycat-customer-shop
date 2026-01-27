@@ -11,13 +11,13 @@ export default function AboutPage() {
         {/* Header with Cat Theme */}
         <div className="text-center mb-12">
           <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-4">
-            <span className="text-3xl">🐱</span>
+            <span className="text-3xl">�</span>
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
-            About CozyCatKitchen
+            About Cozy Cat Kitchen
           </h1>
           <p className="text-xl text-gray-600">
-            Where every meal tells a story and every cat purrs with delight! 🐾
+            Where thoughtful meals meet calm curiosity 🐾
           </p>
         </div>
 
@@ -63,44 +63,56 @@ export default function AboutPage() {
                 <div className="bg-orange-50 rounded-lg p-6">
                   <h2 className="text-2xl font-bold text-orange-800 mb-4 flex items-center">
                     <span className="mr-3">📖</span>
-                    The Purrfect Beginning
+                    Our Story
                   </h2>
-                  <div className="grid md:grid-cols-2 gap-8 items-center">
-                    <div className="space-y-4">
-                      <div className="text-6xl mb-4">🐱</div>
-                      <p className="text-gray-700">
-                        It all started with a simple dream: creating meals that would make even the pickiest cats purr with delight. Our founder, Sarah, believed that every cat deserved food that was made with the same love and care as human food.
-                      </p>
-                      <p className="text-gray-700">
-                        What began as experiments in her home kitchen quickly grew into a passion project. Her own cats, Whiskers and Mittens, became the official taste-testers, giving their approval through enthusiastic purrs and empty bowls.
-                      </p>
-                    </div>
-                    <div className="space-y-4">
-                      <h3 className="font-semibold text-orange-700 mb-2 flex items-center">
+                  <div className="space-y-6">
+                    <p className="text-gray-700 text-lg leading-relaxed">
+                      At Cozy Cat Kitchen, every meal we prepare comes from a place of calm curiosity, care, and real understanding — just like you'd make for your own family.
+                    </p>
+                    
+                    <p className="text-gray-700 leading-relaxed">
+                      It didn't start in a lab or a corporate kitchen. It started in a home kitchen, with two cats who taught us to pay attention — not just to what they ate, but how they ate. Watching them gently explore new flavors, sniffing and inspecting before that first bite, we learned something simple: cats aren't picky — they're aware of what's in their bowl.
+                    </p>
+                    
+                    <p className="text-gray-700 leading-relaxed">
+                      That observation became a quiet mission: to make fresh, thoughtful food that feels like a genuine choice — not just something cats eat because it's there, but something they trust.
+                    </p>
+                    
+                    <div className="bg-white rounded-lg p-6 mt-6">
+                      <h3 className="font-semibold text-orange-700 mb-4 flex items-center">
                         <span className="mr-2">🍽️</span>
-                        Quality Ingredients
+                        Our Kitchen Philosophy
                       </h3>
-                      <p className="text-gray-700">
-                        We source only the finest ingredients - free-range chicken, fresh vegetables, and herbs that cats would love if they could shop for themselves!
+                      <p className="text-gray-700 mb-4">
+                        We began by cooking with ingredients we'd happily eat ourselves — real meat, fresh produce, minimal processing — and never using artificial preservatives, colors, or fillers. Every recipe is handcrafted after you place an order, so nothing sits on shelves waiting to be sold.
                       </p>
-                      <div className="bg-white rounded-lg p-4 mt-4">
-                        <h4 className="font-semibold text-gray-800 mb-2">Our Kitchen Philosophy</h4>
-                        <ul className="space-y-2 text-gray-600">
-                          <li className="flex items-center">
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center">
                             <span className="text-orange-500 mr-2">✓</span>
-                            Fresh ingredients, never frozen
-                          </li>
-                          <li className="flex items-center">
+                            <span className="text-gray-600">Real ingredients we'd eat ourselves</span>
+                          </div>
+                          <div className="flex items-center">
                             <span className="text-orange-500 mr-2">✓</span>
-                            No artificial preservatives
-                          </li>
-                          <li className="flex items-center">
+                            <span className="text-gray-600">No artificial preservatives, colors, or fillers</span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center">
                             <span className="text-orange-500 mr-2">✓</span>
-                            Cat-approved recipes
-                          </li>
-                        </ul>
+                            <span className="text-gray-600">Handcrafted after you place an order</span>
+                          </div>
+                          <div className="flex items-center">
+                            <span className="text-orange-500 mr-2">✓</span>
+                            <span className="text-gray-600">Nothing sits on shelves waiting to be sold</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
+                    
+                    <p className="text-gray-700 leading-relaxed italic">
+                      Today, Cozy Cat Kitchen is about more than food — it's about giving cat parents a mindful way to nourish their cats with meals that feel like love on a plate.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -113,26 +125,36 @@ export default function AboutPage() {
                     <span className="mr-3">🎯</span>
                     Our Mission
                   </h2>
-                  <p className="text-gray-700 mb-6">
-                    To provide fresh, nutritious, and delicious meals that make every cat feel loved and cared for, one purr at a time.
-                  </p>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-lg p-4">
-                      <h3 className="font-semibold text-purple-700 mb-2 flex items-center">
-                        <span className="mr-2">🐾</span>
-                        Cat-Approved Recipes
-                      </h3>
-                      <p className="text-gray-600">
-                        Every recipe is taste-tested by our panel of feline food critics. We've perfected the art of the gentle simmer and the aromatic bake to create meals that satisfy both human and cat palates.
-                      </p>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 text-lg leading-relaxed">
+                      Our mission is simple:
+                    </p>
+                    
+                    <blockquote className="text-xl font-medium text-purple-700 italic border-l-4 border-purple-300 pl-4">
+                      To bring cats wholesome food that's as honest and calm as their curiosity.
+                    </blockquote>
+                    
+                    <div className="space-y-4">
+                      <h3 className="font-semibold text-purple-700 mb-3">We believe:</h3>
+                      <div className="space-y-3">
+                        <div className="flex items-start space-x-3">
+                          <span className="text-purple-500 mt-1">🐾</span>
+                          <p className="text-gray-700">cats deserve meals made with real ingredients</p>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <span className="text-purple-500 mt-1">🍽️</span>
+                          <p className="text-gray-700">food shouldn't compromise quality for convenience</p>
+                        </div>
+                        <div className="flex items-start space-x-3">
+                          <span className="text-purple-500 mt-1">💚</span>
+                          <p className="text-gray-700">fresh, slow-cooked meals help support wellbeing and confidence at mealtime</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="bg-white rounded-lg p-4">
-                      <h3 className="font-semibold text-purple-700 mb-2 flex items-center">
-                        <span className="mr-2">🌈</span>
-                        Happy Customers
-                      </h3>
-                      <p className="text-gray-600">
-                        Your satisfaction is our top priority. We're not happy until you and your cats are completely satisfied with every order.
+                    
+                    <div className="bg-white rounded-lg p-6 mt-6">
+                      <p className="text-gray-700 leading-relaxed">
+                        We don't chase trends. We don't use buzzwords. We just make food that feels right, because your cat deserves food that's made with the same kind of care you'd put into your own kitchen.
                       </p>
                     </div>
                   </div>
@@ -145,40 +167,99 @@ export default function AboutPage() {
                 <div className="bg-green-50 rounded-lg p-6">
                   <h2 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
                     <span className="mr-3">👥</span>
-                    The Kitchen Crew
+                    Our Team
                   </h2>
-                  <p className="text-gray-700 mb-6">
-                    Meet the passionate team behind CozyCatKitchen - humans and cats working together!
-                  </p>
-                  <div className="grid md:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-lg p-6 text-center">
-                      <div className="w-20 h-20 bg-orange-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-3xl">👩‍🍳</span>
+                  <div className="space-y-6">
+                    <p className="text-gray-700 leading-relaxed">
+                      Behind Cozy Cat Kitchen is a small team with big hearts — two human cat parents and two feline taste-testers who make sure every recipe feels just right.
+                    </p>
+                    
+                    <div className="grid md:grid-cols-2 gap-6">
+                      <div className="bg-white rounded-lg p-6">
+                        <div className="flex items-center space-x-4 mb-4">
+                          <div className="w-16 h-16 bg-orange-200 rounded-full flex items-center justify-center">
+                            <span className="text-2xl">👩</span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800">Priyanka</h3>
+                            <p className="text-sm text-gray-600">Co-Founder & Chief Cat Whisperer</p>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          Priyanka brings quiet attention to every detail — from ingredient selection to how meals are presented. She's the calm voice in the kitchen and the one who remembers every cat's preference.
+                        </p>
                       </div>
-                      <h3 className="font-semibold text-gray-800">Sarah</h3>
-                      <p className="text-sm text-gray-600 mb-2">Founder & Head Chef</p>
-                      <p className="text-xs text-gray-500">Cat mom to Whiskers & Mittens</p>
+                      
+                      <div className="bg-white rounded-lg p-6">
+                        <div className="flex items-center space-x-4 mb-4">
+                          <div className="w-16 h-16 bg-blue-200 rounded-full flex items-center justify-center">
+                            <span className="text-2xl">👨</span>
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-gray-800">Aditya</h3>
+                            <p className="text-sm text-gray-600">Co-Founder & Kitchen Craftsman</p>
+                          </div>
+                        </div>
+                        <p className="text-gray-700 text-sm leading-relaxed">
+                          Aditya leads our kitchen philosophy with gentle precision. His process is deliberate, slow, and mindful — just the way we believe food should be made.
+                        </p>
+                      </div>
                     </div>
-                    <div className="bg-white rounded-lg p-6 text-center">
-                      <div className="w-20 h-20 bg-pink-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-3xl">👨‍🍳</span>
+                    
+                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6">
+                      <h3 className="font-semibold text-purple-700 mb-4 flex items-center">
+                        <span className="mr-2">😺</span>
+                        Official Taste-Testers
+                      </h3>
+                      <p className="text-gray-700 mb-4">
+                        These two aren't just mascots — they set the bar.
+                      </p>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="bg-white rounded-lg p-4">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <span className="text-2xl">�</span>
+                            <h4 className="font-semibold text-gray-800">Chi</h4>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            Chi's curiosity makes sure everything smells interesting
+                          </p>
+                        </div>
+                        <div className="bg-white rounded-lg p-4">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <span className="text-2xl">😸</span>
+                            <h4 className="font-semibold text-gray-800">Nobita</h4>
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            Nobita's calm, steady approval is the litmus test for every recipe we share
+                          </p>
+                        </div>
                       </div>
-                      <h3 className="font-semibold text-gray-800">Mike</h3>
-                      <p className="text-sm text-gray-600 mb-2">Master Baker</p>
-                      <p className="text-xs text-gray-500">Treat specialist</p>
-                    </div>
-                    <div className="bg-white rounded-lg p-6 text-center">
-                      <div className="w-20 h-20 bg-purple-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="text-3xl">😸</span>
-                      </div>
-                      <h3 className="font-semibold text-gray-800">Lisa</h3>
-                      <p className="text-sm text-gray-600 mb-2">Cat Nutritionist</p>
-                      <p className="text-xs text-gray-500">Health & wellness expert</p>
+                      <p className="text-gray-700 italic mt-4 text-center">
+                        Together, they remind us that cats notice what's in their bowl… and so do we.
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
             )}
+            
+            {/* Final Note Section */}
+            <div className="space-y-8 animate-fade-in">
+              <div className="bg-gradient-to-r from-orange-50 to-pink-50 rounded-lg p-6">
+                <h2 className="text-2xl font-bold text-orange-800 mb-4 flex items-center">
+                  <span className="mr-3">✨</span>
+                  Final Note
+                </h2>
+                <div className="space-y-4">
+                  <p className="text-gray-700 leading-relaxed">
+                    Cozy Cat Kitchen isn't about being loud or flashy — it's about being thoughtful, honest, and mindful.
+                  </p>
+                  <p className="text-gray-700 leading-relaxed italic">
+                    Because every cat deserves food that feels like it was made just for them — and every parent deserves the peace of mind that comes with it.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

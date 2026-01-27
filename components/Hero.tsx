@@ -46,11 +46,16 @@ export default function Hero() {
 
             <div className="space-y-6">
               <h2 className="text-2xl font-bold text-gray-800 mb-4">
-                Fresh, Homemade, Cat-Approved! 🐾
+                Fresh, Homemade Food for Your Cat
               </h2>
-              <p className="text-gray-600 mb-8">
-                Delicious meals prepared with the finest ingredients for your feline friends. 
-                Each recipe is taste-tested by our pickiest eaters!
+              <p className="text-gray-600 mb-4">
+                Cooked after you order.
+              </p>
+              <p className="text-gray-600 mb-4">
+                No preservatives. No fillers. Just real ingredients.
+              </p>
+              <p className="text-gray-700 font-medium mb-8 italic">
+                Because cats notice what's in their bowl.
               </p>
               
               <div className="flex flex-col sm:flex-row gap-4">
