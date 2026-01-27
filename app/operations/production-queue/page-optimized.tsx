@@ -6,6 +6,8 @@ import { useToast } from '@/components/Toast/ToastProvider'
 import { supabase } from '@/lib/supabase/client'
 import { getOperationsUserClient } from '@/lib/middleware/operations-client'
 import dynamic from 'next/dynamic'
+import { Package } from 'lucide-react'
+import OperationsPageHeader from '@/components/operations/OperationsPageHeader'
 
 // Dynamically import components for better code splitting
 const ProductionQueueHeader = dynamic(() => import('@/components/operations/ProductionQueueHeader'), {
@@ -267,13 +269,51 @@ export default function ProductionQueueOptimized() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <ProductionQueueHeader
-        loading={loading}
-        showCumulativeView={showCumulativeView}
-        showProductGroupView={showProductGroupView}
-        onRefresh={fetchProductionQueue}
-        onToggleCumulativeView={() => setShowCumulativeView(!showCumulativeView)}
-        onToggleProductGroupView={() => setShowProductGroupView(!showProductGroupView)}
+      <OperationsPageHeader
+        title="Production Queue"
+        description={showCumulativeView 
+          ? 'Cumulative ingredient requirements view'
+          : showProductGroupView
+          ? 'Product group view'
+          : 'Individual orders view'
+        }
+        icon={<Package className="h-8 w-8 text-blue-600" />}
+        actions={
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={() => setShowProductGroupView(!showProductGroupView)}
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                showProductGroupView
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <span className="h-4 w-4 mr-1 inline">👁️</span>
+              Product Groups
+            </button>
+            
+            <button
+              onClick={() => setShowCumulativeView(!showCumulativeView)}
+              className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
+                showCumulativeView
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <span className="h-4 w-4 mr-1 inline">👁️</span>
+              Cumulative View
+            </button>
+            
+            <button
+              onClick={fetchProductionQueue}
+              disabled={loading}
+              className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`}>🔄</span>
+              <span>{loading ? 'Refreshing...' : 'Refresh'}</span>
+            </button>
+          </div>
+        }
       />
 
       {/* Main Content */}

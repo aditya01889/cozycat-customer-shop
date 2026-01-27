@@ -14,6 +14,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react'
+import OperationsPageHeader from '@/components/operations/OperationsPageHeader'
 
 // Types
 interface ProductionBatch {
@@ -54,14 +55,14 @@ export default function BatchesOptimized() {
 
       if (error) {
         console.error('Error fetching batches:', error)
-        showError('Failed to fetch batches')
+        showError(new Error('Failed to fetch batches'))
         return
       }
 
       setBatches(data || [])
     } catch (error) {
       console.error('Error in fetchBatches:', error)
-      showError('Failed to load batches data')
+      showError(new Error('Failed to load batches data'))
     } finally {
       setLoading(false)
     }
@@ -134,42 +135,33 @@ export default function BatchesOptimized() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-4 space-y-4 sm:space-y-0">
-            <div className="flex items-center space-x-3">
-              <Package className="h-8 w-8 text-blue-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Production Batches</h1>
-                <p className="text-sm text-gray-500">
-                  Track and manage production batches
-                </p>
-              </div>
+      <OperationsPageHeader
+        title="Production Batches"
+        description="Track and manage production batches"
+        icon={<Package className="h-8 w-8 text-blue-600" />}
+        actions={
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search batches..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-64"
+              />
             </div>
             
-            <div className="flex items-center space-x-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  placeholder="Search batches..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 w-64"
-                />
-              </div>
-              
-              <button
-                onClick={() => showInfo('Create batch functionality to be implemented')}
-                className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-              >
-                <Plus className="h-4 w-4" />
-                <span>Create Batch</span>
-              </button>
-            </div>
+            <button
+              onClick={() => showInfo('Create batch functionality to be implemented')}
+              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Create Batch</span>
+            </button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

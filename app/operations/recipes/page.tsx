@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, ChefHat, Package, ArrowLeft } from 'lucide-react'
+import { Plus, Edit, Trash2, ChefHat, Package } from 'lucide-react'
 import Link from 'next/link'
+import OperationsPageHeader from '@/components/operations/OperationsPageHeader'
 
 interface Product {
   id: string
@@ -138,44 +139,28 @@ export default function RecipeManagement() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/operations" className="text-gray-600 hover:text-gray-900 mr-4">
-                <ArrowLeft className="w-5 h-5 inline mr-2" />
-                Back to Operations
-              </Link>
-              <span className="text-2xl mr-3">👨‍🍳</span>
-              <h1 className="text-xl font-bold text-gray-900">Recipe Management</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link
-                href="/operations/inventory"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
-              >
-                <Package className="w-4 h-4 mr-2" />
-                Manage Inventory
-              </Link>
-              <div className="text-sm text-gray-600">
-                {Object.keys(recipesByProduct).length} products
-              </div>
+      <OperationsPageHeader
+        title="Recipe Management"
+        description="Manage product recipes and ingredient percentages"
+        icon={<ChefHat className="h-8 w-8 text-orange-600" />}
+        actions={
+          <div className="flex items-center space-x-4">
+            <Link
+              href="/operations/inventory"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center"
+            >
+              <Package className="w-4 h-4 mr-2" />
+              Manage Inventory
+            </Link>
+            <div className="text-sm text-gray-600">
+              {Object.keys(recipesByProduct).length} products
             </div>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-            <ChefHat className="w-8 h-8" />
-            Recipe Management
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Manage product recipes and ingredient percentages
-          </p>
-        </div>
-        <div className="flex gap-3">
           <button
             onClick={() => setShowAddForm(true)}
             className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
