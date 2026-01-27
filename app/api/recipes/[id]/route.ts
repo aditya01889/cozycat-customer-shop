@@ -8,12 +8,14 @@ const supabase = createClient(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    const { id } = await params
     const body = await request.json()
-    const { percentage, notes } = body
+    const { percentage } = body
+
+    console.log('🔧 PUT /api/recipes/', id, 'with body:', body)
 
     // Validate percentage if provided
     if (percentage !== undefined && (percentage < 0 || percentage > 100)) {
@@ -25,7 +27,8 @@ export async function PUT(
 
     const updateData: any = {}
     if (percentage !== undefined) updateData.percentage = parseFloat(percentage)
-    if (notes !== undefined) updateData.notes = notes
+
+    console.log('🔧 Update data:', updateData)
 
     const { data, error } = await supabase
       .from('product_recipes')
@@ -34,7 +37,10 @@ export async function PUT(
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      console.error('🔧 Supabase error:', error)
+      throw error
+    }
 
     if (!data) {
       return NextResponse.json(
@@ -43,11 +49,12 @@ export async function PUT(
       )
     }
 
+    console.log('🔧 Update successful:', data)
     return NextResponse.json({ data })
   } catch (error) {
     console.error('Error updating recipe:', error)
     return NextResponse.json(
-      { error: 'Failed to update recipe' },
+      { error: 'Failed to update recipe', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -55,10 +62,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = params.id
+    const { id } = await params
 
     const { error } = await supabase
       .from('product_recipes')

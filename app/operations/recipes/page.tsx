@@ -172,16 +172,23 @@ export default function RecipeManagement() {
       </div>
 
       {(showAddForm || editingRecipe) && (
-        <RecipeForm
-          recipe={editingRecipe}
-          products={products}
-          ingredients={ingredients}
-          onSave={handleRecipeSaved}
-          onCancel={() => {
-            setShowAddForm(false)
-            setEditingRecipe(null)
-          }}
-        />
+        <>
+          {console.log('🔧 Form should be visible - showAddForm:', showAddForm, 'editingRecipe:', !!editingRecipe)}
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg shadow-xl p-6 m-4 max-w-2xl w-full max-h-screen overflow-y-auto border-4 border-blue-500">
+              <RecipeForm
+                recipe={editingRecipe}
+                products={products}
+                ingredients={ingredients}
+                onSave={handleRecipeSaved}
+                onCancel={() => {
+                  setShowAddForm(false)
+                  setEditingRecipe(null)
+                }}
+              />
+            </div>
+          </div>
+        </>
       )}
 
       <div className="space-y-8">
@@ -201,7 +208,7 @@ export default function RecipeManagement() {
                   .map((recipe) => (
                     <div
                       key={recipe.id}
-                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                      className="flex items-center justify-between p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors relative"
                     >
                       <div className="flex-1">
                         <div className="flex items-center gap-4">
@@ -229,16 +236,28 @@ export default function RecipeManagement() {
                         </div>
                       </div>
                       
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex items-center gap-2 ml-4 z-10 relative">
                         <button
-                          onClick={() => setEditingRecipe(recipe)}
-                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            setEditingRecipe(recipe)
+                          }}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors cursor-pointer pointer-events-auto border border-transparent hover:border-blue-200"
+                          type="button"
+                          title="Edit ingredient"
                         >
                           <Edit className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(recipe.id)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            handleDelete(recipe.id)
+                          }}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer pointer-events-auto border border-transparent hover:border-red-200"
+                          type="button"
+                          title="Delete ingredient"
                         >
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -300,11 +319,20 @@ function RecipeForm({
   const [formData, setFormData] = useState({
     product_id: recipe?.product_id || '',
     ingredient_id: recipe?.ingredient_id || '',
-    percentage: recipe?.percentage || '',
-    notes: recipe?.notes || ''
+    percentage: recipe?.percentage || ''
   })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (recipe) {
+      setFormData({
+        product_id: recipe.product_id,
+        ingredient_id: recipe.ingredient_id,
+        percentage: recipe.percentage.toString()
+      })
+    }
+  }, [recipe])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -337,10 +365,12 @@ function RecipeForm({
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-4">
-        {recipe ? 'Edit Recipe Ingredient' : 'Add Recipe Ingredient'}
-      </h2>
+    <>
+      {console.log('🔧 RecipeForm rendering - recipe:', !!recipe)}
+      <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+        <h2 className="text-xl font-semibold mb-4">
+          {recipe ? 'Edit Recipe Ingredient' : 'Add Recipe Ingredient'}
+        </h2>
 
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
@@ -403,19 +433,6 @@ function RecipeForm({
               required
             />
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Notes (optional)
-            </label>
-            <input
-              type="text"
-              value={formData.notes}
-              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="e.g., Protein base, For moisture"
-            />
-          </div>
         </div>
 
         <div className="flex justify-end gap-3 pt-4">
@@ -436,5 +453,6 @@ function RecipeForm({
         </div>
       </form>
     </div>
+    </>
   )
 }
