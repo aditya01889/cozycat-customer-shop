@@ -284,8 +284,8 @@ export default function AdminProductsContent() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-              <div className="aspect-w-16 aspect-h-9 bg-gray-200">
+            <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col h-[400px]">
+              <div className="flex-shrink-0">
                 {product.image_url ? (
                   <img
                     src={product.image_url}
@@ -298,25 +298,25 @@ export default function AdminProductsContent() {
                   </div>
                 )}
               </div>
-              <div className="p-4">
+              <div className="flex flex-col flex-1 p-4">
                 <div className="flex justify-between items-start mb-2">
-                  <h3 className="text-lg font-medium text-gray-900 truncate">{product.name}</h3>
-                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                  <h3 className="text-lg font-medium text-gray-900 truncate flex-1 mr-2">{product.name}</h3>
+                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0 ${
                     product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                   }`}>
                     {product.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 mb-2 line-clamp-2">{product.short_description}</p>
+                <p className="text-sm text-gray-500 mb-2 line-clamp-2 flex-1">{product.short_description}</p>
                 <div className="flex justify-between items-center mb-3">
                   <span className="text-lg font-bold text-gray-900">
                     ₹{product.product_variants?.[0]?.price || '0'}
                   </span>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-gray-500 truncate">
                     {product.categories?.name || 'Uncategorized'}
                   </span>
                 </div>
-                <div className="flex space-x-2">
+                <div className="flex space-x-2 mt-auto">
                   <button
                     onClick={() => openEditModal(product)}
                     className="flex-1 px-3 py-2 text-sm bg-blue-600 text-white rounded hover:bg-blue-700"
