@@ -158,48 +158,50 @@ export default function ShippingPolicy() {
                   </p>
                 </div>
               </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">🎂</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Birthday Surprises</p>
-                      <p className="text-gray-600">Scheduled delivery with special packaging and birthday message</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">📅</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Subscription Orders</p>
-                      <p className="text-gray-600">Weekly/bi-weekly delivery with 10% discount on subscription plans</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">🏥</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Post-Surgery Care</p>
-                      <p className="text-gray-600">Priority delivery for cats recovering from surgery (vet prescription required)</p>
-                    </div>
-                  </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-800 mb-4">Special Services</h3>
+              <div className="flex items-start space-x-3">
+                <span className="text-green-500 mt-1">🎂</span>
+                <div>
+                  <p className="font-semibold text-gray-800">Birthday Surprises</p>
+                  <p className="text-gray-600">Scheduled delivery with special packaging and birthday message</p>
                 </div>
               </div>
-            </section>
-
-            <div className="bg-gray-100 rounded-lg p-6 text-center">
-              <p className="text-gray-700 font-medium">
-                For any delivery-related queries or special requirements, please contact us:
-              </p>
-              <div className="mt-4 space-y-2">
-                <p className="text-gray-600">
-                  📱 WhatsApp: <a href="https://wa.me/919873648122" className="text-green-600 hover:underline">+91-98736-48122</a>
-                </p>
-                <p className="text-gray-600">
-                  📧 Email: <a href="mailto:cozycatkitchen@gmail.com" className="text-blue-600 hover:underline">cozycatkitchen@gmail.com</a>
-                </p>
+              <div className="flex items-start space-x-3">
+                <span className="text-green-500 mt-1">📅</span>
+                <div>
+                  <p className="font-semibold text-gray-800">Subscription Orders</p>
+                  <p className="text-gray-600">Weekly/bi-weekly delivery with 10% discount on subscription plans</p>
+                </div>
               </div>
-              <p className="text-sm text-gray-600 mt-4 italic">
-                This policy is effective from January 27, 2025. Last updated: January 27, 2025
-              </p>
+              <div className="flex items-start space-x-3">
+                <span className="text-green-500 mt-1">🏥</span>
+                <div>
+                  <p className="font-semibold text-gray-800">Post-Surgery Care</p>
+                  <p className="text-gray-600">Priority delivery for cats recovering from surgery (vet prescription required)</p>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+
+        <div className="bg-gray-100 rounded-lg p-6 text-center">
+          <p className="text-gray-700 font-medium">
+            For any delivery-related queries or special requirements, please contact us:
+          </p>
+          <div className="mt-4 space-y-2">
+            <p className="text-gray-600">
+              📱 WhatsApp: <a href="https://wa.me/919873648122" className="text-green-600 hover:underline">+91-98736-48122</a>
+            </p>
+            <p className="text-gray-600">
+              📧 Email: <a href="mailto:cozycatkitchen@gmail.com" className="text-blue-600 hover:underline">cozycatkitchen@gmail.com</a>
+            </p>
+          </div>
+          <p className="text-sm text-gray-600 mt-4 italic">
+            This policy is effective from January 27, 2025. Last updated: January 27, 2025
+          </p>
         </div>
       </div>
     </div>
