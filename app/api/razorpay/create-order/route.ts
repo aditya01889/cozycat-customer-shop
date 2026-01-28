@@ -22,13 +22,14 @@ export const POST = createSecureHandler({
   preCheck: async (req: NextRequest) => {
     console.log('🔍 Razorpay Pre-check - Starting validation...')
     
-    // Extract JWT token from Authorization header
+    // Extract JWT token from Authorization header (optional for guest orders)
     const authHeader = req.headers.get('authorization')
     console.log('🔍 Razorpay Pre-check - Auth header present:', !!authHeader)
     
+    // Allow guest orders without authentication
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      console.log('❌ Razorpay Pre-check - No valid Authorization header')
-      return { allowed: false, error: 'Valid Authorization header required' }
+      console.log('✅ Razorpay Pre-check - Allowing guest order without authentication')
+      return { allowed: true }
     }
     
     const token = authHeader.substring(7) // Remove 'Bearer ' prefix
@@ -44,12 +45,13 @@ export const POST = createSecureHandler({
     console.log('🔍 Razorpay Pre-check - User:', user ? 'Authenticated' : 'Not authenticated')
     console.log('🔍 Razorpay Pre-check - Auth error:', error)
     
-    if (!user || error) {
-      console.log('❌ Razorpay Pre-check - Authentication failed:', error?.message)
-      return { allowed: false, error: 'Authentication required to create payment orders' }
+    // Allow both authenticated and guest orders
+    if (user && !error) {
+      console.log('✅ Razorpay Pre-check - Authentication passed for user:', user.id)
+    } else {
+      console.log('✅ Razorpay Pre-check - Proceeding as guest order')
     }
     
-    console.log('✅ Razorpay Pre-check - Authentication passed for user:', user.id)
     return { allowed: true }
   },
   handler: async (req: NextRequest, data) => {

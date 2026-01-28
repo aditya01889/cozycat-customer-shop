@@ -55,6 +55,11 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // Disable automatic optimization to prevent preload warnings
+  experimental: {
+    optimizeCss: false,
+    optimizePackageImports: []
+  },
   images: {
     remotePatterns: [
       {

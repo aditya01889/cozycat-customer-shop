@@ -349,24 +349,27 @@ export default function CheckoutPage() {
 
       // Handle payment based on method
       if (paymentMethod === 'online') {
-        // Get authentication token
+        // Get authentication token (optional for guest orders)
         const { data: { session } } = await supabase.auth.getSession()
         
-        if (!session?.access_token) {
-          throw new Error('Authentication required for online payment')
-        }
-
         // Debug: Check CSRF token
         const csrfToken = getCSRFHeader()
+
+        // Prepare headers
+        const headers: Record<string, string> = {
+          'Content-Type': 'application/json',
+          ...csrfToken,
+        }
+
+        // Add authorization header only if user is authenticated
+        if (session?.access_token) {
+          headers['Authorization'] = `Bearer ${session.access_token}`
+        }
 
         // Create Razorpay order first
         const razorpayResponse = await fetch('/api/razorpay/create-order', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session.access_token}`,
-            ...csrfToken,
-          },
+          headers,
           body: JSON.stringify({
             amount: total,
             currency: 'INR',
@@ -376,6 +379,7 @@ export default function CheckoutPage() {
               customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
               customer_phone: customerInfo.phone,
               customer_email: customerInfo.email,
+              is_guest_order: !user
             }
           })
         })
