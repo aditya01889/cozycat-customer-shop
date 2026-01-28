@@ -7,9 +7,9 @@ name: Deploy Application
 
 on:
   push:
-    branches: [main, develop, feature/*]
+    branches: [main, develop, staging, feature/*]
   pull_request:
-    branches: [main, develop]
+    branches: [main, develop, staging]
   workflow_dispatch:
     inputs:
       environment:
@@ -49,6 +49,8 @@ jobs:
             ENVIRONMENT="${{ github.event.inputs.environment }}"
           elif [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             ENVIRONMENT="production"
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            ENVIRONMENT="staging"
           elif [[ "${{ github.ref }}" == "refs/heads/develop" ]]; then
             ENVIRONMENT="staging"
           else
