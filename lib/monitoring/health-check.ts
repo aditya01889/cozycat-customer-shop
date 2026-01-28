@@ -321,7 +321,7 @@ export async function simpleHealthCheck(): Promise<{ status: string; timestamp: 
 }
 
 // Health check middleware for API routes
-export function healthCheckMiddleware(handler: Function) {
+export function healthCheckMiddleware(handler: (req: Request, ...args: any[]) => Promise<any>) {
   return async (req: Request, ...args: any[]) => {
     const startTime = Date.now()
     
