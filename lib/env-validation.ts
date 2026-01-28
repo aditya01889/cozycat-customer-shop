@@ -23,6 +23,7 @@ interface EnvSchema {
 
   // Application Configuration
   NODE_ENV: 'development' | 'production' | 'test'
+  SITE_URL: string
   NEXTAUTH_URL?: string
   NEXTAUTH_SECRET?: string
 }
@@ -48,6 +49,7 @@ export function validateEnv(): EnvSchema {
       RAZORPAY_KEY_SECRET: env.RAZORPAY_KEY_SECRET || 'ci_dummy',
       NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'ci_dummy',
       NODE_ENV: nodeEnv,
+      SITE_URL: env.SITE_URL || 'http://localhost:3000',
       NEXTAUTH_URL: env.NEXTAUTH_URL || '',
       NEXTAUTH_SECRET: env.NEXTAUTH_SECRET || '',
     }
@@ -70,6 +72,23 @@ export function validateEnv(): EnvSchema {
   const nodeEnv = env.NODE_ENV || 'development'
   if (!['development', 'production', 'test'].includes(nodeEnv)) {
     throw new Error('NODE_ENV must be one of: development, production, test')
+  }
+
+  // Validate and set SITE_URL
+  let siteUrl = env.SITE_URL
+  if (!siteUrl) {
+    if (nodeEnv === 'production') {
+      throw new Error('SITE_URL is required in production but not set')
+    } else {
+      siteUrl = 'http://localhost:3000'
+    }
+  }
+
+  // Validate SITE_URL format
+  try {
+    new URL(siteUrl)
+  } catch {
+    throw new Error('SITE_URL must be a valid URL')
   }
 
   // Validate Supabase URL format
@@ -115,6 +134,7 @@ export function validateEnv(): EnvSchema {
     RAZORPAY_KEY_SECRET: env.RAZORPAY_KEY_SECRET || '',
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
     NODE_ENV: nodeEnv as 'development' | 'production' | 'test',
+    SITE_URL: siteUrl,
     NEXTAUTH_URL: env.NEXTAUTH_URL || '',
     NEXTAUTH_SECRET: env.NEXTAUTH_SECRET || '',
   }
@@ -185,4 +205,11 @@ export function getPaymentConfig() {
     razorpayKeyId: env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
     razorpayKeySecret: env.RAZORPAY_KEY_SECRET,
   }
+}
+
+/**
+ * Get site URL safely
+ */
+export function getSiteUrl(): string {
+  return getEnv().SITE_URL
 }

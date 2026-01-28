@@ -1,11 +1,12 @@
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 import { Database } from '@/types/database'
-import { getSupabaseConfig } from '../env-validation'
+import { getSupabaseConfig, getSiteUrl } from '../env-validation'
 
 export const createClient = async () => {
   const cookieStore = await cookies()
   const { url, anonKey } = getSupabaseConfig()
+  const siteUrl = getSiteUrl()
   
   return createServerClient<Database>(
     url,
@@ -27,7 +28,7 @@ export const createClient = async () => {
         flowType: 'pkce',
         autoRefreshToken: true,
         detectSessionInUrl: true,
-        persistSession: true
+        persistSession: true,
       },
       // Add timeout configuration
       global: {
