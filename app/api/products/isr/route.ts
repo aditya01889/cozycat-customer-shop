@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createStaticClient } from '@/lib/supabase/server-static'
 import { cache, CACHE_KEYS, CACHE_TTL } from '@/lib/cache/redis-client'
 
 // ISR configuration
@@ -22,7 +22,7 @@ export async function GET() {
     
     // Fetch from database if not in cache
     console.log('🔍 ISR Cache miss, fetching products from database')
-    const supabase = await createClient()
+    const supabase = createStaticClient()
     
     const { data: products, error } = await supabase
       .from('products')
@@ -50,7 +50,7 @@ export async function GET() {
           slug
         )
       `)
-      .eq('is_active', true)
+      .eq('is_active', true as any)
       .order('display_order', { ascending: true })
       .order('created_at', { ascending: false })
 
