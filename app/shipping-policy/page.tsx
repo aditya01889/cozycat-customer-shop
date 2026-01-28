@@ -1,6 +1,12 @@
+'use client'
+
+import { getShippingPolicySummary } from '@/lib/shipping/config'
+
 export default function ShippingPolicy() {
+  const shippingPolicy = getShippingPolicySummary()
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-pink-50 py-12">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header with Cat Theme */}
         <div className="text-center mb-12">
@@ -13,206 +19,145 @@ export default function ShippingPolicy() {
           </p>
         </div>
         
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <div className="space-y-8">
-            <section className="bg-orange-50 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-orange-800 mb-4 flex items-center">
-                <span className="mr-3">📍</span>
-                Delivery Areas
-              </h2>
-              <div className="space-y-4">
-                <p className="text-gray-700">
-                  We deliver fresh cat food across India:
-                </p>
-                <div className="bg-white rounded-lg p-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-2">🏙️ Delhi NCR</h3>
-                      <ul className="text-gray-600 space-y-1">
-                        <li>• Delhi (All areas)</li>
-                        <li>• Gurgaon (Gurugram)</li>
-                        <li>• Noida</li>
-                        <li>• Ghaziabad</li>
-                        <li>• Faridabad</li>
-                      </ul>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-gray-800 mb-2">🌆 PAN India</h3>
-                      <ul className="text-gray-600 space-y-1">
-                        <li>• Major Metro Cities</li>
-                        <li>• Tier 1 Cities</li>
-                        <li>• Tier 2 Cities</li>
-                        <li>• All major urban centers</li>
-                      </ul>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-600 italic">
-                  We deliver to most major cities across India. Contact us for specific area availability!
-                </p>
+        {/* Shipping Zones */}
+        <div className="grid md:grid-cols-2 gap-8 mb-12">
+          {/* Local Delivery */}
+          <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-orange-200">
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mr-4">
+                <span className="text-2xl">🏠</span>
               </div>
-            </section>
+              <div>
+                <h2 className="text-2xl font-bold text-orange-800">
+                  {shippingPolicy.local.name}
+                </h2>
+                <p className="text-gray-600">Express delivery</p>
+              </div>
+            </div>
 
-            <section className="bg-green-50 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
-                <span className="mr-3">⏰</span>
-                Delivery Timeframes
-              </h2>
-              <div className="space-y-4">
-                <p className="text-gray-700">
-                  Since we prepare food fresh after ordering, delivery timeframes are:
-                </p>
-                <div className="bg-white rounded-lg p-4 space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-green-500 mt-1">📅</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Order Cut-off Time</p>
-                      <p className="text-gray-600">Order before 12 PM for same-day dispatch, otherwise next-day dispatch</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-blue-500 mt-1">�️</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Local Orders (Delhi NCR)</p>
-                      <p className="text-gray-600">Delivered within 1-2 hours of dispatch</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 mt-1">🌆</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">National Orders</p>
-                      <p className="text-gray-600">Delivered within 1-3 days of dispatch</p>
-                    </div>
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-orange-50 rounded-lg">
+                <span className="font-medium">Minimum Order</span>
+                <span className="text-xl font-bold text-orange-600">
+                  ₹{shippingPolicy.local.minOrder}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <span className="font-medium">Delivery Fee</span>
+                <span className="text-lg font-semibold">
+                  ₹{shippingPolicy.local.deliveryFee}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <span className="font-medium">Free Delivery Above</span>
+                <span className="text-lg font-semibold text-green-600">
+                  ₹{shippingPolicy.local.freeAbove}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <span className="font-medium">Estimated Time</span>
+                <span className="text-lg font-semibold text-blue-600">
+                  {shippingPolicy.local.estimatedDays}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-yellow-50 rounded-lg">
+              <h3 className="font-semibold text-yellow-800 mb-2">📍 Serviceable Areas:</h3>
+              <p className="text-sm text-yellow-700">
+                Delhi, Noida, Gurgaon, Ghaziabad, Faridabad, and surrounding areas.
+              </p>
+            </div>
+          </div>
+
+          {/* National Delivery */}
+          <div className="bg-white rounded-2xl shadow-lg p-8 border-2 border-blue-200">
+            <div className="flex items-center mb-6">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mr-4">
+                <span className="text-2xl">🇮🇳</span>
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-blue-800">
+                  {shippingPolicy.national.name}
+                </h2>
+                <p className="text-gray-600">Pan India delivery</p>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                <span className="font-medium">Minimum Order</span>
+                <span className="text-xl font-bold text-blue-600">
+                  ₹{shippingPolicy.national.minOrder}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <span className="font-medium">Delivery Fee</span>
+                <span className="text-lg font-semibold">
+                  ₹{shippingPolicy.national.deliveryFee}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                <span className="font-medium">Free Delivery Above</span>
+                <span className="text-lg font-semibold text-green-600">
+                  ₹{shippingPolicy.national.freeAbove}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-purple-50 rounded-lg">
+                <span className="font-medium">Estimated Time</span>
+                <span className="text-lg font-semibold text-purple-600">
+                  {shippingPolicy.national.estimatedDays}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-6 p-4 bg-indigo-50 rounded-lg">
+              <h3 className="font-semibold text-indigo-800 mb-2">📍 Serviceable Areas:</h3>
+              <p className="text-sm text-indigo-700">
+                All metro cities, Tier 1 and Tier 2 cities across India.
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Important Information */}
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center">
+            <span className="mr-3">📋</span>
+            Important Information
+          </h2>
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-green-600 text-sm">✓</span>
                 </div>
-                <div className="bg-yellow-100 rounded-lg p-4">
-                  <p className="text-yellow-800 font-medium">
-                    ⚠️ All products have the same delivery timeframe. Fresh preparation begins after order confirmation.
+                <div>
+                  <h3 className="font-semibold text-gray-800">Fresh Guarantee</h3>
+                  <p className="text-sm text-gray-600">
+                    All meals are prepared fresh after order confirmation to ensure maximum nutrition and taste.
                   </p>
                 </div>
               </div>
-            </section>
 
-            <section className="bg-blue-50 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-blue-800 mb-4 flex items-center">
-                <span className="mr-3">💰</span>
-                Delivery Charges
-              </h2>
-              <div className="space-y-4">
-                <p className="text-gray-700">
-                  Our delivery charges are based on location and order value:
-                </p>
-                <div className="bg-white rounded-lg p-4 space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-blue-500 mt-1">�️</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">Local Delivery (Delhi NCR)</p>
-                      <p className="text-gray-600">₹40 for orders below ₹499</p>
-                      <p className="text-green-600 font-medium">Free for orders ₹499 and above</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 mt-1">🌆</span>
-                    <div>
-                      <p className="font-semibold text-gray-800">National Delivery (PAN India)</p>
-                      <p className="text-gray-600">₹50 for orders below ₹799</p>
-                      <p className="text-green-600 font-medium">Free for orders ₹799 and above</p>
-                    </div>
-                  </div>
+              <div className="flex items-start space-x-3">
+                <div className="w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                  <span className="text-blue-600 text-sm">�</span>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">Secure Packaging</h3>
+                  <p className="text-sm text-gray-600">
+                    Vacuum-sealed packaging with ice packs to maintain freshness during transit.
+                  </p>
                 </div>
               </div>
-            </section>
-
-            <section className="bg-purple-50 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-purple-800 mb-4 flex items-center">
-                <span className="mr-3">🧊</span>
-                Freshness & Packaging
-              </h2>
-              <div className="space-y-4">
-                <p className="text-gray-700">
-                  We ensure maximum freshness during delivery:
-                </p>
-                <div className="bg-white rounded-lg p-4 space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 mt-1">🥡</span>
-                    <p className="text-gray-700">Food-grade, airtight containers to maintain freshness</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 mt-1">🧊</span>
-                    <p className="text-gray-700">Ice packs for perishable items during warm weather</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 mt-1">🏷️</span>
-                    <p className="text-gray-700">Clear labeling with preparation time and best-before instructions</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-purple-500 mt-1">♻️</span>
-                    <p className="text-gray-700">Eco-friendly packaging materials</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="bg-pink-50 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-pink-800 mb-4 flex items-center">
-                <span className="mr-3">📦</span>
-                Order Tracking
-              </h2>
-              <div className="space-y-4">
-                <p className="text-gray-700">
-                  Stay updated on your order status:
-                </p>
-                <div className="bg-white rounded-lg p-4 space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-pink-500 mt-1">📱</span>
-                    <p className="text-gray-700">Real-time WhatsApp updates on order preparation and delivery</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-pink-500 mt-1">📍</span>
-                    <p className="text-gray-700">Live tracking link once delivery partner is assigned</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-pink-500 mt-1">📞</span>
-                    <p className="text-gray-700">Direct contact with delivery partner for specific instructions</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="bg-yellow-50 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-yellow-800 mb-4 flex items-center">
-                <span className="mr-3">⚠️</span>
-                Important Delivery Notes
-              </h2>
-              <div className="space-y-4">
-                <div className="bg-white rounded-lg p-4 space-y-3">
-                  <div className="flex items-start space-x-3">
-                    <span className="text-yellow-500 mt-1">🏠</span>
-                    <p className="text-gray-700">Someone must be available to receive the order - we cannot leave food unattended</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-yellow-500 mt-1">🌧️</span>
-                    <p className="text-gray-700">During heavy rain or extreme weather, delivery may be delayed for safety</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-yellow-500 mt-1">📞</span>
-                    <p className="text-gray-700">Please keep your phone accessible - delivery partner will call before arrival</p>
-                  </div>
-                  <div className="flex items-start space-x-3">
-                    <span className="text-yellow-500 mt-1">🕐</span>
-                    <p className="text-gray-700">Delivery timing may vary during peak hours (6-9 PM)</p>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <section className="bg-green-50 rounded-lg p-6">
-              <h2 className="text-2xl font-bold text-green-800 mb-4 flex items-center">
-                <span className="mr-3">🎁</span>
-                Special Delivery Services
-              </h2>
-              <div className="space-y-4">
-                <div className="bg-white rounded-lg p-4 space-y-3">
                   <div className="flex items-start space-x-3">
                     <span className="text-green-500 mt-1">🎂</span>
                     <div>

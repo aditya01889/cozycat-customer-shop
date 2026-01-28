@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import { useToast } from '@/components/Toast/ToastProvider'
 import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
-import { ArrowLeft, Truck, Shield, CreditCard, User, Phone, MapPin } from 'lucide-react'
+import { ArrowLeft, Truck, Shield, CreditCard, User, Phone, MapPin, CheckCircle, AlertCircle, X } from 'lucide-react'
 import { RazorpayClient, RazorpayOptions, RazorpayResponse } from '@/lib/razorpay/client'
 import { getCSRFHeader } from '@/lib/security/csrf-client'
 
@@ -63,8 +63,21 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<'online'>('online')
   const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null)
 
+  // Shipping validation state
+  const [shippingValidation, setShippingValidation] = useState<{
+    isServiceable: boolean
+    deliveryFee: number
+    meetsMinimumOrder: boolean
+    minOrderAmount: number
+    estimatedDelivery: string
+    message: string
+    zone?: any
+  } | null>(null)
+  const [isValidatingPincode, setIsValidatingPincode] = useState(false)
+  const [pincodeError, setPincodeError] = useState('')
+
   const subtotal = getTotalPrice()
-  const deliveryFee = subtotal >= 500 ? 0 : 40
+  const deliveryFee = shippingValidation?.deliveryFee ?? 0
   const total = subtotal + deliveryFee
 
   const handleGetCurrentLocation = async () => {
@@ -123,6 +136,50 @@ export default function CheckoutPage() {
         maximumAge: 0
       }
     )
+  }
+
+  const validateShipping = async (pincode: string) => {
+    if (!pincode || pincode.length !== 6) {
+      setPincodeError('Please enter a valid 6-digit PIN code')
+      setShippingValidation(null)
+      return
+    }
+
+    setIsValidatingPincode(true)
+    setPincodeError('')
+
+    try {
+      const response = await fetch('/api/shipping/calculate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          pincode: pincode,
+          orderValue: subtotal,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setShippingValidation(data.data)
+        setPincodeError('')
+        
+        if (data.data.isServiceable && data.data.meetsMinimumOrder) {
+          showSuccess(`Great! ${data.data.message}`)
+        }
+      } else {
+        setPincodeError(data.error || 'Failed to validate shipping')
+        setShippingValidation(null)
+      }
+    } catch (error) {
+      console.error('Shipping validation error:', error)
+      setPincodeError('Failed to check delivery availability. Please try again.')
+      setShippingValidation(null)
+    } finally {
+      setIsValidatingPincode(false)
+    }
   }
 
   const processRazorpayPayment = async (orderId: string, orderNumber: string): Promise<boolean> => {
@@ -222,6 +279,31 @@ export default function CheckoutPage() {
           null,
           400,
           'checkout validation'
+        )
+        showError(error)
+        return
+      }
+
+      // Validate shipping
+      if (!shippingValidation || !shippingValidation.isServiceable) {
+        const error = ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          'Please enter a serviceable PIN code to continue',
+          null,
+          400,
+          'checkout shipping validation'
+        )
+        showError(error)
+        return
+      }
+
+      if (!shippingValidation.meetsMinimumOrder) {
+        const error = ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          `Minimum order amount is ₹${shippingValidation.minOrderAmount} for ${shippingValidation.zone?.name || 'this area'}. Please add more items to continue.`,
+          null,
+          400,
+          'checkout minimum order validation'
         )
         showError(error)
         return
@@ -631,14 +713,91 @@ export default function CheckoutPage() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Pincode *
                   </label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={6}
-                    value={address.pincode}
-                    onChange={(e) => setAddress({...address, pincode: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={address.pincode}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '') // Only allow digits
+                        setAddress({...address, pincode: value})
+                        
+                        // Auto-validate when 6 digits are entered
+                        if (value.length === 6) {
+                          validateShipping(value)
+                        } else {
+                          setShippingValidation(null)
+                          setPincodeError('')
+                        }
+                      }}
+                      className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                        pincodeError 
+                          ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 
+                          : shippingValidation?.isServiceable 
+                            ? 'border-green-300 focus:ring-green-500 focus:border-green-500'
+                            : 'border-gray-300'
+                      }`}
+                      placeholder="110001"
+                    />
+                    {isValidatingPincode && (
+                      <div className="absolute right-3 top-2.5">
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-orange-500 border-t-transparent"></div>
+                      </div>
+                    )}
+                    {!isValidatingPincode && shippingValidation?.isServiceable && (
+                      <div className="absolute right-3 top-2.5 text-green-600">
+                        <CheckCircle className="w-5 h-5" />
+                      </div>
+                    )}
+                    {!isValidatingPincode && pincodeError && (
+                      <div className="absolute right-3 top-2.5 text-red-600">
+                        <X className="w-5 h-5" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Shipping validation feedback */}
+                  {pincodeError && (
+                    <div className="mt-2 flex items-start space-x-2 text-sm text-red-600">
+                      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                      <span>{pincodeError}</span>
+                    </div>
+                  )}
+                  
+                  {shippingValidation && (
+                    <div className={`mt-2 p-3 rounded-lg text-sm ${
+                      shippingValidation.isServiceable 
+                        ? 'bg-green-50 border border-green-200 text-green-800' 
+                        : 'bg-red-50 border border-red-200 text-red-800'
+                    }`}>
+                      <div className="flex items-start space-x-2">
+                        {shippingValidation.isServiceable ? (
+                          <CheckCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                        )}
+                        <div>
+                          <div className="font-medium">
+                            {shippingValidation.isServiceable 
+                              ? `${shippingValidation.zone?.name || 'Serviceable Area'}` 
+                              : 'Not Serviceable'
+                            }
+                          </div>
+                          <div className="mt-1 text-xs">
+                            {shippingValidation.message}
+                          </div>
+                          {shippingValidation.isServiceable && (
+                            <div className="mt-2 space-y-1">
+                              <div>📦 Estimated delivery: {shippingValidation.estimatedDelivery}</div>
+                              <div>💰 Delivery fee: {shippingValidation.deliveryFee === 0 ? 'FREE' : `₹${shippingValidation.deliveryFee}`}</div>
+                              <div>🛒 Minimum order: ₹{shippingValidation.minOrderAmount}</div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
               
@@ -745,10 +904,36 @@ export default function CheckoutPage() {
                 <span>₹{subtotal}</span>
               </div>
               
+              {/* Shipping Information */}
+              {shippingValidation && (
+                <div className={`p-3 rounded-lg text-sm ${
+                  shippingValidation.isServiceable 
+                    ? 'bg-green-50 border border-green-200' 
+                    : 'bg-red-50 border border-red-200'
+                }`}>
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Truck className="w-4 h-4" />
+                    <span className="font-medium">
+                      {shippingValidation.isServiceable 
+                        ? shippingValidation.zone?.name || 'Standard Delivery'
+                        : 'Not Serviceable'
+                      }
+                    </span>
+                  </div>
+                  {shippingValidation.isServiceable && (
+                    <div className="space-y-1 text-xs">
+                      <div>📦 Est. delivery: {shippingValidation.estimatedDelivery}</div>
+                      <div>💰 Min. order: ₹{shippingValidation.minOrderAmount}</div>
+                    </div>
+                  )}
+                </div>
+              )}
+              
               <div className="flex justify-between text-sm">
                 <span>Delivery Fee</span>
                 <span className={deliveryFee === 0 ? 'text-green-600' : ''}>
-                  {deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
+                  {shippingValidation === null ? 'Enter PIN code' : 
+                   deliveryFee === 0 ? 'FREE' : `₹${deliveryFee}`}
                 </span>
               </div>
               
@@ -763,7 +948,7 @@ export default function CheckoutPage() {
             {/* Submit Button */}
             <button
               type="submit"
-              disabled={isSubmitting}
+              disabled={isSubmitting || !shippingValidation?.isServiceable || !shippingValidation?.meetsMinimumOrder}
               className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 px-6 rounded-full hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-bold disabled:opacity-50 disabled:cursor-not-allowed mt-6 flex items-center justify-center"
             >
               {isSubmitting ? (
@@ -774,15 +959,25 @@ export default function CheckoutPage() {
               ) : (
                 <>
                   <span className="mr-2">🐾</span>
-                  Place Order
+                  {shippingValidation === null 
+                    ? 'Enter PIN code to continue'
+                    : !shippingValidation.isServiceable 
+                      ? 'Not Serviceable'
+                      : !shippingValidation.meetsMinimumOrder 
+                        ? `Add ₹${shippingValidation.minOrderAmount - subtotal} more`
+                        : 'Place Order'
+                  }
                 </>
               )}
             </button>
 
             <div className="mt-4 text-xs text-gray-500 space-y-1">
               <p>• Order confirmation via WhatsApp</p>
-              <p>• 2-4 days delivery after confirmation</p>
+              <p>• {shippingValidation?.estimatedDelivery || '2-4'} days delivery after confirmation</p>
               <p>• Fresh food made to order</p>
+              {shippingValidation?.zone && (
+                <p>• {shippingValidation.zone.type === 'local' ? 'Local delivery' : 'National shipping'}</p>
+              )}
             </div>
           </div>
         </div>
