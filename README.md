@@ -20,6 +20,7 @@ A modern, optimized e-commerce platform for cat food and accessories built with 
 
 ## 🏗️ **Architecture**
 
+
 ### **Frontend**
 - **Next.js 16** with App Router
 - **TypeScript** for type safety
