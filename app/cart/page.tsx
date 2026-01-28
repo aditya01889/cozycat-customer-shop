@@ -134,15 +134,15 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
               <div key={item.variantId} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-6">
+                <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-8">
                   {/* Product Image */}
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
+                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
                     {item.productImage && item.productImage.trim() !== '' ? (
                       <Image
                         src={item.productImage}
                         alt={item.productName}
-                        width={64}
-                        height={64}
+                        width={56}
+                        height={56}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           console.error('Image failed to load:', item.productImage);
