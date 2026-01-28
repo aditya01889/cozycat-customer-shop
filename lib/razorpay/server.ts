@@ -6,6 +6,7 @@ export interface CreateOrderRequest {
   currency?: string;
   receipt?: string;
   notes?: Record<string, string>;
+  payment_capture?: boolean;
 }
 
 export interface CreateOrderResponse {
@@ -55,7 +56,7 @@ export class RazorpayServer {
         currency: options.currency || 'INR',
         receipt: options.receipt,
         notes: options.notes,
-        payment_capture: true,
+        payment_capture: options.payment_capture ?? true,
       });
 
       return order as unknown as CreateOrderResponse;

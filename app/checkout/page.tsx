@@ -379,7 +379,7 @@ export default function CheckoutPage() {
               customer_name: `${customerInfo.firstName} ${customerInfo.lastName}`,
               customer_phone: customerInfo.phone,
               customer_email: customerInfo.email,
-              is_guest_order: !user
+              is_guest_order: (!user).toString()
             }
           })
         })
