@@ -1,0 +1,156 @@
+# =============================================================================
+# Infrastructure Management Workflow
+# Free Tier Optimized
+# =============================================================================
+
+name: Infrastructure Management
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'infrastructure/**'
+      - '.github/workflows/infrastructure.yml'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+      action:
+        description: 'Action to perform'
+        required: true
+        default: 'apply'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+env:
+  TF_VERSION: '1.5'
+  NODE_VERSION: '18'
+
+jobs:
+  # Infrastructure Plan Job
+  plan:
+    name: Plan Infrastructure
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    outputs:
+      plan_has_changes: ${{ steps.plan.outputs.plan_has_changes }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure Terraform
+        working-directory: infrastructure/terraform
+        run: |
+          terraform init
+          terraform workspace select ${{ github.event.inputs.environment || 'staging' }} || terraform workspace new ${{ github.event.inputs.environment || 'staging' }}
+
+      - name: Plan Infrastructure
+        id: plan
+        working-directory: infrastructure/terraform
+        run: |
+          terraform plan -var-file=environments/${{ github.event.inputs.environment || 'staging' }}.tfvars -no-color > plan.txt
+          echo "plan_has_changes=$(grep -q 'No changes' plan.txt && echo 'false' || echo 'true')" >> $GITHUB_OUTPUT
+          cat plan.txt
+
+      - name: Upload Plan
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terraform-plan-${{ github.event.inputs.environment || 'staging' }}
+          path: infrastructure/terraform/plan.txt
+
+  # Infrastructure Apply Job (Manual Approval Required)
+  apply:
+    name: Apply Infrastructure
+    runs-on: ubuntu-latest
+    needs: plan
+    if: |
+      (github.event.inputs.action == 'apply' || github.ref == 'refs/heads/main') &&
+      needs.plan.outputs.plan_has_changes == 'true'
+    environment: ${{ github.event.inputs.environment || 'production' }}
+    timeout-minutes: 15
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure Terraform
+        working-directory: infrastructure/terraform
+        run: |
+          terraform init
+          terraform workspace select ${{ github.event.inputs.environment || 'production' }}
+
+      - name: Apply Infrastructure
+        working-directory: infrastructure/terraform
+        run: |
+          terraform apply -var-file=environments/${{ github.event.inputs.environment || 'production' }}.tfvars -auto-approve
+
+      - name: Generate Environment File
+        working-directory: infrastructure/terraform
+        run: |
+          # Generate .env file for the environment
+          cat > .env.generated << EOF
+          # Auto-generated infrastructure variables
+          SUPABASE_URL=$(terraform output -raw supabase_url)
+          SUPABASE_ANON_KEY=$(terraform output -raw supabase_anon_key)
+          SUPABASE_SERVICE_KEY=$(terraform output -raw supabase_service_key)
+          REDIS_URL=$(terraform output -raw redis_url)
+          REDIS_TOKEN=$(terraform output -raw redis_token)
+          REDIS_PREFIX=$(terraform output -raw redis_prefix)
+          ENVIRONMENT=$(terraform output -raw environment)
+          EOF
+
+      - name: Upload Environment File
+        uses: actions/upload-artifact@v4
+        with:
+          name: env-${{ github.event.inputs.environment || 'production' }}
+          path: infrastructure/terraform/.env.generated
+
+  # Infrastructure Destroy Job (Manual Only)
+  destroy:
+    name: Destroy Infrastructure
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'destroy'
+    environment: ${{ github.event.inputs.environment }}
+    timeout-minutes: 10
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Configure Terraform
+        working-directory: infrastructure/terraform
+        run: |
+          terraform init
+          terraform workspace select ${{ github.event.inputs.environment }}
+
+      - name: Destroy Infrastructure
+        working-directory: infrastructure/terraform
+        run: |
+          terraform destroy -var-file=environments/${{ github.event.inputs.environment }}.tfvars -auto-approve

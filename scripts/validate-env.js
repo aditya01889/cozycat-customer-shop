@@ -104,10 +104,12 @@ function validateEnvironment() {
     
     // Specific validation for Supabase URL
     if (varName === 'NEXT_PUBLIC_SUPABASE_URL') {
-      if (!value.startsWith('https://') || !value.includes('.supabase.co')) {
+      // Remove quotes for validation
+      const cleanValue = value.replace(/^["']|["']$/g, '');
+      if (!cleanValue.startsWith('https://') || !cleanValue.includes('.supabase.co')) {
         console.error(`❌ Invalid Supabase URL format: ${varName}`);
         console.error(`   Expected: https://project-id.supabase.co`);
-        console.error(`   Current: ${value}`);
+        console.error(`   Current: ${cleanValue}`);
         hasIssues = true;
         return;
       }

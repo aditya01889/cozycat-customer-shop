@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify Your Email - CozyCatKitchen</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f8f9fa;
+    }
+    .container {
+      background-color: #ffffff;
+      border-radius: 12px;
+      padding: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .logo {
+      font-size: 28px;
+      font-weight: bold;
+      color: #ff6b35;
+      margin-bottom: 10px;
+    }
+    .button {
+      display: inline-block;
+      background-color: #ff6b35;
+      color: white;
+      padding: 14px 28px;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+      margin: 20px 0;
+      transition: background-color 0.3s ease;
+    }
+    .button:hover {
+      background-color: #e55a2b;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e9ecef;
+      font-size: 14px;
+      color: #6c757d;
+    }
+    .customer-name {
+      font-weight: bold;
+      color: #ff6b35;
+    }
+    .feature-list {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+    }
+    .feature-list h3 {
+      color: #ff6b35;
+      margin-top: 0;
+    }
+    .emoji {
+      font-size: 20px;
+      margin-right: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo"><span class="emoji">🍽</span>CozyCatKitchen</div>
+      <p>Welcome to our family of happy cats! 🐱</p>
+    </div>
+    
+    <h2>Verify Your Email Address</h2>
+    <p>Dear <span class="customer-name">{{ .UserEmail }}</span>,</p>
+    <p>Thank you for signing up with CozyCatKitchen! 🎉 We're excited to serve your feline family member with premium, nutritious meals.</p>
+    
+    <p>To complete your registration and start shopping for the best cat food, please verify your email address by clicking the button below:</p>
+    
+    <div style="text-align: center;">
+      <a href="{{ .ConfirmationURL }}" class="button">Verify Email Address</a>
+    </div>
+    
+    <p>Or copy and paste this link into your browser:</p>
+    <p style="word-break: break-all; background-color: #f8f9fa; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 12px;">{{ .ConfirmationURL }}</p>
+    
+    <div class="feature-list">
+      <h3><span class="emoji">🎁</span>What You'll Get After Verification:</h3>
+      <ul>
+        <li><strong>Premium Cat Food Selection</strong> - Nutritionally balanced meals</li>
+        <li><strong>Fast Delivery</strong> - Fresh food at your doorstep</li>
+        <li><strong>Order Tracking</strong> - Monitor your cat's meals in real-time</li>
+        <li><strong>Exclusive Offers</strong> - Special deals for registered members</li>
+        <li><strong>Expert Support</strong> - Nutrition advice for your cat</li>
+      </ul>
+    </div>
+    
+    <p><strong>⚠️ Important:</strong> This verification link will expire in 24 hours for security reasons.</p>
+    
+    <div class="footer">
+      <p><strong>If you didn't create an account with CozyCatKitchen</strong>, please ignore this email or contact our support team.</p>
+      <p>© 2024 CozyCatKitchen. All rights reserved.</p>
+      <p><span class="emoji">🐱</span> Premium nutrition for happy, healthy cats <span class="emoji">🍽</span></p>
+      <p style="font-size: 12px; margin-top: 10px;">
+        <strong>Our Promise:</strong> We're committed to providing the highest quality, nutritionally complete meals that your cat will love.
+      </p>
+    </div>
+  </div>
+</body>
+</html>
