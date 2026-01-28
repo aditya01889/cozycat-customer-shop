@@ -28,13 +28,16 @@ export class RazorpayServer {
   private razorpay: Razorpay;
 
   private constructor() {
-    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-      throw new Error('Razorpay credentials not configured. Please check your .env.local file and add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET');
+    const { getPaymentConfig } = require('@/lib/env-validation');
+    const paymentConfig = getPaymentConfig();
+    
+    if (!paymentConfig.razorpayKeyId || !paymentConfig.razorpayKeySecret) {
+      throw new Error('Razorpay credentials not configured. Please check your environment variables and add NEXT_PUBLIC_RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET');
     }
 
     this.razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
+      key_id: paymentConfig.razorpayKeyId,
+      key_secret: paymentConfig.razorpayKeySecret,
     });
   }
 
@@ -69,9 +72,11 @@ export class RazorpayServer {
   ): Promise<boolean> {
     try {
       const crypto = require('crypto');
+      const { getPaymentConfig } = require('@/lib/env-validation');
+      const paymentConfig = getPaymentConfig();
       
       const generatedSignature = crypto
-        .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+        .createHmac('sha256', paymentConfig.razorpayKeySecret)
         .update(`${orderId}|${paymentId}`)
         .digest('hex');
 
@@ -93,6 +98,8 @@ export class RazorpayServer {
   }
 
   getKeyId(): string {
-    return process.env.RAZORPAY_KEY_ID!;
+    const { getPaymentConfig } = require('@/lib/env-validation');
+    const paymentConfig = getPaymentConfig();
+    return paymentConfig.razorpayKeyId;
   }
 }
