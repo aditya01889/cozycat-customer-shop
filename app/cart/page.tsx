@@ -134,44 +134,46 @@ export default function CartPage() {
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
               <div key={item.variantId} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 p-4 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-12">
-                  {/* Product Image */}
-                  <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
-                    {item.productImage && item.productImage.trim() !== '' ? (
-                      <Image
-                        src={item.productImage}
-                        alt={item.productName}
-                        width={56}
-                        height={56}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          console.error('Image failed to load:', item.productImage);
-                          // Fallback to emoji on error
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                          const parent = target.parentElement;
-                          if (parent) {
-                            const emoji = document.createElement('span');
-                            emoji.className = 'text-2xl sm:text-3xl';
-                            emoji.textContent = '🍽️';
-                            parent.appendChild(emoji);
-                          }
-                        }}
-                      />
-                    ) : (
-                      <span className="text-2xl sm:text-3xl">🍽️</span>
-                    )}
+                <div className="grid grid-cols-[auto_1fr_auto] gap-4 items-start">
+                  {/* Product Image - Fixed dimensions, no shrinking */}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    <div className="w-full h-full relative">
+                      {item.productImage && item.productImage.trim() !== '' ? (
+                        <Image
+                          src={item.productImage}
+                          alt={item.productName}
+                          fill
+                          sizes="56px"
+                          className="object-cover rounded-lg"
+                          onError={(e) => {
+                            console.error('Image failed to load:', item.productImage);
+                            // Fallback to emoji on error
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            const parent = target.parentElement;
+                            if (parent) {
+                              const emoji = document.createElement('span');
+                              emoji.className = 'text-2xl sm:text-3xl absolute inset-0 flex items-center justify-center';
+                              emoji.textContent = '🍽️';
+                              parent.appendChild(emoji);
+                            }
+                          }}
+                        />
+                      ) : (
+                        <span className="text-2xl sm:text-3xl absolute inset-0 flex items-center justify-center">🍽️</span>
+                      )}
+                    </div>
                   </div>
 
-                  {/* Product Details */}
-                  <div className="flex-1 text-center sm:text-left">
-                    <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-1 truncate">{item.productName}</h3>
+                  {/* Product Details - Separate column with guaranteed spacing */}
+                  <div className="min-w-0 flex-1">
+                    <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-1 truncate pr-2">{item.productName}</h3>
                     <p className="text-sm text-gray-600 mb-2">{formatWeight(item.weight)}</p>
                     <p className="text-lg font-bold text-orange-600">₹{item.price}</p>
                   </div>
 
-                  {/* Quantity Controls */}
-                  <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end space-x-4 sm:space-x-0 sm:space-y-4">
+                  {/* Quantity Controls - Fixed width column */}
+                  <div className="flex flex-col items-end space-y-2 flex-shrink-0">
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
