@@ -7,6 +7,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/Toast/ToastProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ReactQueryProvider } from "@/lib/react-query/provider";
+import { SkipLinks } from "@/components/accessibility/AccessibilityComponents";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -96,6 +97,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#ea580c" />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
@@ -103,8 +108,11 @@ export default function RootLayout({
           <ReactQueryProvider>
             <ToastProvider>
               <AuthProvider>
-                <Navbar />
-                <main className="min-h-screen bg-gray-50">
+                <SkipLinks />
+                <header id="navigation">
+                  <Navbar />
+                </header>
+                <main id="main-content" className="min-h-screen bg-gray-50" role="main">
                   {children}
                 </main>
                 <Footer />

@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { Database } from '@/types/database'
-import ProductGridEnhanced from '@/components/ProductGridEnhanced'
+import ProductGridInline from '@/components/ProductGridInline'
 import ProductFiltersEnhanced from '@/components/ProductFiltersEnhanced'
 import SearchInput from '@/components/SearchInput'
 
@@ -130,7 +130,7 @@ export default async function ProductsPage({
 
           {/* Products Grid */}
           <div className="flex-1">
-            <ProductGridEnhanced products={filteredProducts} />
+            <ProductGridInline products={filteredProducts} />
           </div>
         </div>
       </div>

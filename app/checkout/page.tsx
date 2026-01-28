@@ -343,7 +343,7 @@ export default function CheckoutPage() {
   if (items.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
+        <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">Your cart is empty</h1>
         <p className="text-gray-600 mb-8">Add some products before checking out.</p>
         <button
           onClick={() => router.push('/products')}
@@ -363,7 +363,7 @@ export default function CheckoutPage() {
           <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-4">
             <span className="text-3xl">🛒</span>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
             Checkout
           </h1>
           <p className="text-xl text-gray-600">
@@ -376,7 +376,7 @@ export default function CheckoutPage() {
           <div className="lg:col-span-2 space-y-8">
             {/* Customer Information */}
             <div className="bg-white rounded-2xl shadow-lg p-8">
-              <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-orange-800 mb-6 flex items-center">
                 <span className="mr-3">👤</span>
                 Customer Information
               </h2>
@@ -450,7 +450,7 @@ export default function CheckoutPage() {
 
           {/* Delivery Address */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-orange-800 mb-6 flex items-center">
               <span className="mr-3">🏠</span>
               Delivery Address
             </h2>
@@ -552,7 +552,7 @@ export default function CheckoutPage() {
 
           {/* Payment Method */}
           <div className="bg-white rounded-2xl shadow-lg p-8">
-            <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-orange-800 mb-6 flex items-center">
               <span className="mr-3">💳</span>
               Payment Method
             </h2>
@@ -613,7 +613,7 @@ export default function CheckoutPage() {
         {/* Order Summary */}
         <div className="lg:col-span-1">
           <div className="bg-white rounded-2xl shadow-lg p-8 sticky top-24">
-            <h2 className="text-2xl font-bold text-orange-800 mb-6 flex items-center">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-orange-800 mb-6 flex items-center">
               <span className="mr-3">📋</span>
               Order Summary
             </h2>

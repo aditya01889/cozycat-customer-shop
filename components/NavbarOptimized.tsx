@@ -75,7 +75,7 @@ export default function NavbarOptimized() {
             <ProductSearch />
             <Link 
               href="/products" 
-              className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-500 rounded-md px-2 py-1 whitespace-nowrap"
+              className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-500 rounded-md px-2 py-1"
               aria-label="Browse our products"
             >
               <span className="text-lg" aria-hidden="true">🍽️</span>
@@ -83,7 +83,7 @@ export default function NavbarOptimized() {
             </Link>
             <Link 
               href="/track-order" 
-              className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-500 rounded-md px-2 py-1 whitespace-nowrap"
+              className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-500 rounded-md px-2 py-1"
               aria-label="Track your order"
             >
               <span className="text-lg" aria-hidden="true">📦</span>
@@ -92,33 +92,32 @@ export default function NavbarOptimized() {
             {user ? (
               <>
                 {(user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin')) && (
-                  <Link href="/admin" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 whitespace-nowrap">
+                  <Link href="/admin" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
                     <span className="text-lg">⚙️</span>
                     Admin
                   </Link>
                 )}
                 {(role === 'operations' || role === 'admin') && (
-                  <Link href="/operations" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 whitespace-nowrap">
+                  <Link href="/operations" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
                     <span className="text-lg">🏭</span>
                     Operations
                   </Link>
                 )}
-                <Link href="/profile" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 whitespace-nowrap">
+                <Link href="/profile" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
                   <span className="text-lg">👤</span>
                   Profile
                 </Link>
                 <button
                   onClick={handleSignOut}
-                  className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-500 rounded-md px-2 py-1 flex-shrink-0"
-                  style={{ whiteSpace: 'nowrap' }}
-                  aria-label={ariaLabels.button.signOut}
+                  className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-orange-500 rounded-md px-2 py-1"
+                  aria-label={ariaLabels.button.signOut} // FIXED: Using correct ARIA label
                 >
                   <span className="text-lg" aria-hidden="true">🚪</span>
-                  <span style={{ whiteSpace: 'nowrap' }}>Sign Out</span>
+                  Sign Out
                 </button>
               </>
             ) : (
-              <Link href="/auth" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1 whitespace-nowrap">
+              <Link href="/auth" className="text-white hover:text-orange-100 transition-colors flex items-center gap-1">
                 <span className="text-lg">🔑</span>
                 Sign In
               </Link>
@@ -173,7 +172,7 @@ export default function NavbarOptimized() {
           <div className="md:hidden py-4 space-y-2 border-t border-orange-400">
             <Link
               href="/products"
-              className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md whitespace-nowrap"
+              className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md"
               onClick={() => setIsMenuOpen(false)}
             >
               <span className="mr-2">🍽️</span>
@@ -181,7 +180,7 @@ export default function NavbarOptimized() {
             </Link>
             <Link
               href="/track-order"
-              className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2 whitespace-nowrap"
+              className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
               onClick={() => setIsMenuOpen(false)}
             >
               <span className="mr-2">📦</span>
@@ -192,7 +191,7 @@ export default function NavbarOptimized() {
                 {(user.email?.includes('aditya01889@gmail.com') || user.email?.includes('admin')) && (
                   <Link
                     href="/admin"
-                    className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2 whitespace-nowrap"
+                    className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="mr-2">⚙️</span>
@@ -202,7 +201,7 @@ export default function NavbarOptimized() {
                 {(role === 'operations' || role === 'admin') && (
                   <Link
                     href="/operations"
-                    className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2 whitespace-nowrap"
+                    className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span className="mr-2">🏭</span>
@@ -211,7 +210,7 @@ export default function NavbarOptimized() {
                 )}
                 <Link
                   href="/profile"
-                  className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2 whitespace-nowrap"
+                  className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <span className="mr-2">👤</span>
@@ -223,17 +222,16 @@ export default function NavbarOptimized() {
                     setIsMenuOpen(false)
                   }}
                   className="block w-full text-left px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
-                  style={{ whiteSpace: 'nowrap' }}
-                  aria-label={ariaLabels.button.signOut}
+                  aria-label={ariaLabels.button.signOut} // FIXED: Using correct ARIA label
                 >
                   <span className="mr-2">🚪</span>
-                  <span style={{ whiteSpace: 'nowrap' }}>Sign Out</span>
+                  Sign Out
                 </button>
               </>
             ) : (
               <Link
                 href="/auth"
-                className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2 whitespace-nowrap"
+                className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <span className="mr-2">🔑</span>
@@ -242,7 +240,7 @@ export default function NavbarOptimized() {
             )}
             <Link
               href="/cart"
-              className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2 whitespace-nowrap"
+              className="block px-3 py-2 text-white hover:text-orange-100 hover:bg-orange-700 rounded-md flex items-center gap-2"
               onClick={() => setIsMenuOpen(false)}
             >
               <span className="mr-2">🛒</span>

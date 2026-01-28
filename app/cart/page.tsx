@@ -38,7 +38,7 @@ export default function CartPage() {
             </div>
             
             {/* Main Message */}
-            <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-4">
               Your cart is empty
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
@@ -99,43 +99,44 @@ export default function CartPage() {
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/products" className="flex items-center text-gray-600 hover:text-gray-900 mr-4">
+            <div className="flex items-center min-w-0 flex-1">
+              <Link href="/products" className="flex items-center text-gray-600 hover:text-gray-900 mr-4 whitespace-nowrap">
                 <ArrowLeft className="w-5 h-5 mr-2" />
-                Continue Shopping
+                <span className="hidden sm:inline">Continue Shopping</span>
+                <span className="sm:hidden">Back</span>
               </Link>
-              <span className="text-2xl mr-3">🛒</span>
-              <h1 className="text-xl font-bold text-gray-900">Shopping Cart</h1>
+              <span className="text-xl sm:text-2xl mr-3">🛒</span>
+              <h1 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Shopping Cart</h1>
             </div>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-gray-600 whitespace-nowrap">
               {items.reduce((sum, item) => sum + item.quantity, 0)} items
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         {/* Page Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-orange-100 rounded-full mb-4">
-            <span className="text-3xl">🛒</span>
+        <div className="text-center mb-6 sm:mb-8">
+          <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full mb-3 sm:mb-4">
+            <span className="text-2xl sm:text-3xl">🛒</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-4">
             Your Shopping Cart
           </h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-lg sm:text-xl text-gray-600">
             Review your delicious cat food selections 🐾
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
           {/* Cart Items */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => (
-              <div key={item.variantId} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 p-6">
-                <div className="flex items-start space-x-4">
+              <div key={item.variantId} className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
                   {/* Product Image */}
-                  <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gradient-to-br from-orange-100 to-pink-100 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
                     {item.productImage && item.productImage.trim() !== '' ? (
                       <Image
                         src={item.productImage}
@@ -151,26 +152,26 @@ export default function CartPage() {
                           const parent = target.parentElement;
                           if (parent) {
                             const emoji = document.createElement('span');
-                            emoji.className = 'text-3xl';
+                            emoji.className = 'text-2xl sm:text-3xl';
                             emoji.textContent = '🍽️';
                             parent.appendChild(emoji);
                           }
                         }}
                       />
                     ) : (
-                      <span className="text-3xl">🍽️</span>
+                      <span className="text-2xl sm:text-3xl">🍽️</span>
                     )}
                   </div>
 
                   {/* Product Details */}
-                  <div className="flex-1">
-                    <h3 className="font-bold text-lg text-gray-900 mb-1">{item.productName}</h3>
+                  <div className="flex-1 text-center sm:text-left">
+                    <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-1 truncate">{item.productName}</h3>
                     <p className="text-sm text-gray-600 mb-2">{formatWeight(item.weight)}</p>
                     <p className="text-lg font-bold text-orange-600">₹{item.price}</p>
                   </div>
 
                   {/* Quantity Controls */}
-                  <div className="flex flex-col items-end space-y-4">
+                  <div className="flex flex-row sm:flex-col items-center justify-between sm:items-end space-x-4 sm:space-x-0 sm:space-y-4">
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => updateQuantity(item.variantId, item.quantity - 1)}
@@ -206,20 +207,21 @@ export default function CartPage() {
             ))}
 
             {/* Cart Actions */}
-            <div className="flex justify-between items-center pt-6 border-t">
+            <div className="flex flex-col sm:flex-row justify-between items-center pt-4 sm:pt-6 border-t gap-4">
               <button
                 onClick={clearCart}
-                className="text-red-500 hover:text-red-600 font-medium flex items-center transition-colors"
+                className="text-red-500 hover:text-red-600 font-medium flex items-center transition-colors justify-center sm:justify-start"
               >
                 <Trash2 className="w-4 h-4 mr-2" />
                 Clear Cart
               </button>
               <Link
                 href="/products"
-                className="text-orange-500 hover:text-orange-600 font-medium flex items-center transition-colors"
+                className="text-orange-500 hover:text-orange-600 font-medium flex items-center transition-colors justify-center sm:justify-start"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Continue Shopping
+                <span className="hidden sm:inline">Continue Shopping</span>
+                <span className="sm:hidden">Shop More</span>
               </Link>
             </div>
           </div>

@@ -157,36 +157,28 @@ export default function OperationsDashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
       {/* Header */}
-      <div className="bg-white shadow-sm border-b">
+      <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <span className="text-2xl mr-3">🏭</span>
-              <h1 className="text-xl font-bold text-gray-900">CozyCat Operations</h1>
-            </div>
+          <div className="flex justify-between items-center py-4">
             <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
-                Welcome, {operationsUser?.full_name || 'Operations Staff'}
+              <span className="text-xl sm:text-2xl">🏭</span>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Operations Dashboard</h1>
+              <span className="text-sm text-gray-500">
+                Welcome back, {operationsUser?.full_name || 'Operations Staff'}
               </span>
-              <button 
-                onClick={signOut}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Sign out"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
             </div>
+            <button
+              onClick={signOut}
+              className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Sign Out</span>
+            </button>
           </div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Page Title */}
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Operations Dashboard</h2>
-          <p className="text-gray-600">Manage production, inventory, and orders</p>
-        </div>
-
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6 mb-8">
           <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 border-l-4 border-orange-500">

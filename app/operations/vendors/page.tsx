@@ -6,6 +6,7 @@ import { useToast } from '@/components/Toast/ToastProvider'
 import { supabase } from '@/lib/supabase/client'
 import { getOperationsUserClient } from '@/lib/middleware/operations-client'
 import Link from 'next/link'
+import OperationsPageHeader from '@/components/operations/OperationsPageHeader'
 import { 
   Users2,
   Phone,
@@ -15,7 +16,6 @@ import {
   Search,
   Edit,
   Trash2,
-  ArrowLeft,
   Package,
   Clock,
   X,
@@ -657,26 +657,28 @@ export default function VendorManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Link href="/operations" className="text-gray-600 hover:text-gray-900 mr-4">
-                <ArrowLeft className="w-5 h-5 inline mr-2" />
-                Back to Dashboard
-              </Link>
-              <span className="text-2xl mr-3">👥</span>
-              <h1 className="text-xl font-bold text-gray-900">Vendor Management</h1>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      <OperationsPageHeader
+        title="Vendor Management"
+        description="Manage suppliers and purchase orders"
+        icon={<Users2 className="h-8 w-8 text-blue-600" />}
+        actions={
+          <div className="flex items-center space-x-4">
             <div className="text-sm text-gray-600">
               {vendors.filter(v => v.is_active).length} active vendors
             </div>
+            <button 
+              onClick={() => setShowAddModal(true)}
+              className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors flex items-center"
+            >
+              <Plus className="w-5 h-5 mr-2" />
+              Add Vendor
+            </button>
           </div>
-        </div>
-      </div>
+        }
+      />
 
+      {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">

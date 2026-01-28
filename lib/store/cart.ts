@@ -29,6 +29,7 @@ interface CartStore {
   isFreeDelivery: () => boolean
   getItemsCount: () => number
   hasItems: () => boolean
+  getCartItemQuantity: (productId: string, variantId: string) => number
 }
 
 export const useCartStore = create<CartStore>()(
@@ -150,6 +151,12 @@ export const useCartStore = create<CartStore>()(
 
       hasItems: () => {
         return get().items.length > 0
+      },
+
+      getCartItemQuantity: (productId: string, variantId: string) => {
+        const { items } = get()
+        const item = items.find(i => i.productId === productId && i.variantId === variantId)
+        return item ? item.quantity : 0
       }
     }),
     {

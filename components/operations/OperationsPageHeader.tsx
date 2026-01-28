@@ -41,7 +41,7 @@ export default function OperationsPageHeader({
         )}
         
         {/* Page Title */}
-        <div className="flex justify-between items-center py-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 py-4">
           <div className="flex items-center space-x-3">
             {icon && (
               <div className="flex-shrink-0">
@@ -49,7 +49,7 @@ export default function OperationsPageHeader({
               </div>
             )}
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">{title}</h1>
               {description && (
                 <p className="text-sm text-gray-500 mt-1">{description}</p>
               )}
@@ -57,7 +57,7 @@ export default function OperationsPageHeader({
           </div>
           
           {actions && (
-            <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
               {actions}
             </div>
           )}

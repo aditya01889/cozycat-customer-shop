@@ -22,8 +22,16 @@ export default function ProductSearch() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<Product[]>([])
   const [loading, setLoading] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   useEffect(() => {
+    if (!isMounted) return
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault()
@@ -36,11 +44,11 @@ export default function ProductSearch() {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen])
+  }, [isOpen, isMounted])
 
   useEffect(() => {
-    if (query.length < 2) {
-      setResults([])
+    if (!isMounted || query.length < 2) {
+      if (isMounted) setResults([])
       return
     }
 
@@ -61,7 +69,23 @@ export default function ProductSearch() {
 
     const debounceTimer = setTimeout(searchProducts, 300)
     return () => clearTimeout(debounceTimer)
-  }, [query])
+  }, [query, isMounted])
+
+  // Return placeholder during SSR to prevent hydration mismatch
+  if (!isMounted) {
+    return (
+      <button
+        className="flex items-center gap-2 px-4 py-2 text-gray-600"
+        disabled
+      >
+        <Search className="w-5 h-5" />
+        <span className="hidden md:inline">Search</span>
+        <kbd className="hidden md:inline-flex items-center px-2 py-1 text-xs text-gray-500 bg-gray-100 rounded">
+          ⌘K
+        </kbd>
+      </button>
+    )
+  }
 
   if (!isOpen) {
     return (

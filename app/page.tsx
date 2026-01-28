@@ -101,9 +101,9 @@ export default function Home() {
       <section className="py-20 bg-gradient-to-br from-purple-50 to-blue-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center flex-wrap">
               <span className="mr-3">🐾</span>
-              Why Choose Cozy Cat Kitchen
+              <span className="text-center">Why Choose Cozy Cat Kitchen</span>
             </h2>
             <p className="text-lg text-gray-600">Thoughtfully prepared meals that cats notice and trust</p>
           </div>
@@ -203,9 +203,9 @@ export default function Home() {
       <section className="py-20 bg-gradient-to-r from-orange-500 to-pink-500">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="text-white">
-            <h2 className="text-3xl font-bold mb-4 flex items-center justify-center">
+            <h2 className="text-3xl font-bold mb-4 flex items-center justify-center flex-wrap">
               <span className="mr-3">🐾</span>
-              Ready to Make Your Cat Happy?
+              <span className="text-center">Ready to Make Your Cat Happy?</span>
             </h2>
             <p className="text-xl mb-8">Join thousands of happy cats who love CozyCatKitchen meals</p>
             
@@ -260,7 +260,7 @@ export default function Home() {
                 <div className="flex items-center mb-2">
                   <div className="text-2xl mr-2">😺</div>
                   <div>
-                    <h4 className="font-semibold text-gray-800">Happy Customer</h4>
+                    <h4 className="font-semibold text-gray-800">Happy Parent</h4>
                     <p className="text-sm text-gray-500">Verified Purchase</p>
                   </div>
                 </div>
@@ -287,7 +287,7 @@ export default function Home() {
                 <div className="flex items-center mb-2">
                   <div className="text-2xl mr-2">😸</div>
                   <div>
-                    <h4 className="font-semibold text-gray-800">Satisfied Owner</h4>
+                    <h4 className="font-semibold text-gray-800">Concerned Parent</h4>
                     <p className="text-sm text-gray-500">Verified Purchase</p>
                   </div>
                 </div>
@@ -314,7 +314,7 @@ export default function Home() {
                 <div className="flex items-center mb-2">
                   <div className="text-2xl mr-2">😻</div>
                   <div>
-                    <h4 className="font-semibold text-gray-800">Concerned Owner</h4>
+                    <h4 className="font-semibold text-gray-800">Satisfied Parent</h4>
                     <p className="text-sm text-gray-500">Verified Purchase</p>
                   </div>
                 </div>

@@ -210,14 +210,14 @@ export default function AdminUsersContent() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 py-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Users</h1>
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-900">Users</h1>
               <p className="text-sm text-gray-500">Manage all users and customers</p>
             </div>
             <Link
               href="/admin"
-              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors"
+              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors w-full sm:w-auto text-center"
             >
               ← Back to Dashboard
             </Link>
