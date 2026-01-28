@@ -10,19 +10,22 @@ export const redis = createClient({
   password: redisPassword,
   socket: {
     connectTimeout: 5000,
-    lazyConnect: true
   }
 })
 
 // Redis connection status
 let isConnected = false
 
+const shouldLog = process.env.NODE_ENV === 'development'
+
 // Initialize Redis connection
 export async function initRedis() {
   try {
     await redis.connect()
     isConnected = true
-    console.log('✅ Redis connected successfully')
+    if (shouldLog) {
+      console.log('✅ Redis connected successfully')
+    }
   } catch (error) {
     console.error('❌ Redis connection failed:', error)
     isConnected = false
@@ -37,7 +40,7 @@ export function isRedisConnected(): boolean {
 // Redis cache wrapper with fallback
 export class RedisCache {
   private static instance: RedisCache
-  private fallbackCache = new Map<string, { data: any; timestamp: number }>()
+  private fallbackCache = new Map<string, { data: any; timestamp: number; ttl: number }>()
 
   static getInstance(): RedisCache {
     if (!RedisCache.instance) {
@@ -56,11 +59,15 @@ export class RedisCache {
       const data = await redis.get(key)
       if (data) {
         const parsed = JSON.parse(data)
-        console.log(`📦 Cache hit: ${key}`)
+        if (shouldLog) {
+          console.log(`📦 Cache hit: ${key}`)
+        }
         return parsed
       }
       
-      console.log(`📦 Cache miss: ${key}`)
+      if (shouldLog) {
+        console.log(`📦 Cache miss: ${key}`)
+      }
       return null
     } catch (error) {
       console.error('Redis get error:', error)
@@ -77,7 +84,9 @@ export class RedisCache {
       }
 
       await redis.setEx(key, ttl, JSON.stringify(data))
-      console.log(`💾 Cache set: ${key} (TTL: ${ttl}s)`)
+      if (shouldLog) {
+        console.log(`💾 Cache set: ${key} (TTL: ${ttl}s)`)
+      }
     } catch (error) {
       console.error('Redis set error:', error)
       this.setFallback(key, data, ttl)
@@ -93,7 +102,9 @@ export class RedisCache {
       }
 
       await redis.del(key)
-      console.log(`🗑️ Cache deleted: ${key}`)
+      if (shouldLog) {
+        console.log(`🗑️ Cache deleted: ${key}`)
+      }
     } catch (error) {
       console.error('Redis del error:', error)
       this.fallbackCache.delete(key)
@@ -109,7 +120,9 @@ export class RedisCache {
       }
 
       await redis.flushDb()
-      console.log('🗑️ Cache cleared')
+      if (shouldLog) {
+        console.log('🗑️ Cache cleared')
+      }
     } catch (error) {
       console.error('Redis clear error:', error)
       this.fallbackCache.clear()
@@ -180,49 +193,63 @@ export class CacheInvalidation {
   static async invalidateProducts() {
     const keys = await cache.keys(`${CACHE_KEYS.PRODUCTS}*`)
     await Promise.all(keys.map(key => cache.del(key)))
-    console.log('🗑️ Product cache invalidated')
+    if (shouldLog) {
+      console.log('🗑️ Product cache invalidated')
+    }
   }
 
   // Invalidate dashboard cache
   static async invalidateDashboard() {
     const keys = await cache.keys(`${CACHE_KEYS.DASHBOARD}*`)
     await Promise.all(keys.map(key => cache.del(key)))
-    console.log('🗑️ Dashboard cache invalidated')
+    if (shouldLog) {
+      console.log('🗑️ Dashboard cache invalidated')
+    }
   }
 
   // Invalidate orders cache
   static async invalidateOrders() {
     const keys = await cache.keys(`${CACHE_KEYS.ORDERS}*`)
     await Promise.all(keys.map(key => cache.del(key)))
-    console.log('🗑️ Orders cache invalidated')
+    if (shouldLog) {
+      console.log('🗑️ Orders cache invalidated')
+    }
   }
 
   // Invalidate inventory cache
   static async invalidateInventory() {
     const keys = await cache.keys(`${CACHE_KEYS.INVENTORY}*`)
     await Promise.all(keys.map(key => cache.del(key)))
-    console.log('🗑️ Inventory cache invalidated')
+    if (shouldLog) {
+      console.log('🗑️ Inventory cache invalidated')
+    }
   }
 
   // Invalidate production queue cache
   static async invalidateProductionQueue() {
     const keys = await cache.keys(`${CACHE_KEYS.PRODUCTION_QUEUE}*`)
     await Promise.all(keys.map(key => cache.del(key)))
-    console.log('🗑️ Production queue cache invalidated')
+    if (shouldLog) {
+      console.log('🗑️ Production queue cache invalidated')
+    }
   }
 
   // Invalidate user-specific cache
   static async invalidateUserCache(userId: string) {
     const keys = await cache.keys(`${CACHE_KEYS.USER_PROFILE}${userId}*`)
     await Promise.all(keys.map(key => cache.del(key)))
-    console.log(`🗑️ User cache invalidated: ${userId}`)
+    if (shouldLog) {
+      console.log(`🗑️ User cache invalidated: ${userId}`)
+    }
   }
 
   // Invalidate search cache
   static async invalidateSearchCache() {
     const keys = await cache.keys(`${CACHE_KEYS.SEARCH_RESULTS}*`)
     await Promise.all(keys.map(key => cache.del(key)))
-    console.log('🗑️ Search cache invalidated')
+    if (shouldLog) {
+      console.log('🗑️ Search cache invalidated')
+    }
   }
 }
 
@@ -231,10 +258,14 @@ export class CacheWarming {
   // Warm product cache
   static async warmProducts() {
     try {
-      console.log('🔥 Warming product cache...')
+      if (shouldLog) {
+        console.log('🔥 Warming product cache...')
+      }
       // This would typically fetch popular products and cache them
       // Implementation depends on your specific data fetching logic
-      console.log('✅ Product cache warmed')
+      if (shouldLog) {
+        console.log('✅ Product cache warmed')
+      }
     } catch (error) {
       console.error('❌ Failed to warm product cache:', error)
     }
@@ -243,9 +274,13 @@ export class CacheWarming {
   // Warm dashboard cache
   static async warmDashboard() {
     try {
-      console.log('🔥 Warming dashboard cache...')
+      if (shouldLog) {
+        console.log('🔥 Warming dashboard cache...')
+      }
       // This would typically fetch dashboard stats and cache them
-      console.log('✅ Dashboard cache warmed')
+      if (shouldLog) {
+        console.log('✅ Dashboard cache warmed')
+      }
     } catch (error) {
       console.error('❌ Failed to warm dashboard cache:', error)
     }
@@ -282,5 +317,8 @@ export async function getCacheStats() {
   }
 }
 
-// Initialize Redis on module import
-initRedis().catch(console.error)
+// Initialize Redis on module import only when explicitly configured,
+// or in development where localhost is a reasonable default.
+if (process.env.REDIS_URL || process.env.NODE_ENV === 'development') {
+  initRedis().catch(console.error)
+}

@@ -51,12 +51,79 @@ export default function CheckoutPage() {
     deliveryNotes: ''
   })
 
+  const [geoLocation, setGeoLocation] = useState<null | {
+    latitude: number
+    longitude: number
+    accuracy: number
+    capturedAt: string
+  }>(null)
+
+  const [isGettingLocation, setIsGettingLocation] = useState(false)
+
   const [paymentMethod, setPaymentMethod] = useState<'online'>('online')
   const [razorpayOrderId, setRazorpayOrderId] = useState<string | null>(null)
 
   const subtotal = getTotalPrice()
   const deliveryFee = subtotal >= 500 ? 0 : 40
   const total = subtotal + deliveryFee
+
+  const handleGetCurrentLocation = async () => {
+    if (typeof window === 'undefined') return
+
+    if (!navigator.geolocation) {
+      showError(
+        ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          'Location is not supported on this device/browser. Please enter address manually.',
+          null,
+          400,
+          'checkout geolocation'
+        )
+      )
+      return
+    }
+
+    setIsGettingLocation(true)
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const payload = {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+          accuracy: position.coords.accuracy,
+          capturedAt: new Date().toISOString()
+        }
+
+        setGeoLocation(payload)
+        showSuccess('Location captured. We’ll include it with your order for accurate delivery.')
+        setIsGettingLocation(false)
+      },
+      (error) => {
+        setIsGettingLocation(false)
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? 'Location permission was denied. You can still place the order by entering the address manually.'
+            : error.code === error.POSITION_UNAVAILABLE
+              ? 'Location is unavailable right now. Please try again or enter address manually.'
+              : 'Unable to get your location. Please try again or enter address manually.'
+
+        showError(
+          ErrorHandler.createError(
+            ErrorType.NETWORK,
+            message,
+            { code: error.code, message: error.message },
+            400,
+            'checkout geolocation'
+          )
+        )
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    )
+  }
 
   const processRazorpayPayment = async (orderId: string, orderNumber: string): Promise<boolean> => {
     return new Promise((resolve) => {
@@ -210,6 +277,13 @@ export default function CheckoutPage() {
       const orderNumber = 'ORD-' + Date.now().toString().slice(-8)
 
       // Create order with customer info
+      const deliveryLocation = geoLocation
+        ? {
+            ...geoLocation,
+            maps_url: `https://www.google.com/maps?q=${geoLocation.latitude},${geoLocation.longitude}`
+          }
+        : null
+
       const orderData = {
         order_number: orderNumber,
         customer_id: user?.id || null, // Use user ID if logged in
@@ -231,6 +305,7 @@ export default function CheckoutPage() {
           state: address.state,
           pincode: address.pincode,
           delivery_notes: address.deliveryNotes,
+          delivery_location: deliveryLocation,
           is_guest_order: !user // Flag to identify guest orders
         }),
         status: 'pending'
@@ -454,6 +529,34 @@ export default function CheckoutPage() {
               <span className="mr-3">🏠</span>
               Delivery Address
             </h2>
+
+            <div className="mb-6">
+              <button
+                type="button"
+                onClick={handleGetCurrentLocation}
+                disabled={isGettingLocation}
+                className="inline-flex items-center justify-center px-4 py-2 rounded-lg border border-orange-200 bg-orange-50 text-orange-800 hover:bg-orange-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <MapPin className="w-4 h-4 mr-2" />
+                {isGettingLocation ? 'Getting location…' : 'Use my current location'}
+              </button>
+
+              {geoLocation && (
+                <div className="mt-3 text-sm text-gray-600">
+                  <div>
+                    Location captured (±{Math.round(geoLocation.accuracy)}m)
+                  </div>
+                  <a
+                    href={`https://www.google.com/maps?q=${geoLocation.latitude},${geoLocation.longitude}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-orange-600 hover:text-orange-700 underline"
+                  >
+                    Open in Google Maps
+                  </a>
+                </div>
+              )}
+            </div>
             
             <div className="space-y-4">
               <div>

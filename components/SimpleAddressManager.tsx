@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { MapPin, Navigation, Plus, Trash2, Edit2, Home, Check, X } from 'lucide-react'
+import { useToast } from '@/components/Toast/ToastProvider'
+import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 
 interface Address {
   id: string
@@ -35,6 +37,8 @@ export default function SimpleAddressManager({
   const [showForm, setShowForm] = useState(false)
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
   const [loading, setLoading] = useState(false)
+  const [getCurrentLocationLoading, setGetCurrentLocationLoading] = useState(false)
+  const { showError, showSuccess } = useToast()
 
   const [formData, setFormData] = useState({
     address_line1: '',
@@ -85,6 +89,33 @@ export default function SimpleAddressManager({
     }
   }, [editingAddress])
 
+  const reverseGeocodeNominatim = async (latitude: number, longitude: number) => {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+    if (!response.ok) {
+      throw new Error(`Reverse geocoding failed: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const addr = data?.address || {}
+
+    const city = addr.city || addr.town || addr.village || addr.county || ''
+    const state = addr.state || ''
+    const pincode = addr.postcode || ''
+    const addressLine1 = addr.road || addr.neighbourhood || addr.suburb || data?.display_name?.split(',')?.[0] || ''
+
+    return {
+      addressLine1,
+      city,
+      state,
+      pincode
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -106,23 +137,75 @@ export default function SimpleAddressManager({
   }
 
   const handleGetCurrentLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
+    if (!navigator.geolocation) {
+      showError(
+        ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          'Location is not supported on this device/browser. Please enter address manually.',
+          null,
+          400,
+          'address geolocation'
+        )
+      )
+      return
+    }
+
+    setGetCurrentLocationLoading(true)
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords
+
+        setFormData(prev => ({
+          ...prev,
+          latitude,
+          longitude
+        }))
+
+        try {
+          const resolved = await reverseGeocodeNominatim(latitude, longitude)
           setFormData(prev => ({
             ...prev,
-            latitude: position.coords.latitude,
-            longitude: position.coords.longitude
+            address_line1: resolved.addressLine1 || prev.address_line1,
+            city: resolved.city || prev.city,
+            state: resolved.state || prev.state,
+            pincode: resolved.pincode || prev.pincode,
+            latitude,
+            longitude
           }))
-        },
-        (error) => {
-          console.error('Error getting location:', error)
-          alert('Unable to get your location. Please enter address manually.')
+        } catch (error) {
+          console.error('Error reverse geocoding coordinates:', error)
         }
-      )
-    } else {
-      alert('Geolocation is not supported by your browser.')
-    }
+
+        showSuccess('Location captured. You can review/edit the address before saving.')
+        setGetCurrentLocationLoading(false)
+      },
+      (error) => {
+        console.error('Error getting location:', error)
+        setGetCurrentLocationLoading(false)
+
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? 'Location permission was denied. Please enter address manually.'
+            : error.code === error.POSITION_UNAVAILABLE
+              ? 'Location is unavailable right now. Please try again or enter address manually.'
+              : 'Unable to get your location. Please try again or enter address manually.'
+
+        showError(
+          ErrorHandler.createError(
+            ErrorType.NETWORK,
+            message,
+            { code: error.code, message: error.message },
+            400,
+            'address geolocation'
+          )
+        )
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
+      }
+    )
   }
 
   return (
@@ -277,9 +360,10 @@ export default function SimpleAddressManager({
               <button
                 type="button"
                 onClick={handleGetCurrentLocation}
-                className="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors"
+                disabled={getCurrentLocationLoading}
+                className="px-3 py-1 text-sm bg-orange-100 text-orange-700 rounded-lg hover:bg-orange-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Get Location
+                {getCurrentLocationLoading ? 'Getting…' : 'Get Location'}
               </button>
             </div>
 

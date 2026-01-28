@@ -33,6 +33,26 @@ interface EnvSchema {
 export function validateEnv(): EnvSchema {
   const env = process.env as Record<string, string | undefined>
 
+  // CI dummy mode: allow build/tests to run without real secrets.
+  // This must never be used for real deployments.
+  if (env.CI_DUMMY_ENV === '1' || env.CI_DUMMY_ENV === 'true') {
+    const nodeEnv = (env.NODE_ENV || 'test') as 'development' | 'production' | 'test'
+    return {
+      NEXT_PUBLIC_SUPABASE_URL: env.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'ci_dummy',
+      SUPABASE_SERVICE_ROLE_KEY: env.SUPABASE_SERVICE_ROLE_KEY || 'ci_dummy',
+      GMAIL_USER: env.GMAIL_USER || '',
+      GMAIL_APP_PASSWORD: env.GMAIL_APP_PASSWORD || '',
+      RESEND_API_KEY: env.RESEND_API_KEY || '',
+      NEXT_PUBLIC_RAZORPAY_KEY_ID: env.NEXT_PUBLIC_RAZORPAY_KEY_ID || 'ci_dummy',
+      RAZORPAY_KEY_SECRET: env.RAZORPAY_KEY_SECRET || 'ci_dummy',
+      NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || 'ci_dummy',
+      NODE_ENV: nodeEnv,
+      NEXTAUTH_URL: env.NEXTAUTH_URL || '',
+      NEXTAUTH_SECRET: env.NEXTAUTH_SECRET || '',
+    }
+  }
+
   // Required Supabase configuration
   if (!env.NEXT_PUBLIC_SUPABASE_URL) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not set')
@@ -63,10 +83,6 @@ export function validateEnv(): EnvSchema {
   if (nodeEnv === 'production') {
     if (!env.NEXT_PUBLIC_RAZORPAY_KEY_ID) {
       throw new Error('NEXT_PUBLIC_RAZORPAY_KEY_ID is required but not set')
-    }
-
-    if (!env.RAZORPAY_KEY_ID) {
-      throw new Error('RAZORPAY_KEY_ID is required but not set')
     }
 
     if (!env.RAZORPAY_KEY_SECRET) {

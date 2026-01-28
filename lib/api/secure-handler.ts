@@ -5,7 +5,6 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { validateInput } from '../validation/schemas'
-import { requireCSRFProtection } from '../security/csrf'
 import { actionRateLimiters } from '../middleware/rate-limiter'
 
 /**
@@ -25,16 +24,25 @@ export function createSecureHandler<T = any>(config: {
 }) {
   return async (req: NextRequest): Promise<NextResponse> => {
     try {
-      console.log('🔍 Secure Handler - Starting request processing...')
+      const shouldLog = process.env.NODE_ENV === 'development'
+      if (shouldLog) {
+        console.log('🔍 Secure Handler - Starting request processing...')
+      }
       
       // Pre-check validation
       if (config.preCheck) {
-        console.log('🔍 Secure Handler - Running pre-check...')
+        if (shouldLog) {
+          console.log('🔍 Secure Handler - Running pre-check...')
+        }
         const preCheckResult = await config.preCheck(req)
-        console.log('🔍 Secure Handler - Pre-check result:', preCheckResult)
+        if (shouldLog) {
+          console.log('🔍 Secure Handler - Pre-check result:', preCheckResult)
+        }
         
         if (!preCheckResult.allowed) {
-          console.log('❌ Secure Handler - Pre-check failed:', preCheckResult.error)
+          if (shouldLog) {
+            console.log('❌ Secure Handler - Pre-check failed:', preCheckResult.error)
+          }
           return NextResponse.json(
             { error: preCheckResult.error || 'Pre-check failed' },
             { status: 403 }
@@ -44,12 +52,18 @@ export function createSecureHandler<T = any>(config: {
 
       // Rate limiting
       if (config.rateLimiter) {
-        console.log('🔍 Secure Handler - Checking rate limit...')
+        if (shouldLog) {
+          console.log('🔍 Secure Handler - Checking rate limit...')
+        }
         const rateLimitResult = config.rateLimiter(req as any)
-        console.log('🔍 Secure Handler - Rate limit result:', rateLimitResult)
+        if (shouldLog) {
+          console.log('🔍 Secure Handler - Rate limit result:', rateLimitResult)
+        }
         
         if (!rateLimitResult.allowed) {
-          console.log('❌ Secure Handler - Rate limit exceeded')
+          if (shouldLog) {
+            console.log('❌ Secure Handler - Rate limit exceeded')
+          }
           return NextResponse.json(
             {
               error: 'Rate limit exceeded',
@@ -63,16 +77,24 @@ export function createSecureHandler<T = any>(config: {
 
       // CSRF protection (skip for GET requests)
       const shouldRequireCSRF = config.requireCSRF !== false && req.method !== 'GET'
-      console.log('🔍 Secure Handler - CSRF required:', shouldRequireCSRF)
+      if (shouldLog) {
+        console.log('🔍 Secure Handler - CSRF required:', shouldRequireCSRF)
+      }
       
       if (shouldRequireCSRF) {
-        console.log('🔍 Secure Handler - Validating CSRF token...')
+        if (shouldLog) {
+          console.log('🔍 Secure Handler - Validating CSRF token...')
+        }
         const { validateCSRFToken } = await import('../security/csrf')
         const isValidCSRF = await validateCSRFToken(req)
-        console.log('🔍 Secure Handler - CSRF validation result:', isValidCSRF)
+        if (shouldLog) {
+          console.log('🔍 Secure Handler - CSRF validation result:', isValidCSRF)
+        }
         
         if (!isValidCSRF) {
-          console.log('❌ Secure Handler - CSRF validation failed')
+          if (shouldLog) {
+            console.log('❌ Secure Handler - CSRF validation failed')
+          }
           return NextResponse.json(
             { error: 'CSRF token validation failed' },
             { status: 403 }

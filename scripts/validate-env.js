@@ -35,6 +35,15 @@ const PLACEHOLDER_PATTERNS = [
 
 function validateEnvironment() {
   console.log('🔍 Validating environment variables...\n');
+
+  // In CI dummy mode we intentionally do not require real secrets.
+  // This enables build/test to run without production/staging credentials.
+  if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+    console.warn('⚠️  CI_DUMMY_ENV enabled - skipping strict environment variable validation');
+    console.warn('⚠️  Do not use CI_DUMMY_ENV in production deployments.');
+    console.log('\n✅ Environment validation passed (CI dummy mode)!');
+    return;
+  }
   
   // Check if we're in production/CI environment (Vercel, etc.)
   const isProduction = process.env.NODE_ENV === 'production' || process.env.CI || process.env.VERCEL;

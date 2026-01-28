@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { MapPin, Navigation, Plus, Trash2, Edit2, Home, Check, X } from 'lucide-react'
-import { useLoadScript } from '@react-google-maps/api'
-import PlacesAutocomplete from 'react-places-autocomplete'
-
-// Static libraries array to prevent performance warnings
-const GOOGLE_MAPS_LIBRARIES = ['places'] as any
+import { useToast } from '@/components/Toast/ToastProvider'
+import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 
 interface Address {
   id: string
@@ -41,6 +38,7 @@ export default function AddressManager({
   const [editingAddress, setEditingAddress] = useState<Address | null>(null)
   const [loading, setLoading] = useState(false)
   const [getCurrentLocationLoading, setGetCurrentLocationLoading] = useState(false)
+  const { showError, showSuccess } = useToast()
 
   const [formData, setFormData] = useState({
     address_line1: '',
@@ -53,11 +51,6 @@ export default function AddressManager({
     latitude: null as number | null,
     longitude: null as number | null,
     is_default: false
-  })
-
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-    libraries: GOOGLE_MAPS_LIBRARIES
   })
 
   useEffect(() => {
@@ -96,9 +89,44 @@ export default function AddressManager({
     setEditingAddress(null)
   }
 
+  const reverseGeocodeNominatim = async (latitude: number, longitude: number) => {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${latitude}&lon=${longitude}`
+    const response = await fetch(url, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    })
+    if (!response.ok) {
+      throw new Error(`Reverse geocoding failed: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const addr = data?.address || {}
+
+    const city = addr.city || addr.town || addr.village || addr.county || ''
+    const state = addr.state || ''
+    const pincode = addr.postcode || ''
+    const addressLine1 = addr.road || addr.neighbourhood || addr.suburb || data?.display_name?.split(',')?.[0] || ''
+
+    return {
+      addressLine1,
+      city,
+      state,
+      pincode
+    }
+  }
+
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser')
+      showError(
+        ErrorHandler.createError(
+          ErrorType.VALIDATION,
+          'Location is not supported on this device/browser. Please enter address manually.',
+          null,
+          400,
+          'address geolocation'
+        )
+      )
       return
     }
 
@@ -106,53 +134,51 @@ export default function AddressManager({
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords
-        
-        // Reverse geocoding to get address from coordinates
-        try {
-          const response = await fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}`
-          )
-          const data = await response.json()
-          
-          if (data.results && data.results.length > 0) {
-            const addressComponents = data.results[0].address_components
-            let city = '', state = '', pincode = ''
-            
-            addressComponents.forEach((component: any) => {
-              if (component.types.includes('locality')) {
-                city = component.long_name
-              } else if (component.types.includes('administrative_area_level_1')) {
-                state = component.long_name
-              } else if (component.types.includes('postal_code')) {
-                pincode = component.long_name
-              }
-            })
 
-            setFormData(prev => ({
-              ...prev,
-              address_line1: data.results[0].formatted_address.split(',')[0],
-              city,
-              state,
-              pincode,
-              latitude,
-              longitude
-            }))
-          }
-        } catch (error) {
-          console.error('Error getting address from coordinates:', error)
+        setFormData(prev => ({
+          ...prev,
+          latitude,
+          longitude
+        }))
+
+        try {
+          const resolved = await reverseGeocodeNominatim(latitude, longitude)
           setFormData(prev => ({
             ...prev,
+            address_line1: resolved.addressLine1 || prev.address_line1,
+            city: resolved.city || prev.city,
+            state: resolved.state || prev.state,
+            pincode: resolved.pincode || prev.pincode,
             latitude,
             longitude
           }))
+        } catch (error) {
+          console.error('Error reverse geocoding coordinates:', error)
         }
-        
+
+        showSuccess('Location captured. You can review/edit the address before saving.')
         setGetCurrentLocationLoading(false)
       },
       (error) => {
         console.error('Error getting location:', error)
         setGetCurrentLocationLoading(false)
-        alert('Unable to get your location. Please enter address manually.')
+
+        const message =
+          error.code === error.PERMISSION_DENIED
+            ? 'Location permission was denied. Please enter address manually.'
+            : error.code === error.POSITION_UNAVAILABLE
+              ? 'Location is unavailable right now. Please try again or enter address manually.'
+              : 'Unable to get your location. Please try again or enter address manually.'
+
+        showError(
+          ErrorHandler.createError(
+            ErrorType.NETWORK,
+            message,
+            { code: error.code, message: error.message },
+            400,
+            'address geolocation'
+          )
+        )
       },
       {
         enableHighAccuracy: true,
@@ -177,37 +203,10 @@ export default function AddressManager({
       resetForm()
     } catch (error) {
       console.error('Error saving address:', error)
+      const appError = ErrorHandler.fromError(error)
+      showError(appError)
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handlePlaceSelect = (place: any) => {
-    if (place.geometry) {
-      const lat = place.geometry.location.lat()
-      const lng = place.geometry.location.lng()
-      
-      let city = '', state = '', pincode = ''
-      
-      place.address_components.forEach((component: any) => {
-        if (component.types.includes('locality')) {
-          city = component.long_name
-        } else if (component.types.includes('administrative_area_level_1')) {
-          state = component.long_name
-        } else if (component.types.includes('postal_code')) {
-          pincode = component.long_name
-        }
-      })
-
-      setFormData(prev => ({
-        ...prev,
-        address_line1: place.formatted_address.split(',')[0],
-        city,
-        state,
-        pincode,
-        latitude: lat,
-        longitude: lng
-      }))
     }
   }
 
@@ -273,48 +272,6 @@ export default function AddressManager({
                   )}
                 </button>
               </div>
-
-              {/* Address Autocomplete */}
-              {isLoaded && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Search Address *
-                  </label>
-                  <PlacesAutocomplete
-                    value={formData.address_line1}
-                    onChange={(value) => setFormData(prev => ({ ...prev, address_line1: value }))}
-                    onSelect={handlePlaceSelect}
-                    searchOptions={{
-                      types: ['address'],
-                      componentRestrictions: { country: 'in' }
-                    }}
-                  >
-                    {({ getInputProps, suggestions, getSuggestionItemProps, loading }) => (
-                      <div>
-                        <input
-                          {...getInputProps({
-                            placeholder: 'Search for your address...',
-                            className: 'w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500'
-                          })}
-                        />
-                        {suggestions.length > 0 && (
-                          <div className="border border-gray-300 rounded-lg mt-1 bg-white max-h-60 overflow-y-auto">
-                            {suggestions.map((suggestion, index) => (
-                              <div
-                                {...getSuggestionItemProps(suggestion)}
-                                key={suggestion.placeId}
-                                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                              >
-                                {suggestion.description}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </PlacesAutocomplete>
-                </div>
-              )}
 
               {/* Manual Address Fields */}
               <div className="grid md:grid-cols-2 gap-4">

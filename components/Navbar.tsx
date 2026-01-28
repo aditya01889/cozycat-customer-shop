@@ -1,13 +1,15 @@
 'use client'
 
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
 import { ShoppingCart, Menu, X, Package, User, LogOut } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
-import ProductSearch from '@/components/ProductSearch'
 import { accessibilityUtils, ariaLabels, focusStyles } from '@/lib/utils/accessibility-optimized'
+
+const ProductSearch = dynamic(() => import('@/components/ProductSearch'), { ssr: false })
 
 export default function NavbarOptimized() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

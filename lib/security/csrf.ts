@@ -40,11 +40,12 @@ function generateCSRFToken(): string {
 export async function setCSRFToken(): Promise<string> {
   const token = generateCSRFToken()
   const cookieStore = await cookies()
+  const isCiDummy = process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true'
   
   // Set HTTP-only cookie for server-side validation
   cookieStore.set(CSRF_TOKEN_NAME, token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production' && !isCiDummy,
     sameSite: 'strict',
     maxAge: 60 * 60 * 24, // 24 hours
     path: '/',
@@ -53,7 +54,7 @@ export async function setCSRFToken(): Promise<string> {
   // Set accessible cookie for client-side access
   cookieStore.set(`${CSRF_TOKEN_NAME}_client`, token, {
     httpOnly: false,
-    secure: process.env.NODE_ENV === 'production',
+    secure: process.env.NODE_ENV === 'production' && !isCiDummy,
     sameSite: 'strict',
     maxAge: 60 * 60 * 24, // 24 hours
     path: '/',

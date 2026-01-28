@@ -88,6 +88,7 @@ interface OrderWithIngredients extends Order {
 export default function ProductionQueueOptimized() {
   const { user } = useAuth()
   const { showToast } = useToast()
+  const shouldLog = process.env.NODE_ENV === 'development'
   const [orders, setOrders] = useState<OrderWithIngredients[]>([])
   const [loading, setLoading] = useState(true)
   const [updatingOrder, setUpdatingOrder] = useState<string | null>(null)
@@ -107,8 +108,10 @@ export default function ProductionQueueOptimized() {
   // Group orders by product for product group view
   const groupOrdersByProduct = (orders: OrderWithIngredients[]) => {
     const productGroups: { [key: string]: OrderWithIngredients[] } = {}
-    
-    console.log('🔍 Starting product grouping for', orders.length, 'orders')
+
+    if (shouldLog) {
+      console.log('🔍 Starting product grouping for', orders.length, 'orders')
+    }
     
     // First, collect all unique products across all orders
     const allProductItems: any[] = []
@@ -127,20 +130,24 @@ export default function ProductionQueueOptimized() {
         })
       }
     })
-    
-    console.log('📦 Total product items found:', allProductItems.length)
+
+    if (shouldLog) {
+      console.log('📦 Total product items found:', allProductItems.length)
+    }
     
     // Group by product name (since product_id is undefined)
     allProductItems.forEach((item: any) => {
       const productKey = item.product_name
-      
-      console.log('📦 Processing product item:', {
-        orderNumber: item.order.order_number,
-        product_name: item.product_name,
-        variant_weight: item.variant_weight,
-        weight_grams: item.weight_grams,
-        productKey: productKey
-      })
+
+      if (shouldLog) {
+        console.log('📦 Processing product item:', {
+          orderNumber: item.order.order_number,
+          product_name: item.product_name,
+          variant_weight: item.variant_weight,
+          weight_grams: item.weight_grams,
+          productKey: productKey
+        })
+      }
       
       if (!productGroups[productKey]) {
         productGroups[productKey] = []
@@ -151,12 +158,14 @@ export default function ProductionQueueOptimized() {
         productGroups[productKey].push(item.order)
       }
     })
-    
-    console.log('📊 Final product groups:', Object.keys(productGroups).map(key => ({
-      key,
-      displayName: key,
-      count: productGroups[key].length
-    })))
+
+    if (shouldLog) {
+      console.log('📊 Final product groups:', Object.keys(productGroups).map(key => ({
+        key,
+        displayName: key,
+        count: productGroups[key].length
+      })))
+    }
     
     return { productGroups, allProductItems }
   }
@@ -234,7 +243,9 @@ export default function ProductionQueueOptimized() {
           sum + (item.quantity * (item.product_variants?.weight_grams || 0)), 0) || 0
       }))
 
-      console.log('🔍 Transformed orders:', transformedOrders)
+      if (shouldLog) {
+        console.log('🔍 Transformed orders:', transformedOrders)
+      }
       setOrders(transformedOrders)
       
       // Calculate cumulative requirements using optimized function
@@ -263,7 +274,9 @@ export default function ProductionQueueOptimized() {
       setUpdatingOrder('batch')
       
       // Mock implementation - would actually start production
-      console.log('Starting batch production for:', productName, 'with orders:', orders)
+      if (shouldLog) {
+        console.log('Starting batch production for:', productName, 'with orders:', orders)
+      }
       
       showToast({
         type: 'success',

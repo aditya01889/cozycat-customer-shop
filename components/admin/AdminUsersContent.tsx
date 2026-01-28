@@ -20,7 +20,7 @@ export default function AdminUsersContent() {
   const [showEditModal, setShowEditModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showViewModal, setShowViewModal] = useState(false)
-  const { showToast } = useToast()
+  const { showError, showSuccess } = useToast()
 
   useEffect(() => {
     fetchUsers()
@@ -69,7 +69,7 @@ export default function AdminUsersContent() {
     } catch (error) {
       console.error('Error fetching users:', error)
       const appError = ErrorHandler.fromError(error)
-      showToast(appError.message, 'error')
+      showError(appError)
     } finally {
       setLoading(false)
     }
@@ -140,14 +140,14 @@ export default function AdminUsersContent() {
         throw profilesError
       }
 
-      showToast('User updated successfully', 'success')
+      showSuccess('User updated successfully', 'Success')
       fetchUsers()
       setShowEditModal(false)
       setSelectedUser(null)
     } catch (error) {
       console.error('Error updating user:', error)
       const appError = ErrorHandler.fromError(error)
-      showToast(appError.message, 'error')
+      showError(appError)
     }
   }
 
@@ -166,14 +166,14 @@ export default function AdminUsersContent() {
         throw profilesResult.error
       }
 
-      showToast('User deleted successfully', 'success')
+      showSuccess('User deleted successfully', 'Success')
       fetchUsers()
       setShowDeleteModal(false)
       setSelectedUser(null)
     } catch (error) {
       console.error('Error deleting user:', error)
       const appError = ErrorHandler.fromError(error)
-      showToast(appError.message, 'error')
+      showError(appError)
     }
   }
 
@@ -217,7 +217,7 @@ export default function AdminUsersContent() {
             </div>
             <Link
               href="/admin"
-              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors w-full sm:w-auto text-center"
+              className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-md transition-colors self-end sm:self-auto"
             >
               ← Back to Dashboard
             </Link>

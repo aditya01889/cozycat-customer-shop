@@ -60,7 +60,7 @@ test.describe('Smoke Tests - Critical Project Structure', () => {
     // Check if configuration files exist
     expect(fs.existsSync('package.json')).toBe(true)
     expect(fs.existsSync('tsconfig.json')).toBe(true)
-    expect(fs.existsSync('next.config.ts')).toBe(true)
+    expect(fs.existsSync('next.config.js')).toBe(true)
     expect(fs.existsSync('postcss.config.mjs')).toBe(true)
   })
 

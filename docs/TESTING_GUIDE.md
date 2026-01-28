@@ -27,6 +27,17 @@ npm run test:security  # All security tests
    ```
 3. Run tests: `npm test`
 
+### CI Dummy Mode (recommended for CI)
+
+For CI and local test runs without real production secrets:
+
+```bash
+CI_DUMMY_ENV=true npm run test:critical
+CI_DUMMY_ENV=true npm run test:security
+```
+
+CI uses internal endpoints under `app/api/ci/*` to validate security contracts without depending on third-party services.
+
 ## 📋 Test Categories
 
 ### 1. Phase 1 Security Testing
@@ -42,6 +53,17 @@ npm run test:security  # All security tests
 - ✅ Input sanitization and XSS prevention
 - ✅ CSRF protection implementation
 - ✅ Error handling without information leakage
+
+### CI Security Contract Testing
+
+**Location**: `tests/security/ci-security-contract.test.ts`
+
+This suite validates:
+
+- CSP headers on homepage
+- CSRF enforcement on CI-only protected endpoints
+- Rate limiting behavior
+- Admin auth enforcement
 
 #### Authentication Security Tests
 - ✅ Session management validation

@@ -2,6 +2,11 @@
 
 // Basic environment validation without TypeScript dependency
 function validateBasicEnv() {
+  if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+    console.warn('⚠️  CI_DUMMY_ENV enabled - skipping Next.js env validation')
+    return
+  }
+
   const requiredVars = [
     'NEXT_PUBLIC_SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
@@ -62,13 +67,17 @@ const nextConfig = {
   },
   // Security headers - updated for Razorpay compatibility
   async headers() {
+    const isProd = process.env.NODE_ENV === 'production'
+    const scriptSrcUnsafeEval = isProd ? '' : " 'unsafe-eval'"
+    const cspValue = `default-src 'self'; script-src 'self'${scriptSrcUnsafeEval} 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://xfnbhheapralprcwjvzl.supabase.co wss://xfnbhheapralprcwjvzl.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com; object-src 'none'; base-uri 'self'; form-action 'self'`
+
     return [
       {
         source: '/(.*)',
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://xfnbhheapralprcwjvzl.supabase.co wss://xfnbhheapralprcwjvzl.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com; object-src 'none'; base-uri 'self'; form-action 'self'"
+            value: cspValue
           },
         ],
       },
@@ -126,10 +135,6 @@ const nextConfig = {
     // Production optimizations
     poweredByHeader: false,
     compress: true,
-    // Enable edge runtime for better performance
-    experimental: {
-      runtime: 'edge',
-    },
   }),
 }
 

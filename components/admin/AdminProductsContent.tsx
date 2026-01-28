@@ -45,7 +45,8 @@ export default function AdminProductsContent() {
     is_active: true,
     display_order: 0
   })
-  const { showToast } = useToast()
+  const { showError, showSuccess } = useToast()
+  const shouldLog = process.env.NODE_ENV === 'development'
 
   useEffect(() => {
     fetchProducts()
@@ -55,7 +56,9 @@ export default function AdminProductsContent() {
   const fetchProducts = async () => {
     try {
       setLoading(true)
-      console.log('🔍 Fetching products data...')
+      if (shouldLog) {
+        console.log('🔍 Fetching products data...')
+      }
       const { data, error } = await supabase
         .from('products')
         .select(`
@@ -66,16 +69,18 @@ export default function AdminProductsContent() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      
-      console.log('🔍 Products data:', data)
-      console.log('🔍 First product sample:', data?.[0])
-      console.log('🔍 Product variants check:', data?.[0]?.product_variants)
+
+      if (shouldLog) {
+        console.log('🔍 Products data:', data)
+        console.log('🔍 First product sample:', data?.[0])
+        console.log('🔍 Product variants check:', data?.[0]?.product_variants)
+      }
       
       setProducts(data || [])
     } catch (error) {
       console.error('Error fetching products:', error)
       const appError = ErrorHandler.fromError(error)
-      showToast(appError.message, 'error')
+      showError(appError)
     } finally {
       setLoading(false)
     }
@@ -93,7 +98,7 @@ export default function AdminProductsContent() {
     } catch (error) {
       console.error('Error fetching categories:', error)
       const appError = ErrorHandler.fromError(error)
-      showToast(appError.message, 'error')
+      showError(appError)
     }
   }
 
@@ -121,7 +126,7 @@ export default function AdminProductsContent() {
           .eq('id', selectedProduct.id)
 
         if (error) throw error
-        showToast('Product updated successfully', 'success')
+        showSuccess('Product updated successfully', 'Success')
       } else {
         // Create new product
         const { error } = await supabase
@@ -129,7 +134,7 @@ export default function AdminProductsContent() {
           .insert(productData)
 
         if (error) throw error
-        showToast('Product created successfully', 'success')
+        showSuccess('Product created successfully', 'Success')
       }
 
       fetchProducts()
@@ -139,7 +144,7 @@ export default function AdminProductsContent() {
     } catch (error) {
       console.error('Error saving product:', error)
       const appError = ErrorHandler.fromError(error)
-      showToast(appError.message, 'error')
+      showError(appError)
     }
   }
 
@@ -153,14 +158,14 @@ export default function AdminProductsContent() {
         .eq('id', productId)
 
       if (error) throw error
-      showToast('Product deleted successfully', 'success')
+      showSuccess('Product deleted successfully', 'Success')
       fetchProducts()
       setShowDeleteModal(false)
       setSelectedProduct(null)
     } catch (error) {
       console.error('Error deleting product:', error)
       const appError = ErrorHandler.fromError(error)
-      showToast(appError.message, 'error')
+      showError(appError)
     }
   }
 
@@ -285,15 +290,15 @@ export default function AdminProductsContent() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {sortedProducts.map((product) => (
             <div key={product.id} className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow flex flex-col h-[400px]">
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 w-full h-48 overflow-hidden bg-gray-100">
                 {product.image_url ? (
                   <img
                     src={product.image_url}
                     alt={product.name}
-                    className="w-full h-48 object-cover"
+                    className="block w-full h-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+                  <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                     <Package className="h-12 w-12 text-gray-400" />
                   </div>
                 )}
@@ -422,8 +427,8 @@ export default function AdminProductsContent() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Image URL</label>
                   <ImageUpload
-                    value={formData.image_url}
-                    onChange={(url) => setFormData({ ...formData, image_url: url })}
+                    currentImage={formData.image_url}
+                    onUploadComplete={(url: string) => setFormData({ ...formData, image_url: url })}
                   />
                 </div>
 

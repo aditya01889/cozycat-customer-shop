@@ -5,6 +5,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { getSupabaseConfig } from '@/lib/env-validation'
 import { sessionManager } from './session-manager'
 
@@ -21,13 +22,41 @@ export class AuthMiddleware {
    */
   static async verifyAuth(request: NextRequest): Promise<AuthContext> {
     try {
+      // CI dummy mode: avoid external Supabase calls and allow deterministic auth.
+      // This is only intended for CI/test environments.
+      if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+        const ciUser = request.headers.get('x-ci-user')
+
+        if (!ciUser) {
+          return {
+            user: null,
+            session: null,
+            isAdmin: false,
+            isAuthenticated: false,
+          }
+        }
+
+        const isAdmin = ciUser.toLowerCase() === 'admin'
+        const user = {
+          id: `ci-${ciUser.toLowerCase()}`,
+          email: `${ciUser.toLowerCase()}@ci.local`,
+        }
+
+        return {
+          user,
+          session: { user },
+          isAdmin,
+          isAuthenticated: true,
+        }
+      }
+
       // Get session from server-side client
       const supabase = await createClient()
       
       // Check for Bearer token in headers first (client-side auth)
       const authHeader = request.headers.get('authorization')
       let session = null
-      let error = null
+      let error: any = null
       let user = null
       
       if (authHeader && authHeader.startsWith('Bearer ')) {
@@ -36,7 +65,7 @@ export class AuthMiddleware {
         const { url, serviceRoleKey } = getSupabaseConfig()
         
         if (serviceRoleKey) {
-          const supabaseAdmin = await createClient(url, serviceRoleKey, {
+          const supabaseAdmin = createSupabaseClient(url, serviceRoleKey, {
             auth: {
               autoRefreshToken: false,
               persistSession: false
@@ -56,11 +85,11 @@ export class AuthMiddleware {
                 hasUser: !!user,
                 userId: user?.id,
                 userEmail: user?.email,
-                error: error?.message
+                error: (error as any)?.message
               })
             }
           } catch (tokenError) {
-            error = tokenError
+            error = tokenError as any
             console.log('🔍 Auth verification - Token Error:', tokenError)
           }
         }
@@ -104,7 +133,7 @@ export class AuthMiddleware {
       try {
         const { url, serviceRoleKey } = getSupabaseConfig()
         if (serviceRoleKey) {
-          const supabaseAdmin = await createClient(url, serviceRoleKey, {
+          const supabaseAdmin = createSupabaseClient(url, serviceRoleKey, {
             auth: {
               autoRefreshToken: false,
               persistSession: false

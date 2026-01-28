@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useCartStore } from '@/lib/store/cart'
 import { ShoppingCart, Plus, Minus, Check } from 'lucide-react'
-import toast from 'react-hot-toast'
 import Image from 'next/image'
+import { useToast } from '@/components/Toast/ToastProvider'
 
 interface Product {
   id: string
@@ -26,6 +26,7 @@ interface QuickAddToCartProps {
 
 export default function QuickAddToCart({ product, compact = false, showImage = true }: QuickAddToCartProps) {
   const { addItem } = useCartStore()
+  const { showSuccess, showError } = useToast()
   const [selectedVariant, setSelectedVariant] = useState(product.product_variants[0])
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
@@ -56,13 +57,7 @@ export default function QuickAddToCart({ product, compact = false, showImage = t
       })
 
       setAdded(true)
-      toast.success(
-        `${product.name} (${formatWeight(selectedVariant.weight_grams)}) × ${quantity} added to cart!`,
-        {
-          icon: '🛒',
-          duration: 2000
-        }
-      )
+      showSuccess(`${product.name} (${formatWeight(selectedVariant.weight_grams)}) × ${quantity} added to cart!`)
 
       // Reset after 2 seconds
       setTimeout(() => {
@@ -70,7 +65,7 @@ export default function QuickAddToCart({ product, compact = false, showImage = t
         setQuantity(1)
       }, 2000)
     } catch (error) {
-      toast.error('Failed to add to cart')
+      showError(error as Error)
     } finally {
       setIsAdding(false)
     }

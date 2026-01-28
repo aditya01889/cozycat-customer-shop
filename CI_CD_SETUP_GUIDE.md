@@ -92,6 +92,22 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 - ✅ Critical endpoints respond
 - ✅ No crashes on malformed requests
 
+### CI Dummy Mode (no production secrets required)
+
+CI runs the app in a deterministic dummy environment using:
+
+```bash
+CI_DUMMY_ENV=true
+```
+
+This bypasses strict environment validation and enables CI-only internal endpoints under `app/api/ci/*`.
+
+Key endpoints used by CI:
+
+- `/api/ci/ping` (server health)
+- `/api/ci/secure-action` (CSRF + rate limit contract)
+- `/api/ci/admin-only` (admin auth contract)
+
 ---
 
 ## 🚀 Local Development

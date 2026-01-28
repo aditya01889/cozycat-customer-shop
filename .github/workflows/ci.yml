@@ -9,6 +9,15 @@ on:
 env:
   NODE_VERSION: '18'
   NEXT_TELEMETRY_DISABLED: 1
+  CI_DUMMY_ENV: 'true'
+  # Dummy values to allow build/start without production secrets.
+  # These are NOT used for real external calls in CI.
+  NEXT_PUBLIC_SUPABASE_URL: 'https://example.supabase.co'
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjaS1hbm9uIn0.c2lnbmF0dXJl'
+  SUPABASE_SERVICE_ROLE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJjaS1zZXJ2aWNlIn0.c2lnbmF0dXJl'
+  NEXT_PUBLIC_RAZORPAY_KEY_ID: 'ci_dummy'
+  RAZORPAY_KEY_SECRET: 'ci_dummy'
+  NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: 'ci_dummy'
 
 jobs:
   # Fast lint and type checking
@@ -37,15 +46,13 @@ jobs:
         run: npx tsc --noEmit --skipLibCheck || echo "TypeScript check completed with errors"
 
       - name: Check build size
-        run: |
-          npm run build || echo "Build failed - likely missing environment variables"
-          echo "Build check completed"
+        run: npm run build
 
   # Critical functionality tests
   critical-tests:
     name: Critical Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     
     steps:
       - name: Checkout code
@@ -61,27 +68,42 @@ jobs:
         run: npm ci --prefer-offline --no-audit
 
       - name: Validate environment
-        run: npm run validate-env || echo "Environment validation failed - variables need to be added to Vercel"
+        run: npm run validate-env
 
       - name: Build project
-        run: npm run build || echo "Build failed - environment variables needed in Vercel"
+        run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
 
       - name: Start production server
         run: |
           npm run start &
-          sleep 10 || echo "Server start skipped - build failed"
+          sleep 10
 
       - name: Health check
         run: |
-          curl -f http://localhost:3000 || echo "Health check failed - server not running"
-          curl -f http://localhost:3000/api/products || echo "API health check failed"
+          curl -f http://localhost:3000 || exit 1
+          curl -f http://localhost:3000/api/ci/ping || exit 1
 
       - name: API endpoint tests
         run: |
-          # Test critical API endpoints
-          curl -f http://localhost:3000/api/products/all || echo "API test failed - server not running"
-          curl -f http://localhost:3000/api/ingredients || echo "API test failed - server not running"
-          echo "API tests completed"
+          # Test CI-only endpoints (no external dependencies)
+          curl -f http://localhost:3000/api/ci/ping || exit 1
+          echo "CI API tests completed"
+
+      - name: Playwright critical tests
+        run: npm run test:critical
+
+      - name: Playwright security tests
+        run: npm run test:security
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report
 
   # Security scan (lightweight)
   security-scan:

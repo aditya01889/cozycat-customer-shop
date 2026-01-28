@@ -4,10 +4,7 @@ import { createClient } from '@supabase/supabase-js'
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xfnbhheapralprcwjvzl.supabase.co'
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-console.log('Supabase URL:', supabaseUrl)
-console.log('Supabase Key exists:', !!supabaseAnonKey)
-
-if (!supabaseAnonKey) {
+if (!supabaseAnonKey && process.env.NODE_ENV === 'development') {
   console.warn('Warning: NEXT_PUBLIC_SUPABASE_ANON_KEY is not set. Some features may not work.')
 }
 

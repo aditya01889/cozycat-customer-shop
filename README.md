@@ -107,8 +107,13 @@ customer-shop/
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+NEXT_PUBLIC_RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 REDIS_URL=your_redis_url
 REDIS_PASSWORD=your_redis_password
+
+# CI/Test-only
+CI_DUMMY_ENV=true
 ```
 
 ## 📊 **Performance Features**
@@ -175,6 +180,17 @@ node scripts/analyze-bundle.js
 - CSRF protection verified
 - Rate limiting tested
 - Input validation confirmed
+
+### CI Dummy Mode (no production secrets required)
+
+For CI and local test runs without real third-party secrets:
+
+```bash
+CI_DUMMY_ENV=true npm run test:critical
+CI_DUMMY_ENV=true npm run test:security
+```
+
+CI uses lightweight internal endpoints under `app/api/ci/*` (e.g. `/api/ci/ping`) to validate security contracts without depending on external services.
 
 ## 🚀 **Deployment**
 
