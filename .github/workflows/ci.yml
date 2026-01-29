@@ -72,9 +72,7 @@ jobs:
         run: npx tsc --noEmit --skipLibCheck || echo "TypeScript check completed with errors"
 
       - name: Build validation
-        env:
-          CI_DUMMY_ENV: "1"
-        run: npm run build
+        run: npm run build:ci
 
   # Security scanning
   security-scan:
