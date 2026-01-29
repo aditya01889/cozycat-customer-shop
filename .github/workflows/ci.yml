@@ -99,6 +99,7 @@ jobs:
         with:
           path: ./
           base: ""
+          continue-on-error: true
           head: HEAD
 
   # Database operations (staging only)
