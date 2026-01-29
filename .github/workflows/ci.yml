@@ -69,6 +69,8 @@ jobs:
         run: npx tsc --noEmit --skipLibCheck || echo "TypeScript check completed with errors"
 
       - name: Build validation
+        env:
+          CI_DUMMY_ENV: "1"
         run: npm run build
 
   # Security scanning
@@ -107,8 +109,8 @@ jobs:
     if: needs.detect-environment.outputs.is-staging == 'true'
     timeout-minutes: 10
     env:
-      SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-      SUPABASE_SERVICE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_KEY }}
+      SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -140,8 +142,8 @@ jobs:
     if: needs.detect-environment.outputs.is-staging == 'true'
     timeout-minutes: 15
     env:
-      STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
-      STAGING_SUPABASE_SERVICE_KEY: ${{ secrets.STAGING_SUPABASE_SERVICE_KEY }}
+      STAGING_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      STAGING_SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
