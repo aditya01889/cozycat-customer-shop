@@ -222,7 +222,7 @@ jobs:
         run: npm ci --prefer-offline --no-audit
 
       - name: Build project
-        run: npm run build
+        run: npm run build:ci
 
       - name: Export build size
         run: |
