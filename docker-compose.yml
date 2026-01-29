@@ -1,0 +1,169 @@
+version: '3.8'
+
+services:
+  supabase-db:
+    image: supabase/postgres:15.1.1.117
+    container_name: cozycat-supabase-db
+    restart: unless-stopped
+    ports:
+      - "54322:5432"
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes:
+      - supabase_db_data:/var/lib/postgresql/data
+      - ./supabase/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  supabase-kong:
+    image: kong:3.4
+    container_name: cozycat-supabase-kong
+    restart: unless-stopped
+    ports:
+      - "54321:8000"
+      - "54323:8443"
+    environment:
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /kong/declarative/kong.yml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001
+      KONG_ADMIN_GUI_URL: http://localhost:8002
+    volumes:
+      - ./supabase/kong:/kong/declarative
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+
+  supabase-auth:
+    image: supabase/gotrue:v2.142.0
+    container_name: cozycat-supabase-auth
+    restart: unless-stopped
+    ports:
+      - "54324:9999"
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: 9999
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgresql://postgres:postgres@supabase-db:5432/postgres
+      GOTRUE_SITE_URL: http://localhost:3000
+      GOTRUE_URI_ALLOW_LIST: "*"
+      GOTRUE_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+      GOTRUE_JWT_EXP: 3600
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_SMTP_HOST: inbucket
+      GOTRUE_SMTP_PORT: 2500
+      GOTRUE_SMTP_USER: ""
+      GOTRUE_SMTP_PASS: ""
+      GOTRUE_SMTP_ADMIN_EMAIL: admin@example.com
+      GOTRUE_RATE_LIMIT_EMAIL_SENT: 3600
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+      supabase-kong:
+        condition: service_started
+
+  supabase-rest:
+    image: postgrest/postgrest:v12.2.0
+    container_name: cozycat-supabase-rest
+    restart: unless-stopped
+    ports:
+      - "54325:3000"
+    environment:
+      PGRST_DB_URI: postgresql://postgres:postgres@supabase-db:5432/postgres
+      PGRST_DB_SCHEMAS: public, storage, graphql_public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+      supabase-kong:
+        condition: service_started
+
+  supabase-storage:
+    image: supabase/storage-api:v0.48.6
+    container_name: cozycat-supabase-storage
+    restart: unless-stopped
+    ports:
+      - "54326:5000"
+    environment:
+      POSTGREST_URL: http://supabase-rest:3000
+      PGOPTIONS: "-c search_path=storage,public"
+      ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24ifQ.6C_wt1x2q_3jIz6a8N2T6d6Z8H7Y9Z0W1V2R3F4G5H6
+      SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSJ9.6C_wt1x2q_3jIz6a8N2T6d6Z8H7Y9Z0W1V2R3F4G5H6
+      DATABASE_URL: postgresql://postgres:postgres@supabase-db:5432/postgres
+      FILE_SIZE_LIMIT: 52428800
+      STORAGE_BACKEND: file
+      FILE_STORAGE_BACKEND_PATH: /var/lib/storage
+      TENANT_ID: stub
+      REGION: stub
+      GLOBAL_S3_BUCKET: stub
+    volumes:
+      - supabase_storage_data:/var/lib/storage
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+      supabase-rest:
+        condition: service_started
+
+  supabase-realtime:
+    image: supabase/realtime:v2.25.2
+    container_name: cozycat-supabase-realtime
+    restart: unless-stopped
+    ports:
+      - "54327:4000"
+    environment:
+      PORT: 4000
+      DB_HOST: supabase-db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_NAME: postgres
+      DB_AFTER_CONNECT_QUERY: 'SET search_path TO _realtime'
+      DB_ENC_KEY: supabaserealtime
+      API_JWT_SECRET: your-super-secret-jwt-token-with-at-least-32-characters-long
+      SECRET_KEY_BASE: UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq
+      ECTO_USE_SSL: "false"
+      FLY_ALLOC_ID: abc123
+      DNS_NODES: "[]"
+      ENABLE_TAILSCALE: "false"
+      LOG_LEVEL: info
+      API_JWT_EXPIRES: 3600
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+
+  inbucket:
+    image: inbucket/inbucket:3.0.4
+    container_name: cozycat-inbucket
+    restart: unless-stopped
+    ports:
+      - "54328:9000"
+      - "54329:2500"
+    environment:
+      INBUCKET_WEB_HOST: 0.0.0.0
+      INBUCKET_WEB_PORT: 9000
+      INBUCKET_SMTP_HOST: 0.0.0.0
+      INBUCKET_SMTP_PORT: 2500
+
+volumes:
+  supabase_db_data:
+    driver: local
+  supabase_storage_data:
+    driver: local
+
+networks:
+  default:
+    name: cozycat-supabase-network

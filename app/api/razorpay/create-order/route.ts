@@ -59,9 +59,18 @@ export const POST = createSecureHandler({
     
     // Get validated payment configuration
     const paymentConfig = getPaymentConfig()
+    console.log('Payment config:', {
+      hasKeyId: !!paymentConfig.razorpayKeyId,
+      hasKeySecret: !!paymentConfig.razorpayKeySecret,
+      keyIdPrefix: paymentConfig.razorpayKeyId ? paymentConfig.razorpayKeyId.substring(0, 10) + '...' : 'null'
+    })
     
     if (!paymentConfig.razorpayKeyId || !paymentConfig.razorpayKeySecret) {
       console.error('Razorpay not configured in payment config')
+      console.error('Available env vars:', {
+        NEXT_PUBLIC_RAZORPAY_KEY_ID: !!process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        RAZORPAY_KEY_SECRET: !!process.env.RAZORPAY_KEY_SECRET
+      })
       throw new Error('Payment service not configured')
     }
 
@@ -72,18 +81,35 @@ export const POST = createSecureHandler({
     const razorpayServer = RazorpayServer.getInstance()
     console.log('Creating order...')
     
-    const order = await razorpayServer.createOrder(data as CreateOrderRequest)
-    console.log('Order created successfully:', order)
+    try {
+      const order = await razorpayServer.createOrder(data as CreateOrderRequest)
+      console.log('Order created successfully:', order)
 
-    return NextResponse.json({
-      success: true,
-      order: {
-        id: order.id,
-        amount: order.amount,
-        currency: order.currency,
-        receipt: order.receipt,
-        notes: order.notes,
-      },
-    })
+      return NextResponse.json({
+        success: true,
+        order: {
+          id: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          receipt: order.receipt,
+          notes: order.notes,
+        },
+      })
+    } catch (razorpayError) {
+      console.error('Razorpay API Error:', razorpayError)
+      
+      // More detailed error logging
+      if (razorpayError instanceof Error) {
+        console.error('Error message:', razorpayError.message)
+        console.error('Error stack:', razorpayError.stack)
+      }
+      
+      // Check if it's a Razorpay API error
+      if (razorpayError && typeof razorpayError === 'object' && 'error' in razorpayError) {
+        console.error('Razorpay API Response:', razorpayError)
+      }
+      
+      throw new Error(`Payment order creation failed: ${razorpayError instanceof Error ? razorpayError.message : 'Unknown error'}`)
+    }
   }
 })
