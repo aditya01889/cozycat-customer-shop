@@ -483,7 +483,9 @@ export default function CheckoutPage() {
         const paymentSuccess = await processRazorpayPayment(razorpayData.order.id, orderNumber)
         
         if (!paymentSuccess) {
-          throw new Error('Payment failed')
+          // Payment was cancelled by user - don't show error toast
+          console.log('Payment cancelled by user')
+          return
         }
       }
 

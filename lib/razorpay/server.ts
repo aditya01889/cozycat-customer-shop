@@ -29,17 +29,29 @@ export class RazorpayServer {
   private razorpay: Razorpay;
 
   private constructor() {
+    console.log('🔧 RazorpayServer constructor called');
+    
     const { getPaymentConfig } = require('@/lib/env-validation');
     const paymentConfig = getPaymentConfig();
     
+    console.log('🔧 Payment config in RazorpayServer:', {
+      hasKeyId: !!paymentConfig.razorpayKeyId,
+      hasKeySecret: !!paymentConfig.razorpayKeySecret,
+      keyIdLength: paymentConfig.razorpayKeyId ? paymentConfig.razorpayKeyId.length : 0,
+      keySecretLength: paymentConfig.razorpayKeySecret ? paymentConfig.razorpayKeySecret.length : 0
+    });
+    
     if (!paymentConfig.razorpayKeyId || !paymentConfig.razorpayKeySecret) {
+      console.error('❌ Razorpay credentials not configured. Please check your environment variables and add NEXT_PUBLIC_RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET');
       throw new Error('Razorpay credentials not configured. Please check your environment variables and add NEXT_PUBLIC_RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET');
     }
 
+    console.log('✅ Creating Razorpay instance...');
     this.razorpay = new Razorpay({
       key_id: paymentConfig.razorpayKeyId,
       key_secret: paymentConfig.razorpayKeySecret,
     });
+    console.log('✅ Razorpay instance created successfully');
   }
 
   static getInstance(): RazorpayServer {
