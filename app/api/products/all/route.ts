@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 export async function GET(request: NextRequest) {
+  // Skip database calls in CI mode - return empty data
+  if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+    return NextResponse.json({ data: [] });
+  }
+
+  // Only import Supabase when not in CI mode
+  const { createServerSupabaseClient } = await import('@/lib/supabase/server-helper');
+
   try {
+    const supabase = createServerSupabaseClient();
     const { data, error } = await supabase
       .from('products')
       .select(`
