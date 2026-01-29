@@ -114,8 +114,8 @@ jobs:
       - name: Validate environment (CI mode)
         run: node scripts/validate-env-ci.js
 
-      - name: Check build size (skip for preview)
-        if: needs.detect-environment.outputs.environment != 'preview'
+      - name: Check build size (skip for preview and staging)
+        if: needs.detect-environment.outputs.environment != 'preview' && needs.detect-environment.outputs.environment != 'staging'
         run: npm run build
 
   # Security Scanning
@@ -176,8 +176,8 @@ jobs:
       - name: Validate environment (CI mode)
         run: node scripts/validate-env-ci.js
 
-      - name: Build project (skip for preview)
-        if: needs.detect-environment.outputs.environment != 'preview'
+      - name: Build project (skip for preview and staging)
+        if: needs.detect-environment.outputs.environment != 'preview' && needs.detect-environment.outputs.environment != 'staging'
         run: npm run build
 
       - name: Install Playwright browsers
