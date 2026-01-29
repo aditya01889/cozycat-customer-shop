@@ -6,8 +6,7 @@ This guide shows you how to sync all environment variables to Vercel using CLI c
 
 ### **Environment Files Created:**
 - `.env.production` - Production environment variables
-- `.env.staging` - Staging environment variables (NEW)
-- `.env.preview` - Preview environment variables (PRs/feature branches)
+- `.env.staging` - Staging environment variables
 - `.env.development` - Development environment variables (local)
 
 ### **Sync Scripts:**
@@ -93,22 +92,6 @@ NEXT_PUBLIC_PAYMENT_MODE=test
 NEXT_PUBLIC_DEBUG=true
 ```
 
-### **Preview (.env.preview)**
-```env
-# Supabase Production (use production for previews)
-NEXT_PUBLIC_SUPABASE_URL=https://xfnbhheapralprcwjvzl.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_production_anon_key
-SUPABASE_SERVICE_ROLE_KEY=your_production_service_key
-
-# Environment
-NODE_ENV=production
-NEXT_PUBLIC_ENVIRONMENT=preview
-REDIS_PREFIX=preview
-
-# Test mode
-NEXT_PUBLIC_PAYMENT_MODE=test
-```
-
 ### **Development (.env.development)**
 ```env
 # Supabase Staging (use staging for local dev)
@@ -132,7 +115,6 @@ NEXT_PUBLIC_LOG_LEVEL=debug
 |-------------|---------------|----------|
 | **Production** | Production, Preview, Development | Main branch deployments |
 | **Staging** | Preview | Staging branch (uses preview env) |
-| **Preview** | Preview | Pull requests, feature branches |
 | **Development** | Development | Local development |
 
 ## 🔄 **How Vercel Uses These Variables**
@@ -140,8 +122,7 @@ NEXT_PUBLIC_LOG_LEVEL=debug
 ### **Branch Deployments:**
 - **main branch** → Uses Production variables
 - **staging branch** → Uses Staging variables (via preview environment)
-- **feature branches** → Uses Preview variables
-- **Pull requests** → Uses Preview variables
+- **feature branches** → Uses Production variables (fallback)
 
 ### **Priority Order:**
 1. **Branch-specific variables** (highest)

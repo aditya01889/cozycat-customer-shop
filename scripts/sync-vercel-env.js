@@ -15,7 +15,6 @@ const path = require('path');
 const ENVIRONMENTS = {
   production: '.env.production',
   staging: '.env.staging',
-  preview: '.env.preview',
   development: '.env.development'
 };
 
@@ -98,8 +97,6 @@ function syncEnvironment(envName, envFile) {
         targetEnvs = ['production', 'preview', 'development'];
       } else if (envName === 'staging') {
         targetEnvs = ['preview']; // Staging uses preview environment in Vercel
-      } else if (envName === 'preview') {
-        targetEnvs = ['preview'];
       } else if (envName === 'development') {
         targetEnvs = ['development'];
       }
@@ -175,7 +172,6 @@ function main() {
     log('\n📋 Summary:', 'blue');
     log('   • Production variables: Production, Preview, Development environments', 'blue');
     log('   • Staging variables: Preview environment (staging branch)', 'blue');
-    log('   • Preview variables: Preview environment only', 'blue');
     log('   • Development variables: Development environment only', 'blue');
     
     log('\n🌐 Next steps:', 'cyan');

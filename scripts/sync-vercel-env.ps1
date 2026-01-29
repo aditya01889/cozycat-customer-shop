@@ -122,9 +122,6 @@ function Sync-Environment {
         "staging" {
             $targetEnvs = @("preview") # Staging uses preview environment in Vercel
         }
-        "preview" {
-            $targetEnvs = @("preview")
-        }
         "development" {
             $targetEnvs = @("development")
         }
@@ -167,7 +164,6 @@ function Main {
         # Sync environments
         Sync-Environment "production" ".env.production"
         Sync-Environment "staging" ".env.staging"
-        Sync-Environment "preview" ".env.preview"
         Sync-Environment "development" ".env.development"
         
         Write-Host ""
@@ -176,7 +172,6 @@ function Main {
         Write-ColorOutput "📋 Summary:" "Blue"
         Write-ColorOutput "   • Production variables: Production, Preview, Development environments" "Blue"
         Write-ColorOutput "   • Staging variables: Preview environment (staging branch)" "Blue"
-        Write-ColorOutput "   • Preview variables: Preview environment only" "Blue"
         Write-ColorOutput "   • Development variables: Development environment only" "Blue"
         
         Write-Host ""

@@ -99,9 +99,6 @@ sync_environment() {
             "staging")
                 target_envs=("preview") # Staging uses preview environment in Vercel
                 ;;
-            "preview")
-                target_envs=("preview")
-                ;;
             "development")
                 target_envs=("development")
                 ;;
@@ -137,14 +134,12 @@ main() {
     # Sync environments
     sync_environment "production" ".env.production"
     sync_environment "staging" ".env.staging"
-    sync_environment "preview" ".env.preview"
     sync_environment "development" ".env.development"
     
     log "\n🎉 Environment variables sync completed!" "$GREEN"
     log "\n📋 Summary:" "$BLUE"
     log "   • Production variables: Production, Preview, Development environments" "$BLUE"
     log "   • Staging variables: Preview environment (staging branch)" "$BLUE"
-    log "   • Preview variables: Preview environment only" "$BLUE"
     log "   • Development variables: Development environment only" "$BLUE"
     
     log "\n🌐 Next steps:" "$CYAN"
