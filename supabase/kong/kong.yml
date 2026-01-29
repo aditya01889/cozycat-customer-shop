@@ -1,0 +1,49 @@
+_format_version: "3.0"
+
+_transform: true
+
+services:
+- name: auth-v1-route
+  url: http://supabase-auth:9999
+  routes:
+  - name: auth-v1-route
+    paths: ["/auth/v1/*"]
+  plugins:
+  - name: cors
+- name: rest-v1-route
+  url: http://supabase-rest:3000
+  routes:
+  - name: rest-v1-route
+    paths: ["/rest/v1/*"]
+  plugins:
+  - name: cors
+- name: realtime-v1-route
+  url: http://supabase-realtime:4000/socket
+  routes:
+  - name: realtime-v1-route
+    paths: ["/realtime/v1/*"]
+  plugins:
+  - name: cors
+- name: storage-v1-route
+  url: http://supabase-storage:5000
+  routes:
+  - name: storage-v1-route
+    paths: ["/storage/v1/*"]
+  plugins:
+  - name: cors
+
+consumers:
+- username: anon
+  jwt_secrets:
+  - key: your-super-secret-jwt-token-with-at-least-32-characters-long
+- username: service_role
+  jwt_secrets:
+  - key: your-super-secret-jwt-token-with-at-least-32-characters-long
+
+plugins:
+- name: prometheus
+  config:
+    per_consumer: true
+- name: jwt
+  config:
+    secret_is_base64: false

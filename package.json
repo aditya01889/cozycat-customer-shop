@@ -33,7 +33,18 @@
     "test:ci": "playwright test tests/critical/ --reporter=json --reporter=html",
     "test:install": "playwright install",
     "test:report": "playwright show-report",
-    "test:quick": "bash scripts/quick-test.sh"
+    "test:quick": "bash scripts/quick-test.sh",
+    "test:db:staging": "node scripts/test-database.js staging",
+    "test:api:staging": "node scripts/test-api.js staging",
+    "type-check": "tsc --noEmit --skipLibCheck",
+    "db:status": "node scripts/check-db-status.js",
+    "db:seed": "node scripts/seed-database.js",
+    "db:seed:local": "node scripts/seed-database.js local",
+    "db:seed:staging": "node scripts/seed-database.js staging",
+    "supabase:start": "node scripts/setup-local-supabase.js",
+    "supabase:stop": "docker-compose down",
+    "supabase:logs": "docker-compose logs -f",
+    "supabase:reset": "docker-compose down -v && docker-compose up -d && node scripts/seed-database.js local"
   },
   "dependencies": {
     "@react-google-maps/api": "^2.20.8",
