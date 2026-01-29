@@ -62,10 +62,6 @@ export default function CartPage() {
                   <span>Free delivery above ₹500</span>
                 </div>
                 <div className="flex items-center">
-                  <span className="text-2xl mr-2">💰</span>
-                  <span>Cash on delivery</span>
-                </div>
-                <div className="flex items-center">
                   <span className="text-2xl mr-2">⭐</span>
                   <span>Made fresh to order</span>
                 </div>
@@ -280,10 +276,6 @@ export default function CartPage() {
                 </Link>
 
                 <div className="mt-6 p-4 bg-gray-50 rounded-lg space-y-2">
-                  <div className="flex items-center text-sm text-gray-600">
-                    <span className="mr-2">💰</span>
-                    <span>Cash on Delivery (COD) available</span>
-                  </div>
                   <div className="flex items-center text-sm text-gray-600">
                     <span className="mr-2">⭐</span>
                     <span>Made fresh to order</span>

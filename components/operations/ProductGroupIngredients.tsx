@@ -136,10 +136,10 @@ export default function ProductGroupIngredients({
   ).length
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
+    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className} max-w-full overflow-hidden`}>
       {/* Header */}
       <div 
-        className={`p-4 ${!productId ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 active:bg-blue-100'} transition-colors duration-200`}
+        className={`p-3 sm:p-4 ${!productId ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50 active:bg-blue-100'} transition-colors duration-200`}
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
@@ -147,25 +147,25 @@ export default function ProductGroupIngredients({
         }}
       >
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className={`p-2 rounded-lg ${!productId ? 'bg-gray-100' : 'bg-blue-100'}`}>
-              <Package className={`h-5 w-5 ${!productId ? 'text-gray-400' : 'text-blue-600'}`} />
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
+            <div className={`p-2 rounded-lg flex-shrink-0 ${!productId ? 'bg-gray-100' : 'bg-blue-100'}`}>
+              <Package className={`h-4 w-4 sm:h-5 sm:w-5 ${!productId ? 'text-gray-400' : 'text-blue-600'}`} />
             </div>
-            <div>
-              <h4 className="font-semibold text-gray-900">Ingredient Requirements</h4>
-              <p className="text-sm text-gray-600">
+            <div className="min-w-0 flex-1">
+              <h4 className="font-semibold text-gray-900 text-sm sm:text-base truncate">Ingredient Requirements</h4>
+              <p className="text-xs sm:text-sm text-gray-600 truncate">
                 Total batch: {totalWeight.toFixed(0)}g • {orders.length} order{orders.length > 1 ? 's' : ''}
               </p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
             {insufficientCount > 0 && (
-              <span className="px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full border border-red-200">
+              <span className="px-1 sm:px-2 py-1 text-xs font-medium bg-red-100 text-red-800 rounded-full border border-red-200 whitespace-nowrap">
                 {insufficientCount} insufficient
               </span>
             )}
             {!productId ? (
-              <span className="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full border border-gray-200">
+              <span className="px-1 sm:px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-full border border-gray-200 whitespace-nowrap">
                 Unavailable
               </span>
             ) : (
@@ -179,34 +179,34 @@ export default function ProductGroupIngredients({
 
       {/* Ingredient Requirements */}
       {isExpanded && (
-        <div className="border-t border-gray-200">
+        <div className="border-t border-gray-200 max-h-96 overflow-y-auto">
           {aggregatedRequirements.length === 0 ? (
-            <div className="p-6 text-center text-gray-500">
-              <Package className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-              <p>No ingredient requirements found</p>
+            <div className="p-4 sm:p-6 text-center text-gray-500">
+              <Package className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-2 text-gray-300" />
+              <p className="text-sm sm:text-base">No ingredient requirements found</p>
             </div>
           ) : (
-            <div className="p-4 space-y-2">
+            <div className="p-3 sm:p-4 space-y-2">
               {aggregatedRequirements.map((ingredient: IngredientRequirement) => (
                 <div 
                   key={ingredient.ingredient_id}
-                  className={`border rounded-lg p-3 ${getStockStatusColor(ingredient.stock_status)} hover:shadow-md transition-shadow duration-200`}
+                  className={`border rounded-lg p-2 sm:p-3 ${getStockStatusColor(ingredient.stock_status)} hover:shadow-md transition-shadow duration-200`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="flex items-start sm:items-center space-x-2 sm:space-x-3 min-w-0 flex-1">
                       {getStockStatusIcon(ingredient.stock_status)}
-                      <div>
-                        <h5 className="font-semibold text-gray-900">{ingredient.ingredient_name}</h5>
-                        <div className="flex items-center space-x-4 text-xs text-gray-600 mt-1">
-                          <span>Required: <strong>{formatQuantity(ingredient.required_quantity_display, ingredient.ingredient_name, ingredient.display_unit)}</strong></span>
-                          <span>Waste: <strong>{formatQuantity(ingredient.waste_quantity_display, ingredient.ingredient_name, ingredient.display_unit)}</strong></span>
-                          <span>Total: <strong className="text-lg">{formatQuantity(ingredient.total_quantity_display, ingredient.ingredient_name, ingredient.display_unit)}</strong></span>
-                          <span>Stock: <strong>{formatQuantity(ingredient.current_stock_display, ingredient.ingredient_name, ingredient.display_unit)}</strong></span>
+                      <div className="min-w-0 flex-1">
+                        <h5 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{ingredient.ingredient_name}</h5>
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-600 mt-1">
+                          <span className="whitespace-nowrap">Required: <strong>{formatQuantity(ingredient.required_quantity_display, ingredient.ingredient_name, ingredient.display_unit)}</strong></span>
+                          <span className="whitespace-nowrap">Waste: <strong>{formatQuantity(ingredient.waste_quantity_display, ingredient.ingredient_name, ingredient.display_unit)}</strong></span>
+                          <span className="whitespace-nowrap">Total: <strong className="text-sm sm:text-lg">{formatQuantity(ingredient.total_quantity_display, ingredient.ingredient_name, ingredient.display_unit)}</strong></span>
+                          <span className="whitespace-nowrap">Stock: <strong>{formatQuantity(ingredient.current_stock_display, ingredient.ingredient_name, ingredient.display_unit)}</strong></span>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStockStatusColor(ingredient.stock_status)}`}>
+                    <div className="text-right flex-shrink-0">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full border ${getStockStatusColor(ingredient.stock_status)} whitespace-nowrap`}>
                         {ingredient.stock_status.replace('_', ' ').toUpperCase()}
                       </span>
                       
@@ -227,7 +227,7 @@ export default function ProductGroupIngredients({
                               ingredient.display_unit // Pass the display unit
                             )
                           }}
-                          className="mt-2 px-3 py-1 text-xs font-medium text-white bg-orange-500 rounded hover:bg-orange-600 transition-colors duration-200 flex items-center space-x-1"
+                          className="mt-2 px-2 sm:px-3 py-1 text-xs font-medium text-white bg-orange-500 rounded hover:bg-orange-600 transition-colors duration-200 flex items-center space-x-1 w-full sm:w-auto justify-center"
                         >
                           <ShoppingCart className="h-3 w-3" />
                           <span>Create PO</span>
@@ -236,18 +236,18 @@ export default function ProductGroupIngredients({
                       
                       {/* Show PO created status */}
                       {createdPOs.has(ingredient.ingredient_id) && (
-                        <div className="mt-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded border border-green-200">
+                        <div className="mt-2 px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded border border-green-200 whitespace-nowrap">
                           PO Created
                         </div>
                       )}
                       
                       {ingredient.supplier_name && (
                         <div className="mt-2 text-xs text-gray-500">
-                          <div className="font-medium text-gray-700">{ingredient.supplier_name}</div>
+                          <div className="font-medium text-gray-700 truncate">{ingredient.supplier_name}</div>
                           {ingredient.supplier_phone && (
                             <div className="flex items-center space-x-1">
                               <Phone className="h-3 w-3" />
-                              <span>{ingredient.supplier_phone}</span>
+                              <span className="truncate">{ingredient.supplier_phone}</span>
                             </div>
                           )}
                         </div>
