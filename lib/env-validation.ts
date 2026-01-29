@@ -174,6 +174,15 @@ export function isProduction(): boolean {
 export function getSupabaseConfig() {
   const env = process.env as Record<string, string | undefined>
   
+  // CI dummy mode: allow build/tests to run without real secrets
+  if (env.CI_DUMMY_ENV === '1' || env.CI_DUMMY_ENV === 'true') {
+    return {
+      url: env.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co',
+      anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'ci_dummy',
+      serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY || 'ci_dummy',
+    }
+  }
+  
   if (!env.NEXT_PUBLIC_SUPABASE_URL) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not set')
   }
