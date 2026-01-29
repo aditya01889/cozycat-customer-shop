@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase/server-helper'
 import { z } from 'zod'
 
 // Validation schema for ingredient creation
@@ -14,14 +14,7 @@ const ingredientSchema = z.object({
 
 // Helper function to create Supabase client
 function getSupabaseClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Supabase credentials are required');
-  }
-  
-  return createClient(supabaseUrl, supabaseServiceKey);
+  return createServerSupabaseClient();
 }
 
 export async function GET(request: NextRequest) {
