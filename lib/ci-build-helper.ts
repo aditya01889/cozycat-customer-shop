@@ -35,6 +35,9 @@ export function createMockSupabaseClient() {
       eq: () => chain,
       order: () => chain,
       limit: () => chain,
+      update: () => chain,
+      insert: () => chain,
+      delete: () => chain,
       single: () => Promise.resolve({ data: [], error: null })
     };
     

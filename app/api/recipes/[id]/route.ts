@@ -1,10 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+import { createServerSupabaseClient } from '@/lib/supabase/server-helper'
 
 export async function PUT(
   request: NextRequest,
@@ -13,6 +8,7 @@ export async function PUT(
   try {
     const { id } = await params
     const body = await request.json()
+    const supabase = createServerSupabaseClient();
     const { percentage } = body
 
     console.log('🔧 PUT /api/recipes/', id, 'with body:', body)
@@ -66,6 +62,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params
+    const supabase = createServerSupabaseClient();
 
     const { error } = await supabase
       .from('product_recipes')
