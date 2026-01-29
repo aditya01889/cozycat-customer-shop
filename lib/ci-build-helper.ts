@@ -55,7 +55,17 @@ export function createMockSupabaseClient() {
   return {
     from: () => createMockChain(),
     auth: {
-      getUser: () => Promise.resolve({ data: { user: null }, error: null })
+      getUser: () => Promise.resolve({ data: { user: null }, error: null }),
+      admin: {
+        listUsers: () => Promise.resolve({ 
+          data: { users: [] },
+          error: null 
+        }),
+        generateLink: () => Promise.resolve({ 
+          data: { properties: { action_link: 'mock-link' } },
+          error: null 
+        })
+      }
     }
   };
 }
