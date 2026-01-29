@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server'
-import { DatabaseHelper } from '@/lib/database/connection-pool'
 import { z } from 'zod'
 
 // Product query schema for validation
@@ -10,6 +9,22 @@ const productQuerySchema = z.object({
 })
 
 export async function GET(request: Request) {
+  // Skip database calls in CI mode - return empty data
+  if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+    return NextResponse.json({ 
+      data: [],
+      pagination: {
+        limit: 20,
+        offset: 0,
+        total: 0,
+        hasMore: false
+      }
+    });
+  }
+
+  // Only import DatabaseHelper when not in CI mode
+  const { DatabaseHelper } = await import('@/lib/database/connection-pool');
+
   try {
     // Parse query parameters
     const { searchParams } = new URL(request.url)
