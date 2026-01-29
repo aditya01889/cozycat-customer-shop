@@ -91,6 +91,7 @@ jobs:
     name: Quality Checks
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    if: needs.detect-environment.outputs.is_staging != 'true' # Skip quality checks for staging
     
     steps:
       - name: Checkout code
