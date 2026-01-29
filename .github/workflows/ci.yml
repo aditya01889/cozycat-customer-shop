@@ -2,6 +2,7 @@ name: CI Pipeline
 
 # Unified CI/CD workflow for build validation, security scanning, and testing
 # Replaces multiple workflows with single comprehensive pipeline
+# Status checks should appear as: Build validation, Security Check, Build Validation
 
 on:
   push:
