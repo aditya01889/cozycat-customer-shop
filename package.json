@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "node scripts/validate-env.js && next dev",
     "build": "node scripts/validate-env.js && next build",
+    "build:ci": "CI_DUMMY_ENV=1 npm run build",
     "start": "next start",
     "validate-env": "node scripts/validate-env.js",
     "backup-env": "cp .env.local .env.backup",
