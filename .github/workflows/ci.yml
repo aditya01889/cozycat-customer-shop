@@ -1,5 +1,8 @@
 name: CI Pipeline
 
+# Unified CI/CD workflow for build validation, security scanning, and testing
+# Replaces multiple workflows with single comprehensive pipeline
+
 on:
   push:
     branches: [ main, staging ]
