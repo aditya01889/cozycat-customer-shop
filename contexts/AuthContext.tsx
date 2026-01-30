@@ -23,6 +23,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const { showSuccess, showError } = useToast()
 
+  // If supabase is not available (build time), set loading to false and return children
+  if (!supabase) {
+    return <>{children}</>
+  }
+
+  // From this point, supabase is guaranteed to be non-null
+  const sb = supabase
+
   const ensureCustomerRecord = async (user: User, name?: string) => {
     try {
       console.log('🔍 Ensuring customer record for user:', user.id)
@@ -37,7 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const ensureRecordPromise = async () => {
         // First, check if profile already exists with role
-        const { data: existingProfile } = await supabase
+        const { data: existingProfile } = await sb
           .from('profiles')
           .select('role, phone, full_name, email')
           .eq('id', user.id)
@@ -53,12 +61,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         
         console.log('🏷️ Creating/updating profile with name:', fullName)
         
-        const { error: profileError } = await supabase
+        const { error: profileError } = await sb
           .from('profiles')
           .upsert({
             id: user.id,
             email: user.email,
-            full_name: fullName,
+            full_name: name || user.user_metadata?.full_name || '',
             role: profileRole,
             updated_at: new Date().toISOString()
           }, {
@@ -76,7 +84,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (profileRole === 'customer') {
           console.log('� Creating customer record...')
           
-          const { error: customerError } = await supabase
+          const { error: customerError } = await sb
             .from('customers')
             .upsert({
               id: user.id,
@@ -111,7 +119,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     // Get initial session
     const getInitialSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await sb.auth.getSession()
       setUser(session?.user ?? null)
       
       // Ensure customer record exists for logged in user (non-blocking)
@@ -129,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event: any, session: any) => {
+    } = sb.auth.onAuthStateChange(async (_event: any, session: any) => {
       setUser(session?.user ?? null)
       
       // Ensure customer record exists for logged in user (non-blocking)
@@ -151,7 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('🔐 Starting sign up process for:', email)
       console.log('👤 Name provided:', name)
       
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await sb.auth.signUp({
         email,
         password,
         options: {
@@ -188,7 +196,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Try sign in with longer timeout and better error handling
       try {
         console.log('🔄 Attempting sign in...')
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await sb.auth.signInWithPassword({
           email,
           password,
         })
@@ -221,7 +229,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('💥 Sign in catch error:', error)
       
       // Check if user is actually authenticated despite the error
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await sb.auth.getSession()
       if (session?.user) {
         console.log('✅ User is authenticated despite error, proceeding...')
         showSuccess('Welcome back!')
@@ -277,9 +285,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clear any stored session data
       if (typeof window !== 'undefined') {
         const keysToRemove = [
-          'supabase.auth.token', 
-          'supabase.auth.refreshToken',
-          'supabase.auth.accessToken',
+          'sb.auth.token', 
+          'sb.auth.refreshToken',
+          'sb.auth.accessToken',
           'sb-auth-token',
           'sb-refresh-token'
         ]
@@ -293,7 +301,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Clear Supabase client state (using signOut with empty session as fallback)
       try {
         // This might work locally but not on Vercel, so we wrap it in try-catch
-        await supabase.auth.signOut({ scope: 'local' })
+        await sb.auth.signOut({ scope: 'local' })
         console.log('✅ Supabase client session cleared')
       } catch (clearError) {
         console.log('⚠️ Supabase client clear failed (non-critical):', clearError)
@@ -317,8 +325,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Even if everything fails, clear local state
       setUser(null)
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('supabase.auth.token')
-        sessionStorage.removeItem('supabase.auth.token')
+        localStorage.removeItem('sb.auth.token')
+        sessionStorage.removeItem('sb.auth.token')
       }
       
       showSuccess('Signed out (emergency fallback)')
@@ -338,7 +346,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       })
       if (error) throw error

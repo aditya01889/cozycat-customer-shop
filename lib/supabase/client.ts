@@ -15,10 +15,13 @@ if (!supabaseAnonKey && process.env.NODE_ENV === 'development') {
 }
 
 // Don't create Supabase client during build/prerendering or if URL is invalid
+const isBuildTime = process.env.NEXT_PHASE?.includes('build') || 
+                   (process.env.VERCEL && process.env.NODE_ENV === 'production' && !process.env.NEXT_RUNTIME)
+
 const shouldCreateClient = !isCIMode() && 
                           supabaseUrl && 
                           supabaseUrl.startsWith('https://') &&
-                          !process.env.NEXT_PHASE?.includes('build')
+                          !isBuildTime
 
 export const supabase = shouldCreateClient ? createClient(supabaseUrl, supabaseAnonKey || '', {
   auth: {

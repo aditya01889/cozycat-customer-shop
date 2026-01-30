@@ -74,7 +74,7 @@ const nextConfig = {
   async headers() {
     const isProd = process.env.NODE_ENV === 'production'
     const scriptSrcUnsafeEval = isProd ? '' : " 'unsafe-eval'"
-    const cspValue = `default-src 'self'; script-src 'self'${scriptSrcUnsafeEval} 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://xfnbhheapralprcwjvzl.supabase.co wss://xfnbhheapralprcwjvzl.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com; object-src 'none'; base-uri 'self'; form-action 'self'`
+    const cspValue = `default-src 'self'; script-src 'self'${scriptSrcUnsafeEval} 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://xfnbhheapralprcwjvzl.supabase.co wss://xfnbhheapralprcwjvzl.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'`
 
     return [
       {
