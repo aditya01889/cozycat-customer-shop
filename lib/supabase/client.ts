@@ -9,7 +9,7 @@ if (!supabaseAnonKey && process.env.NODE_ENV === 'development') {
   console.warn('Warning: NEXT_PUBLIC_SUPABASE_ANON_KEY is not set. Some features may not work.')
 }
 
-// In CI mode, return a mock client to prevent build errors
+// In CI mode or Vercel builds, return a mock client to prevent build errors
 export const supabase = isCIMode() ? null : createClient(supabaseUrl, supabaseAnonKey || '', {
   auth: {
     persistSession: true,

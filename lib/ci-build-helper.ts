@@ -6,7 +6,9 @@
  */
 
 export function isCIMode(): boolean {
-  return process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true';
+  return process.env.CI_DUMMY_ENV === '1' || 
+         process.env.CI_DUMMY_ENV === 'true' ||
+         process.env.VERCEL === '1'; // Also treat Vercel builds as CI mode
 }
 
 /**
