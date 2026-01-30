@@ -6,9 +6,10 @@
  */
 
 export function isCIMode(): boolean {
+  // Only treat as CI mode when CI_DUMMY_ENV is explicitly set
+  // This should only happen during CI builds, not in production runtime
   return process.env.CI_DUMMY_ENV === '1' || 
-         process.env.CI_DUMMY_ENV === 'true' ||
-         process.env.VERCEL === '1'; // Also treat Vercel builds as CI mode
+         process.env.CI_DUMMY_ENV === 'true';
 }
 
 /**
