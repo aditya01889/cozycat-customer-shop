@@ -74,7 +74,19 @@ const nextConfig = {
   async headers() {
     const isProd = process.env.NODE_ENV === 'production'
     const scriptSrcUnsafeEval = isProd ? '' : " 'unsafe-eval'"
-    const cspValue = `default-src 'self'; script-src 'self'${scriptSrcUnsafeEval} 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://xfnbhheapralprcwjvzl.supabase.co wss://xfnbhheapralprcwjvzl.supabase.co https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'`
+    // Dynamic CSP configuration based on environment
+const getSupabaseUrl = () => {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  if (!supabaseUrl) {
+    console.warn('⚠️ NEXT_PUBLIC_SUPABASE_URL not set, using placeholder for CSP')
+    return 'https://placeholder.supabase.co'
+  }
+  // Extract hostname from URL for CSP
+  const url = new URL(supabaseUrl)
+  return url.hostname
+}
+
+const cspValue = `default-src 'self'; script-src 'self'${scriptSrcUnsafeEval} 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://${getSupabaseUrl()} wss://${getSupabaseUrl()} https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'`
 
     return [
       {
