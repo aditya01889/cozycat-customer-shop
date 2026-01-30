@@ -6,8 +6,9 @@
     "node": ">=20.9.0"
   },
   "scripts": {
-    "dev": "node scripts/validate-env.js && next dev",
-    "build": "node scripts/validate-env.js && next build",
+    "prebuild": "node scripts/validate-env.js",
+    "dev": "next dev",
+    "build": "next build",
     "build:ci": "cross-env CI_DUMMY_ENV=1 npm run build",
     "start": "next start",
     "validate-env": "node scripts/validate-env.js",

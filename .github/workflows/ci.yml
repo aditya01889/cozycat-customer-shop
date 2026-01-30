@@ -270,7 +270,7 @@ jobs:
           echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Environment Detection | ${{ needs.detect-environment.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Code Quality | ${{ needs.quality-check.result }} |" >> $GITHUB_STEP_SUMMARY
-          echo "| Security Scan | ${{ needs.security-check.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Scan | ${{ needs.security-scan.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Database Setup | ${{ needs.database-setup.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Integration Tests | ${{ needs.integration-tests.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| E2E Tests | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
