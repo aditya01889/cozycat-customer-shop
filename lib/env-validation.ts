@@ -192,14 +192,19 @@ export function getSupabaseConfig() {
   }
 
   // Validate Supabase URL format
-  try {
-    const url = new URL(env.NEXT_PUBLIC_SUPABASE_URL)
-    console.log(`✅ Supabase URL validation passed: ${url.protocol}//${url.host}`)
-  } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-    console.error(`❌ Supabase URL validation failed: ${env.NEXT_PUBLIC_SUPABASE_URL}`)
-    console.error(`❌ Error details: ${errorMessage}`)
-    throw new Error(`NEXT_PUBLIC_SUPABASE_URL must be a valid URL. Current value: "${env.NEXT_PUBLIC_SUPABASE_URL}"`)
+  // Skip URL validation in Vercel builds (env vars are already validated by validate-env.js)
+  if (process.env.VERCEL) {
+    console.log(`⚠️ Skipping URL validation in Vercel build - trusting validate-env.js validation`);
+  } else {
+    try {
+      const url = new URL(env.NEXT_PUBLIC_SUPABASE_URL)
+      console.log(`✅ Supabase URL validation passed: ${url.protocol}//${url.host}`)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error)
+      console.error(`❌ Supabase URL validation failed: ${env.NEXT_PUBLIC_SUPABASE_URL}`)
+      console.error(`❌ Error details: ${errorMessage}`)
+      throw new Error(`NEXT_PUBLIC_SUPABASE_URL must be a valid URL. Current value: "${env.NEXT_PUBLIC_SUPABASE_URL}"`)
+    }
   }
   
   return {

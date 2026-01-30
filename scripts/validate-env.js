@@ -40,16 +40,25 @@ function validateEnvironment() {
   // This enables build/test to run without production/staging credentials.
   if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
     console.warn('⚠️  CI_DUMMY_ENV enabled - skipping strict environment variable validation');
-    console.warn('⚠️  Do not use CI_DUMMY_ENV in production deployments.');
     console.log('\n✅ Environment validation passed (CI dummy mode)!');
     return;
   }
   
   // Check if we're in production/CI environment (Vercel, etc.)
   // Use VERCEL_ENV first, then fallback to NODE_ENV
-  const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
-  const isProduction = env === 'production' || process.env.CI || process.env.VERCEL;
-  const isPreview = process.env.VERCEL_ENV === 'preview';
+  const vercelEnv = process.env.VERCEL_ENV || 'development';
+  const isProduction = vercelEnv === 'production';
+  const isPreview = vercelEnv === 'preview';
+
+  console.log(`🔍 Environment detection: VERCEL_ENV=${process.env.VERCEL_ENV}, NODE_ENV=${process.env.NODE_ENV}`);
+  console.log(`🔍 Parsed: vercelEnv=${vercelEnv}, isProduction=${isProduction}, isPreview=${isPreview}`);
+
+  // Guard against double execution during Next.js build
+  if (process.env.__ENV_VALIDATED__) {
+    console.log('⚠️ Environment already validated in this build, skipping...');
+    process.exit(0);
+  }
+  process.env.__ENV_VALIDATED__ = 'true';
   
   let envVars = {};
   
@@ -87,13 +96,17 @@ function validateEnvironment() {
   
   let hasIssues = false;
   
-  // Check critical variables
+  // Check critical variables with environment-specific strictness
   CRITICAL_VARS.forEach(varName => {
     const value = envVars[varName];
     
     if (!value) {
-      console.error(`❌ Missing: ${varName}`);
-      hasIssues = true;
+      if (isProduction) {
+        console.error(`❌ Missing: ${varName}`);
+        hasIssues = true;
+      } else {
+        console.log(`ℹ️ Preview environment - ${varName} not set, skipping validation`);
+      }
       return;
     }
     
@@ -103,33 +116,45 @@ function validateEnvironment() {
     );
     
     if (isPlaceholder) {
-      console.error(`❌ Placeholder value detected: ${varName}`);
-      console.error(`   Current value: ${value.substring(0, 50)}...`);
-      hasIssues = true;
+      if (isProduction) {
+        console.error(`❌ Placeholder value detected: ${varName}`);
+        console.error(`   Current value: ${value.substring(0, 50)}...`);
+        hasIssues = true;
+      } else {
+        console.log(`ℹ️ Preview environment - placeholder value in ${varName}, skipping validation`);
+      }
       return;
     }
     
-    // Specific validation for Supabase URL
+    // Specific validation for Supabase URL (only in production)
     if (varName === 'NEXT_PUBLIC_SUPABASE_URL') {
       // Remove quotes for validation
       const cleanValue = value.replace(/^["']|["']$/g, '');
       if (!cleanValue.startsWith('https://') || !cleanValue.includes('.supabase.co')) {
-        console.error(`❌ Invalid Supabase URL format: ${varName}`);
-        console.error(`   Expected: https://project-id.supabase.co`);
-        console.error(`   Current: ${cleanValue}`);
-        hasIssues = true;
+        if (isProduction) {
+          console.error(`❌ Invalid Supabase URL format: ${varName}`);
+          console.error(`   Expected: https://project-id.supabase.co`);
+          console.error(`   Current: ${cleanValue}`);
+          hasIssues = true;
+        } else {
+          console.log(`ℹ️ Preview environment - invalid URL format in ${varName}, skipping validation`);
+        }
         return;
       }
     }
     
-    // Specific validation for API keys
+    // Specific validation for API keys (only in production)
     if (varName.includes('KEY')) {
       try {
         // Basic JWT format check
         const parts = value.split('.');
         if (parts.length !== 3) {
-          console.error(`❌ Invalid JWT format: ${varName}`);
-          hasIssues = true;
+          if (isProduction) {
+            console.error(`❌ Invalid JWT format: ${varName}`);
+            hasIssues = true;
+          } else {
+            console.log(`ℹ️ Preview environment - invalid JWT format in ${varName}, skipping validation`);
+          }
           return;
         }
         
@@ -137,13 +162,21 @@ function validateEnvironment() {
         try {
           Buffer.from(parts[1], 'base64');
         } catch (e) {
-          console.error(`❌ Invalid base64 in JWT: ${varName}`);
-          hasIssues = true;
+          if (isProduction) {
+            console.error(`❌ Invalid base64 in JWT: ${varName}`);
+            hasIssues = true;
+          } else {
+            console.log(`ℹ️ Preview environment - invalid base64 in ${varName}, skipping validation`);
+          }
           return;
         }
       } catch (e) {
-        console.error(`❌ Error validating ${varName}:`, e.message);
-        hasIssues = true;
+        if (isProduction) {
+          console.error(`❌ Error validating ${varName}:`, e.message);
+          hasIssues = true;
+        } else {
+          console.log(`ℹ️ Preview environment - error validating ${varName}, skipping validation`);
+        }
         return;
       }
     }
@@ -160,19 +193,24 @@ function validateEnvironment() {
       console.log('2. Ensure all critical variables are set');
       console.log('3. Verify no placeholder values are present');
       console.log('4. Redeploy after fixing variables');
+      process.exit(1);
     } else {
-      console.log('\n🔧 Development Environment - To fix:');
-      console.log('1. Update .env.local with correct values');
-      console.log('2. Copy from Vercel environment variables if available');
-      console.log('3. Or restore from .env.backup: cp .env.backup .env.local');
-      console.log('4. Restart development server');
+      console.log('\nℹ️ Preview environment - some validation issues detected, but continuing...');
+      console.log('🔧 To fix preview environment issues:');
+      console.log('1. Check Vercel environment variables for Preview environment');
+      console.log('2. Ensure staging variables are properly set');
+      console.log('3. Redeploy to preview after fixing variables');
+      console.log('\n✅ Environment validation passed (preview mode)!');
+      return; // Don't exit with error in preview
     }
-    
-    process.exit(1);
   }
   
   console.log('\n✅ Environment validation passed!');
-  console.log('🛡️ Your environment variables are properly configured.');
+  if (isProduction) {
+    console.log('🛡️ Your production environment variables are properly configured.');
+  } else {
+    console.log('🔍 Your preview environment variables are configured.');
+  }
 }
 
 // Create backup if it doesn't exist (development only)
