@@ -192,13 +192,17 @@ export function getSupabaseConfig() {
   }
 
   // Validate Supabase URL format
+  console.log(`🔍 Debugging Supabase URL: "${env.NEXT_PUBLIC_SUPABASE_URL}"`)
+  console.log(`🔍 URL type: ${typeof env.NEXT_PUBLIC_SUPABASE_URL}`)
+  console.log(`🔍 URL length: ${env.NEXT_PUBLIC_SUPABASE_URL?.length}`)
+  
   try {
     const url = new URL(env.NEXT_PUBLIC_SUPABASE_URL)
     console.log(`✅ Supabase URL validation passed: ${url.protocol}//${url.host}`)
   } catch (error) {
     console.error(`❌ Supabase URL validation failed: ${env.NEXT_PUBLIC_SUPABASE_URL}`)
     console.error(`❌ Error details: ${error.message}`)
-    throw new Error(`NEXT_PUBLIC_SUPABASE_URL must be a valid URL. Current value: ${env.NEXT_PUBLIC_SUPABASE_URL}`)
+    throw new Error(`NEXT_PUBLIC_SUPABASE_URL must be a valid URL. Current value: "${env.NEXT_PUBLIC_SUPABASE_URL}" (Type: ${typeof env.NEXT_PUBLIC_SUPABASE_URL})`)
   }
   
   return {
