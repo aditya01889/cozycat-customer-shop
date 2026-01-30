@@ -183,8 +183,8 @@ export function getSupabaseConfig() {
     }
   }
   
-  // Vercel build mode: skip validation entirely, trust that validate-env.js already ran
-  if (process.env.VERCEL) {
+  // Vercel build mode: only during build time, not runtime
+  if (process.env.VERCEL && process.env.NODE_ENV === 'production' && !process.env.NEXT_RUNTIME) {
     console.log(`⚠️ Vercel build detected - using safe Supabase config without validation`);
     return {
       url: env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
