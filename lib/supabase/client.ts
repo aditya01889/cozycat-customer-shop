@@ -14,8 +14,13 @@ if (!supabaseAnonKey && process.env.NODE_ENV === 'development') {
   console.warn('Warning: NEXT_PUBLIC_SUPABASE_ANON_KEY is not set. Some features may not work.')
 }
 
-// In CI mode, return a mock client to prevent build errors
-export const supabase = isCIMode() ? null : createClient(supabaseUrl || '', supabaseAnonKey || '', {
+// Don't create Supabase client during build/prerendering or if URL is invalid
+const shouldCreateClient = !isCIMode() && 
+                          supabaseUrl && 
+                          supabaseUrl.startsWith('https://') &&
+                          !process.env.NEXT_PHASE?.includes('build')
+
+export const supabase = shouldCreateClient ? createClient(supabaseUrl, supabaseAnonKey || '', {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
@@ -28,6 +33,6 @@ export const supabase = isCIMode() ? null : createClient(supabaseUrl || '', supa
       'X-Client-Info': 'cozycat-kitchen/1.0.0',
     },
   },
-})
+}) : null
 
 export { createClient }
