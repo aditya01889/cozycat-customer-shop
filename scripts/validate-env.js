@@ -9,6 +9,11 @@
  * Usage: node scripts/validate-env.js
  */
 
+// This file must never be imported - it must be executed as a script only
+if (require.main !== module) {
+  throw new Error('validate-env.js must be executed as a script, not imported');
+}
+
 const fs = require('fs');
 const path = require('path');
 
