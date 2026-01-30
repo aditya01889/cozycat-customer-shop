@@ -27,9 +27,9 @@ function validateBasicEnv() {
     }
   }
 
-  // Validate Supabase URL format
+  // Validate Supabase URL format (skip in Vercel builds - handled by validate-env.js)
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  if (supabaseUrl) {
+  if (supabaseUrl && !process.env.VERCEL) {
     try {
       new URL(supabaseUrl)
     } catch {
