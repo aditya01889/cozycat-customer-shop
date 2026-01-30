@@ -19,6 +19,7 @@ export default function AboutPage() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-4">
             About Cozy Cat Kitchen
+            
           </h1>
           <p className="text-xl text-gray-600">
             Where thoughtful meals meet calm curiosity 🐾
