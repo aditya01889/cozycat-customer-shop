@@ -23,9 +23,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
   const { showSuccess, showError } = useToast()
 
-  // If supabase is not available (build time), set loading to false and return children
+  // If supabase is not available (build time), provide mock context
   if (!supabase) {
-    return <>{children}</>
+    const mockContext: AuthContextType = {
+      user: null,
+      loading: false,
+      signUp: async () => {},
+      signIn: async () => {},
+      signOut: async () => {},
+      resetPassword: async () => {},
+    }
+    
+    return (
+      <AuthContext.Provider value={mockContext}>
+        {children}
+      </AuthContext.Provider>
+    )
   }
 
   // From this point, supabase is guaranteed to be non-null
