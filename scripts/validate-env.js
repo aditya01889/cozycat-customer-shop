@@ -46,13 +46,20 @@ function validateEnvironment() {
   }
   
   // Check if we're in production/CI environment (Vercel, etc.)
-  const isProduction = process.env.NODE_ENV === 'production' || process.env.CI || process.env.VERCEL;
+  // Use VERCEL_ENV first, then fallback to NODE_ENV
+  const env = process.env.VERCEL_ENV || process.env.NODE_ENV;
+  const isProduction = env === 'production' || process.env.CI || process.env.VERCEL;
+  const isPreview = process.env.VERCEL_ENV === 'preview';
   
   let envVars = {};
   
   if (isProduction) {
     // In production, use process.env directly
     console.log('🏭 Production environment detected - validating process.env variables');
+    envVars = process.env;
+  } else if (isPreview) {
+    // In preview (staging), use process.env directly but with preview context
+    console.log('🔍 Preview environment detected - validating process.env variables');
     envVars = process.env;
   } else {
     // In development, check for .env.local file
