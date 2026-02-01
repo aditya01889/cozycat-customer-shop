@@ -71,7 +71,8 @@ function DebugAdminDashboardContent() {
       })
     } catch (error) {
       console.error('Debug error:', error)
-      setDebugInfo({ error: error.message })
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
+      setDebugInfo({ error: errorMessage })
     } finally {
       setLoading(false)
     }

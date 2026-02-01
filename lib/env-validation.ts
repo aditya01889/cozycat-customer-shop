@@ -174,6 +174,26 @@ export function isProduction(): boolean {
 export function getSupabaseConfig() {
   const env = process.env as Record<string, string | undefined>
   
+  // CI dummy mode: allow build/tests to run without real secrets
+  if (env.CI_DUMMY_ENV === '1' || env.CI_DUMMY_ENV === 'true') {
+    return {
+      url: env.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co',
+      anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'ci_dummy',
+      serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY || 'ci_dummy',
+    }
+  }
+  
+  // Vercel build mode: only during build time, not runtime
+  if (process.env.VERCEL && process.env.NODE_ENV === 'production' && !process.env.NEXT_RUNTIME) {
+    console.log(`⚠️ Vercel build detected - using safe Supabase config without validation`);
+    return {
+      url: env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder.supabase.co',
+      anonKey: env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder',
+      serviceRoleKey: env.SUPABASE_SERVICE_ROLE_KEY || 'placeholder',
+    };
+  }
+  
+  // Development/Local mode: validate strictly
   if (!env.NEXT_PUBLIC_SUPABASE_URL) {
     throw new Error('NEXT_PUBLIC_SUPABASE_URL is required but not set')
   }
@@ -184,9 +204,13 @@ export function getSupabaseConfig() {
 
   // Validate Supabase URL format
   try {
-    new URL(env.NEXT_PUBLIC_SUPABASE_URL)
-  } catch {
-    throw new Error('NEXT_PUBLIC_SUPABASE_URL must be a valid URL')
+    const url = new URL(env.NEXT_PUBLIC_SUPABASE_URL)
+    console.log(`✅ Supabase URL validation passed: ${url.protocol}//${url.host}`)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    console.error(`❌ Supabase URL validation failed: ${env.NEXT_PUBLIC_SUPABASE_URL}`)
+    console.error(`❌ Error details: ${errorMessage}`)
+    throw new Error(`NEXT_PUBLIC_SUPABASE_URL must be a valid URL. Current value: "${env.NEXT_PUBLIC_SUPABASE_URL}"`)
   }
   
   return {

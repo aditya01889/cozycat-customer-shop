@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase/server-helper'
 import { z } from 'zod'
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
 
 // Validation schema for ingredient creation
 const ingredientSchema = z.object({
@@ -17,8 +12,14 @@ const ingredientSchema = z.object({
   supplier: z.string().nullable().optional()
 })
 
+// Helper function to create Supabase client
+function getSupabaseClient() {
+  return createServerSupabaseClient();
+}
+
 export async function GET(request: NextRequest) {
   try {
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('ingredients')
       .select('*')
@@ -44,6 +45,7 @@ export async function POST(request: NextRequest) {
     const validatedData = ingredientSchema.parse(body)
     
     // Create ingredient
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('ingredients')
       .insert([validatedData])
@@ -92,6 +94,7 @@ export async function PUT(request: NextRequest) {
     const validatedData = ingredientSchema.parse(updateData)
     
     // Update ingredient
+    const supabase = getSupabaseClient();
     const { data, error } = await supabase
       .from('ingredients')
       .update(validatedData)

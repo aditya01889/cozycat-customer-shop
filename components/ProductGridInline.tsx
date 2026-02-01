@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import SimpleImage from '@/components/SimpleImage'
 import { useCartStore } from '@/lib/store/cart'
 import toast from 'react-hot-toast'
 import { Database } from '@/types/database'
@@ -54,11 +54,21 @@ interface ProductCardProps {
 
 function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
   const { addItem } = useCartStore()
-  const [selectedVariant, setSelectedVariant] = useState(product.product_variants[0])
+  
+  // Safely handle variants with fallback
+  const variants = product.product_variants || []
+  const hasValidVariants = variants.length > 0 && variants.some(v => v?.weight_grams !== undefined && v?.weight_grams !== null)
+  
+  // Set initial selected variant safely
+  const [selectedVariant, setSelectedVariant] = useState(
+    hasValidVariants ? variants.find(v => v?.weight_grams !== undefined && v?.weight_grams !== null) || null : null
+  )
   const [selectedPack, setSelectedPack] = useState(1)
   
-  const variants = product.product_variants
-  const minPrice = Math.min(...variants.map(v => v.price))
+  // Calculate min price safely
+  const minPrice = hasValidVariants 
+    ? Math.min(...variants.filter(v => v?.price !== undefined).map(v => v.price))
+    : 0
   
   const isMealOrBroth = product.categories?.slug === 'meals' || product.categories?.slug === 'broths'
   
@@ -84,12 +94,17 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
   }
 
   const handleAddToCart = () => {
+    if (!selectedVariant) {
+      toast.error('Product variant not available')
+      return
+    }
+    
     addItem({
       productId: product.id,
       variantId: selectedVariant.id,
       productName: product.name,
-      weight: selectedVariant.weight_grams,
-      price: selectedVariant.price,
+      weight: selectedVariant.weight_grams || 0,
+      price: selectedVariant.price || 0,
       quantity: selectedPack,
       sku: selectedVariant.sku || '',
       productImage: product.image_url || undefined
@@ -102,20 +117,24 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
       <Link href={`/products/${product.slug}`} className="block">
         <div className="aspect-square bg-gradient-to-br from-orange-50 to-pink-50 relative overflow-hidden">
           {product.image_url ? (
-            <Image
+            <SimpleImage
               src={product.image_url}
               alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover group-hover:scale-110 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              fallback={
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-pink-100">
+                  <span className="text-6xl">
+                    {product.categories?.slug ? getCategoryEmoji(product.categories.slug) : '📦'}
+                  </span>
+                </div>
+              }
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-pink-100">
-              <span className="text-6xl">
-                {product.categories?.slug ? getCategoryEmoji(product.categories.slug) : '📦'}
-              </span>
-            </div>
-          )}
+          ) : null}
+          <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-pink-100 ${product.image_url ? 'hidden' : 'flex'}`}>
+            <span className="text-6xl">
+              {product.categories?.slug ? getCategoryEmoji(product.categories.slug) : '📦'}
+            </span>
+          </div>
           <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
             <span className="mr-1">🐾</span>
             {product.categories?.slug ? getCategoryEmoji(product.categories.slug) : '📦'}
@@ -142,7 +161,12 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
               {product.name}
             </span>
           </h3>
-          <p className="text-sm text-gray-600 mb-2">{formatWeight(variants[0].weight_grams)}</p>
+          <p className="text-sm text-gray-600 mb-2">
+            {hasValidVariants && variants.find(v => v?.weight_grams !== undefined && v?.weight_grams !== null)?.weight_grams 
+              ? formatWeight(variants.find(v => v?.weight_grams !== undefined && v?.weight_grams !== null)!.weight_grams) 
+              : 'Weight not available'
+            }
+          </p>
           <p className="text-lg font-bold text-orange-600">₹{minPrice}</p>
         </div>
       </Link>
@@ -151,20 +175,22 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
         {/* Inline Controls - Always Present */}
         <div className="space-y-3">
           {/* Variant Selector */}
-          {variants.length > 1 && (
+          {variants.length > 1 && hasValidVariants && (
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600">Size:</span>
               <select
-                value={selectedVariant.id}
+                value={selectedVariant?.id || ''}
                 onChange={(e) => {
                   const variant = variants.find(v => v.id === e.target.value)
-                  if (variant) setSelectedVariant(variant)
+                  if (variant && variant.weight_grams !== undefined) {
+                    setSelectedVariant(variant)
+                  }
                 }}
                 className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:border-orange-500 focus:outline-none"
               >
-                {variants.map((variant) => (
+                {variants.filter(v => v?.weight_grams !== undefined).map((variant) => (
                   <option key={variant.id} value={variant.id}>
-                    {formatWeight(variant.weight_grams)}
+                    {variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}
                   </option>
                 ))}
               </select>
@@ -190,11 +216,16 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
           {/* Add to Cart Button */}
           <button
             onClick={handleAddToCart}
-            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-2 px-4 rounded-full hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-bold flex items-center justify-center relative"
+            disabled={!hasValidVariants}
+            className={`w-full py-2 px-4 rounded-full transition-all duration-300 transform font-bold flex items-center justify-center relative ${
+              hasValidVariants 
+                ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600 hover:scale-105'
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
           >
             <span className="mr-2">🛒</span>
-            Add to Cart
-            {getTotalCartCount() > 0 && (
+            {hasValidVariants ? 'Add to Cart' : 'Unavailable'}
+            {hasValidVariants && getTotalCartCount() > 0 && (
               <span className="absolute -top-1 -right-1 bg-pink-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                 {getTotalCartCount()}
               </span>

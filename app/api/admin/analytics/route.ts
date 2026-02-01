@@ -37,45 +37,70 @@ async function handleAnalytics(request: NextRequest, authContext: AuthContext) {
     switch (type) {
       case 'revenue':
         try {
-          const { data: revenueData, error: revenueError } = await supabase.rpc('get_revenue_analytics', {
-            start_date: startDate || null,
-            end_date: endDate || null,
-            group_by: groupBy
-          })
+          const params: any = {}
+          if (startDate) params.start_date = startDate
+          if (endDate) params.end_date = endDate
+          if (groupBy) params.group_by = groupBy
+          
+          const { data: revenueData, error: revenueError } = await supabase.rpc('get_revenue_analytics', params)
           if (!revenueError) data = revenueData
           error = revenueError
         } catch (err) {
-          error = err
+          console.log('Revenue analytics RPC not available, using fallback query')
+          // Fallback to direct query if RPC doesn't exist
+          const { data: revenueData, error: revenueError } = await supabase
+            .from('orders')
+            .select('total_amount, created_at')
+            .gte('created_at', startDate || '2024-01-01')
+            .lte('created_at', endDate || new Date().toISOString())
+          if (!revenueError) data = revenueData
+          error = revenueError
         }
         break
 
       case 'customers':
         try {
-          const { data: customerData, error: customerError } = await supabase.rpc('get_customer_analytics_paginated', {
-            limit_count: limit,
-            offset_count: (page - 1) * limit,
-            start_date: startDate || null,
-            end_date: endDate || null
-          })
+          const params: any = {}
+          if (limit) params.limit_count = limit
+          if (page > 1) params.offset_count = (page - 1) * limit
+          if (startDate) params.start_date = startDate
+          if (endDate) params.end_date = endDate
+          
+          const { data: customerData, error: customerError } = await supabase.rpc('get_customer_analytics_paginated', params)
           if (!customerError) data = customerData
           error = customerError
         } catch (err) {
-          error = err
+          console.log('Customer analytics RPC not available, using fallback query')
+          // Fallback to direct query if RPC doesn't exist
+          const { data: customerData, error: customerError } = await supabase
+            .from('profiles')
+            .select('*')
+            .range((page - 1) * limit, page * limit - 1)
+          if (!customerError) data = customerData
+          error = customerError
         }
         break
 
       case 'products':
         try {
-          const { data: productData, error: productError } = await supabase.rpc('get_product_performance_paginated', {
-            limit_count: limit,
-            offset_count: (page - 1) * limit,
-            start_date: startDate || null,
-            end_date: endDate || null
-          })
+          const params: any = {}
+          if (limit) params.limit_count = limit
+          if (page > 1) params.offset_count = (page - 1) * limit
+          if (startDate) params.start_date = startDate
+          if (endDate) params.end_date = endDate
+          
+          const { data: productData, error: productError } = await supabase.rpc('get_product_performance_paginated', params)
           if (!productError) data = productData
           error = productError
         } catch (err) {
-          error = err
+          console.log('Product analytics RPC not available, using fallback query')
+          // Fallback to direct query if RPC doesn't exist
+          const { data: productData, error: productError } = await supabase
+            .from('products')
+            .select('*')
+            .range((page - 1) * limit, page * limit - 1)
+          if (!productError) data = productData
+          error = productError
         }
         break
 
@@ -85,20 +110,35 @@ async function handleAnalytics(request: NextRequest, authContext: AuthContext) {
           if (!inventoryError) data = inventoryData
           error = inventoryError
         } catch (err) {
-          error = err
+          console.log('Inventory analytics RPC not available, using fallback query')
+          // Fallback to direct query if RPC doesn't exist
+          const { data: inventoryData, error: inventoryError } = await supabase
+            .from('products')
+            .select('id, name, stock_quantity, category')
+          if (!inventoryError) data = inventoryData
+          error = inventoryError
         }
         break
 
       case 'orders':
         try {
-          const { data: orderData, error: orderError } = await supabase.rpc('get_order_stats_filtered', {
-            start_date: startDate || null,
-            end_date: endDate || null
-          })
+          const params: any = {}
+          if (startDate) params.start_date = startDate
+          if (endDate) params.end_date = endDate
+          
+          const { data: orderData, error: orderError } = await supabase.rpc('get_order_stats_filtered', params)
           if (!orderError) data = orderData
           error = orderError
         } catch (err) {
-          error = err
+          console.log('Order analytics RPC not available, using fallback query')
+          // Fallback to direct query if RPC doesn't exist
+          const { data: orderData, error: orderError } = await supabase
+            .from('orders')
+            .select('*')
+            .gte('created_at', startDate || '2024-01-01')
+            .lte('created_at', endDate || new Date().toISOString())
+          if (!orderError) data = orderData
+          error = orderError
         }
         break
 
