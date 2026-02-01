@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import SimpleImage from '@/components/SimpleImage'
 import { useCartStore } from '@/lib/store/cart'
 import toast from 'react-hot-toast'
 import { Database } from '@/types/database'
@@ -102,20 +102,24 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
       <Link href={`/products/${product.slug}`} className="block">
         <div className="aspect-square bg-gradient-to-br from-orange-50 to-pink-50 relative overflow-hidden">
           {product.image_url ? (
-            <Image
+            <SimpleImage
               src={product.image_url}
               alt={product.name}
-              fill
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover group-hover:scale-110 transition-transform duration-300"
+              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              fallback={
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-pink-100">
+                  <span className="text-6xl">
+                    {product.categories?.slug ? getCategoryEmoji(product.categories.slug) : '📦'}
+                  </span>
+                </div>
+              }
             />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-pink-100">
-              <span className="text-6xl">
-                {product.categories?.slug ? getCategoryEmoji(product.categories.slug) : '📦'}
-              </span>
-            </div>
-          )}
+          ) : null}
+          <div className={`w-full h-full flex items-center justify-center bg-gradient-to-br from-orange-100 to-pink-100 ${product.image_url ? 'hidden' : 'flex'}`}>
+            <span className="text-6xl">
+              {product.categories?.slug ? getCategoryEmoji(product.categories.slug) : '📦'}
+            </span>
+          </div>
           <div className="absolute top-2 right-2 bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
             <span className="mr-1">🐾</span>
             {product.categories?.slug ? getCategoryEmoji(product.categories.slug) : '📦'}

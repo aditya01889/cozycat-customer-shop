@@ -59,7 +59,8 @@ export async function GET(request: Request) {
           nutritional_info,
           ingredients_display,
           created_at,
-          updated_at
+          updated_at,
+          product_variants (*)
         `)
         .eq('id', id)
         .eq('is_active', true)
@@ -93,7 +94,8 @@ export async function GET(request: Request) {
         nutritional_info,
         ingredients_display,
         created_at,
-        updated_at
+        updated_at,
+        product_variants (*)
       `)
       .eq('is_active', true)
 
