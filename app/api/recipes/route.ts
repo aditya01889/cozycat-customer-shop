@@ -1,10 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Create Supabase client only when environment variables are available
+const getSupabaseClient = () => {
+  if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+    // Return a mock client for CI builds
+    return {
+      from: () => ({
+        select: () => ({
+          eq: (column: string, value: any) => ({
+            order: () => ({ data: [], error: null }),
+            single: () => ({ data: null, error: new Error('CI dummy mode') })
+          }),
+          order: () => ({ data: [], error: null })
+        }),
+        insert: () => ({
+          select: () => ({
+            single: () => ({ data: null, error: new Error('CI dummy mode') })
+          })
+        })
+      })
+    }
+  }
+  
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,6 +36,7 @@ export async function GET(request: NextRequest) {
 
     if (productId) {
       // Get recipe for specific product
+      const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('product_recipes')
         .select('*')
@@ -24,6 +48,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data })
     } else {
       // Get all recipes
+      const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('product_recipes')
         .select('*')
@@ -64,6 +89,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if recipe already exists
+    const supabase = getSupabaseClient()
     const { data: existing } = await supabase
       .from('product_recipes')
       .select('*')
