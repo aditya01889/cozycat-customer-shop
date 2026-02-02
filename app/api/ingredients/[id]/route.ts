@@ -2,10 +2,31 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-)
+// Create Supabase client only when environment variables are available
+const getSupabaseClient = () => {
+  if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+    // Return a mock client for CI builds
+    return {
+      from: () => ({
+        update: () => ({
+          eq: () => ({
+            select: () => ({
+              single: () => Promise.resolve({ data: null, error: new Error('CI dummy mode') })
+            })
+          })
+        }),
+        delete: () => ({
+          eq: () => Promise.resolve({ error: new Error('CI dummy mode') })
+        })
+      })
+    }
+  }
+  
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
 
 // Validation schema for ingredient updates
 const ingredientUpdateSchema = z.object({
@@ -47,6 +68,7 @@ export async function PUT(
       )
     }
 
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('ingredients')
       .update(updateData)
@@ -88,6 +110,7 @@ export async function DELETE(
   try {
     const { id } = await params
 
+    const supabase = getSupabaseClient()
     const { error } = await supabase
       .from('ingredients')
       .delete()

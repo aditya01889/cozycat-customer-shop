@@ -4,14 +4,16 @@ import { createClient } from 'redis'
 const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379'
 const redisPassword = process.env.REDIS_PASSWORD
 
-// Create Redis client
-export const redis = createClient({
-  url: redisUrl,
-  password: redisPassword,
-  socket: {
-    connectTimeout: 5000,
-  }
-})
+// Create Redis client only when not in CI dummy mode
+export const redis = (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') 
+  ? null 
+  : createClient({
+      url: redisUrl,
+      password: redisPassword,
+      socket: {
+        connectTimeout: 5000,
+      }
+    })
 
 // Redis connection status
 let isConnected = false
@@ -20,6 +22,14 @@ const shouldLog = process.env.NODE_ENV === 'development'
 
 // Initialize Redis connection
 export async function initRedis() {
+  if (!redis) {
+    if (shouldLog) {
+      console.log('⚠️ Redis disabled in CI dummy mode')
+    }
+    isConnected = false
+    return
+  }
+  
   try {
     await redis.connect()
     isConnected = true
@@ -52,7 +62,7 @@ export class RedisCache {
   // Get data from cache
   async get<T>(key: string): Promise<T | null> {
     try {
-      if (!isConnected) {
+      if (!isConnected || !redis) {
         return this.getFallback<T>(key)
       }
 
@@ -78,7 +88,7 @@ export class RedisCache {
   // Set data in cache
   async set(key: string, data: any, ttl: number = 300): Promise<void> {
     try {
-      if (!isConnected) {
+      if (!isConnected || !redis) {
         this.setFallback(key, data, ttl)
         return
       }
@@ -96,7 +106,7 @@ export class RedisCache {
   // Delete data from cache
   async del(key: string): Promise<void> {
     try {
-      if (!isConnected) {
+      if (!isConnected || !redis) {
         this.fallbackCache.delete(key)
         return
       }
@@ -114,7 +124,7 @@ export class RedisCache {
   // Clear all cache
   async clear(): Promise<void> {
     try {
-      if (!isConnected) {
+      if (!isConnected || !redis) {
         this.fallbackCache.clear()
         return
       }
@@ -132,7 +142,7 @@ export class RedisCache {
   // Get cache keys with pattern
   async keys(pattern: string): Promise<string[]> {
     try {
-      if (!isConnected) {
+      if (!isConnected || !redis) {
         return Array.from(this.fallbackCache.keys()).filter(key => 
           key.includes(pattern.replace('*', ''))
         )
@@ -290,7 +300,7 @@ export class CacheWarming {
 // Cache statistics
 export async function getCacheStats() {
   try {
-    if (!isConnected) {
+    if (!isConnected || !redis) {
       return {
         type: 'fallback',
         size: cache['fallbackCache']?.size || 0,
@@ -319,6 +329,7 @@ export async function getCacheStats() {
 
 // Initialize Redis on module import only when explicitly configured,
 // or in development where localhost is a reasonable default.
-if (process.env.REDIS_URL || process.env.NODE_ENV === 'development') {
+if ((process.env.REDIS_URL || process.env.NODE_ENV === 'development') && 
+    !(process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true')) {
   initRedis().catch(console.error)
 }
