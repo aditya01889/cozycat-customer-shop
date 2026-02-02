@@ -7,6 +7,25 @@ import { getSupabaseConfig } from '../env-validation'
  * This allows routes to be statically generated and cached
  */
 export const createStaticClient = () => {
+  // Skip Supabase client creation during CI build
+  if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+    // Return a mock client for CI builds
+    return {
+      from: () => ({
+        select: () => ({
+          eq: (column: string, value: any) => ({
+            order: () => ({
+              order: () => ({ data: [], error: null }),
+              single: () => ({ data: null, error: new Error('CI dummy mode') })
+            }),
+            single: () => ({ data: null, error: new Error('CI dummy mode') })
+          }),
+          order: () => ({ data: [], error: null })
+        })
+      })
+    }
+  }
+  
   const { url, serviceRoleKey } = getSupabaseConfig()
   
   return createSupabaseClient<Database>(
