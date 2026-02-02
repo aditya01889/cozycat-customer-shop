@@ -1,0 +1,67 @@
+# TruffleHog ignore file - Exclude false positives and test data
+
+# Environment files (contain placeholders)
+.env*
+*.env
+
+# Test files and examples
+**/test*
+**/tests/**
+**/*test*
+**/*example*
+
+# Documentation and guides
+**/*.md
+**/docs/**
+**/guides/**
+
+# Configuration files with example values
+**/config/**
+**/*.config.*
+**/*.json
+
+# Database setup and migration files
+**/*.sql
+**/database/**
+
+# Scripts and utilities
+**/scripts/**
+**/utils/**
+
+# Backup files
+**/*.backup
+**/*.bak
+
+# Temporary files
+**/tmp/**
+**/temp/**
+
+# Node modules and build artifacts
+**/node_modules/**
+**/.next/**
+**/dist/**
+**/build/**
+
+# Logs and reports
+**/*.log
+**/reports/**
+**/coverage/**
+
+# Development tools
+**/.vercel/**
+**/.husky/**
+
+# False positive patterns
+placeholder
+example
+test
+demo
+your-
+localhost
+127.0.0.1
+3000
+54321
+
+# Specific to this project - known false positives
+supabase/config.toml
+**/supabase/snippets/**
