@@ -14,6 +14,7 @@ const getSupabaseClient = () => {
         })
       })
     }
+  }
   
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
