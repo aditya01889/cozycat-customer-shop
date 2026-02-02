@@ -166,6 +166,11 @@ function ProductCardEnhanced({ product, onQuickView }: {
   }
 
   const handleAddToCart = (variant: any) => {
+    if (!variant || variant.weight_grams === undefined) {
+      toast.error('Product variant not available')
+      return
+    }
+    
     addItem({
       productId: product.id,
       variantId: variant.id,
@@ -184,7 +189,12 @@ function ProductCardEnhanced({ product, onQuickView }: {
     if (hasMultipleVariants) {
       setShowVariantModal(true)
     } else {
-      handleAddToCart(variants[0])
+      const firstVariant = variants[0]
+      if (firstVariant && firstVariant.weight_grams !== undefined) {
+        handleAddToCart(firstVariant)
+      } else {
+        toast.error('Product variant not available')
+      }
     }
   }
 

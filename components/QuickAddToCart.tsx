@@ -40,7 +40,10 @@ export default function QuickAddToCart({ product, compact = false, showImage = t
   }
 
   const handleAddToCart = async () => {
-    if (!selectedVariant) return
+    if (!selectedVariant || selectedVariant.weight_grams === undefined) {
+      showError(new Error('Please select a valid variant'))
+      return
+    }
 
     setIsAdding(true)
     

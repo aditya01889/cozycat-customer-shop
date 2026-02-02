@@ -28,8 +28,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const handleAddToCart = () => {
     console.log('Add to cart clicked, selected variant:', selectedVariant)
     
-    if (!selectedVariant) {
-      toast.error('Please select a variant first', {
+    if (!selectedVariant || selectedVariant.weight_grams === undefined) {
+      toast.error('Please select a valid variant first', {
         icon: '⚠️',
       })
       return

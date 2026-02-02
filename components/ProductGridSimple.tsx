@@ -84,6 +84,11 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
   }
 
   const handleAddToCart = () => {
+    if (!selectedVariant || selectedVariant.weight_grams === undefined) {
+      toast.error('Product variant not available')
+      return
+    }
+    
     addItem({
       productId: product.id,
       variantId: selectedVariant.id,

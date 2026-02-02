@@ -70,6 +70,11 @@ function ProductCard({ product }: { product: Product }) {
   }
 
   const handleAddToCart = (variant: any) => {
+    if (!variant || variant.weight_grams === undefined) {
+      toast.error('Product variant not available')
+      return
+    }
+    
     addItem({
       productId: product.id,
       variantId: variant.id,
@@ -89,7 +94,12 @@ function ProductCard({ product }: { product: Product }) {
       setShowVariantModal(true)
     } else {
       // Add the only variant directly
-      handleAddToCart(variants[0])
+      const firstVariant = variants[0]
+      if (firstVariant && firstVariant.weight_grams !== undefined) {
+        handleAddToCart(firstVariant)
+      } else {
+        toast.error('Product variant not available')
+      }
     }
   }
 
