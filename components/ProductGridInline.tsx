@@ -56,24 +56,29 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
   const { addItem } = useCartStore()
   
   // Safely handle variants with fallback
-  const variants = product.product_variants || []
-  const hasValidVariants = variants.length > 0 && variants.some(v => v?.weight_grams !== undefined && v?.weight_grams !== null)
+  const variants = Array.isArray(product.product_variants) ? product.product_variants : []
+  const hasValidVariants = variants.length > 0 && variants.some(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)
   
   // Set initial selected variant safely
   const [selectedVariant, setSelectedVariant] = useState(
-    hasValidVariants ? variants.find(v => v?.weight_grams !== undefined && v?.weight_grams !== null) || null : null
+    hasValidVariants ? variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null) || null : null
   )
   const [selectedPack, setSelectedPack] = useState(1)
   
   // Calculate min price safely
   const minPrice = hasValidVariants 
-    ? Math.min(...variants.filter(v => v?.price !== undefined).map(v => v.price))
+    ? Math.min(...variants.filter(v => v && typeof v === 'object' && v.price !== undefined).map(v => v.price))
     : 0
   
   const isMealOrBroth = product.categories?.slug === 'meals' || product.categories?.slug === 'broths'
   
   const getTotalCartCount = () => {
-    return variants.reduce((total, variant) => total + getCartItemQuantity(product.id, variant.id), 0)
+    return variants.reduce((total, variant) => {
+      if (variant && typeof variant === 'object' && variant.id) {
+        return total + getCartItemQuantity(product.id, variant.id)
+      }
+      return total
+    }, 0)
   }
 
   const formatWeight = (grams: number) => {
@@ -158,8 +163,8 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
             </span>
           </h3>
           <p className="text-sm text-gray-600 mb-2">
-            {hasValidVariants && variants.find(v => v?.weight_grams !== undefined && v?.weight_grams !== null)?.weight_grams 
-              ? formatWeight(variants.find(v => v?.weight_grams !== undefined && v?.weight_grams !== null)!.weight_grams) 
+            {hasValidVariants && variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)?.weight_grams 
+              ? formatWeight(variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)!.weight_grams) 
               : 'Weight not available'
             }
           </p>
@@ -177,14 +182,14 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
               <select
                 value={selectedVariant?.id || ''}
                 onChange={(e) => {
-                  const variant = variants.find(v => v.id === e.target.value)
+                  const variant = variants.find(v => v && typeof v === 'object' && v.id === e.target.value)
                   if (variant && variant.weight_grams !== undefined) {
                     setSelectedVariant(variant)
                   }
                 }}
                 className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:border-orange-500 focus:outline-none"
               >
-                {variants.filter(v => v?.weight_grams !== undefined).map((variant) => (
+                {variants.filter(v => v && typeof v === 'object' && v.weight_grams !== undefined).map((variant) => (
                   <option key={variant.id} value={variant.id}>
                     {variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}
                   </option>
