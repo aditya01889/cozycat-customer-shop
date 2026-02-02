@@ -84,6 +84,11 @@ export const useCartStore = create<CartStore>()(
       },
       
       updateCartItemsWithImages: async () => {
+        // Skip API calls during CI build
+        if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+          return
+        }
+        
         const { items } = get()
         const itemsWithoutImages = items.filter(item => !item.productImage)
         
