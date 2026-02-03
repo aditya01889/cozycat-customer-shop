@@ -156,7 +156,7 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
               >
                 {variants.map((variant) => (
                   <option key={variant.id} value={variant.id}>
-                    {formatWeight(variant.weight_grams)}
+                    {variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}
                   </option>
                 ))}
               </select>

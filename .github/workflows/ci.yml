@@ -226,11 +226,69 @@ jobs:
           echo "Build completed successfully"
           du -sh .next/ || echo "No .next directory found"
 
+  # Vercel deployment (production only)
+  deploy-vercel:
+    name: Deploy to Vercel
+    runs-on: ubuntu-latest
+    needs: [detect-environment, quality-check, security-scan, build-validation]
+    if: needs.detect-environment.outputs.is-main == 'true'
+    timeout-minutes: 10
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Build for production
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Deploy Project Artifacts to Vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Comment PR with deployment info
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '🚀 **Production Deployment Successful!**\n\nYour changes have been deployed to Vercel production environment.\n\n✅ **Build Status**: Success\n✅ **Deployment Status**: Live\n\n📊 **Next Steps**: Monitor the application for any issues.'
+            })
+
   # Status reporting
   status-report:
     name: Status Report
     runs-on: ubuntu-latest
-    needs: [detect-environment, quality-check, security-scan, integration-tests, e2e-tests, build-validation]
+    needs: [detect-environment, quality-check, security-scan, integration-tests, e2e-tests, build-validation, deploy-vercel]
     if: always()
     timeout-minutes: 2
     steps:
@@ -247,6 +305,7 @@ jobs:
           echo "| Integration Tests | ${{ needs.integration-tests.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| E2E Tests | ${{ needs.e2e-tests.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "| Build Validation | ${{ needs.build-validation.result }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Vercel Deployment | ${{ needs.deploy-vercel.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Environment:** ${{ needs.detect-environment.outputs.environment }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY

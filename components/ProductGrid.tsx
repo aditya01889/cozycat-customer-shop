@@ -197,7 +197,7 @@ function ProductCard({ product }: { product: Product }) {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-semibold text-gray-900">
-                            {formatWeight(variant.weight_grams)}
+                            {variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}
                           </div>
                           <div className="text-sm text-gray-600">
                             ₹{variant.price}
