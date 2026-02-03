@@ -55,10 +55,24 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
+  // Disable Turbopack to use Webpack for better PostCSS compatibility
+  turbo: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
+      },
+    },
+  },
   // Disable automatic optimization to prevent preload warnings
   experimental: {
     optimizeCss: false,
-    optimizePackageImports: []
+    optimizePackageImports: [],
+    turbo: {
+      loaders: {
+        '.svg': ['@svgr/webpack'],
+      },
+    },
   },
   images: {
     remotePatterns: [
