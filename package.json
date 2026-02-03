@@ -7,7 +7,7 @@
   },
   "scripts": {
     "dev": "node scripts/validate-env.js && next dev",
-    "build": "node scripts/validate-env.js && NODE_OPTIONS='--no-experimental-fetch' NEXT_BUILD_TURBO=0 next build",
+    "build": "node scripts/validate-env.js && NEXT_BUILD_TURBO=0 next build",
     "start": "next start",
     "validate-env": "node scripts/validate-env.js",
     "backup-env": "cp .env.local .env.backup",
