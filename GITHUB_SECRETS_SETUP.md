@@ -15,21 +15,42 @@ vercel whoami
 
 ### 2. Add these secrets to GitHub:
 
-#### **VERCEL_TOKEN**
-- Get from: Vercel Dashboard → Settings → Tokens → Create Token
-- Value: Your Vercel personal access token
+#### **Vercel Deployment Secrets**
+- **VERCEL_TOKEN**: Get from Vercel Dashboard → Settings → Tokens → Create Token
+- **VERCEL_ORG_ID**: `team_FOYgZRADH0UCR3CFoH9epquJ`
+- **VERCEL_PROJECT_ID**: `prj_AdV9FAL1imqxiBh0ouHRbU28gN4S`
 
-#### **VERCEL_ORG_ID**
-- Value: `team_FOYgZRADH0UCR3CFoH9epquJ`
+#### **Supabase Secrets**
+- **NEXT_PUBLIC_SUPABASE_URL**: Your Supabase project URL
+- **NEXT_PUBLIC_SUPABASE_ANON_KEY**: Your Supabase anonymous key
+- **SUPABASE_SERVICE_ROLE_KEY**: Your Supabase service role key
 
-#### **VERCEL_PROJECT_ID**
-- Value: `prj_AdV9FAL1imqxiBh0ouHRbU28gN4S`
+#### **Payment & API Secrets**
+- **NEXT_PUBLIC_RAZORPAY_KEY_ID**: Your Razorpay public key
+- **RAZORPAY_KEY_SECRET**: Your Razorpay secret key
+- **NEXT_PUBLIC_GOOGLE_MAPS_API_KEY**: Your Google Maps API key
 
-### 3. Verification
-After adding secrets, the GitHub Actions deployment should work correctly.
+### 3. Quick Setup - Copy from Vercel
+
+You can get most of these values from your Vercel project:
+```bash
+# Run this locally to pull environment variables
+vercel env pull .env.local --environment=production
+# Then copy the values to GitHub secrets
+```
+
+### 4. Verification
+After adding all secrets, the GitHub Actions deployment should work correctly.
 
 ## Current Status
 ✅ Project linked correctly: `cozycat-customer-shop`
 ✅ Environment variables exist in Vercel
 ✅ GitHub Actions workflow updated
-❌ Missing GitHub secrets (need to be added)
+✅ Added missing payment and API secrets
+❌ GitHub secrets need to be added (you need to do this step)
+
+## Critical Missing Variables (Causing Current Failure)
+The build is failing because these are missing from GitHub Actions:
+- NEXT_PUBLIC_RAZORPAY_KEY_ID
+- RAZORPAY_KEY_SECRET  
+- NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
