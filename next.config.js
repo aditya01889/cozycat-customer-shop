@@ -59,6 +59,8 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     return config;
   },
+  // Add empty Turbopack config to silence the warning
+  turbopack: {},
   // Disable automatic optimization to prevent preload warnings
   experimental: {
     optimizeCss: false,
