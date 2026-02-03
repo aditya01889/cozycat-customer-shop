@@ -57,11 +57,16 @@ const nextConfig = {
   },
   // Force Webpack instead of Turbopack for better PostCSS compatibility
   webpack: (config, { isServer }) => {
+    // Ensure proper path resolution for @/ aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': './',
+    };
     return config;
   },
   // Add empty Turbopack config to silence the warning
   turbopack: {},
-  // Disable automatic optimization to prevent preload warnings
+  // Ensure proper path resolution
   experimental: {
     optimizeCss: false,
     optimizePackageImports: []
