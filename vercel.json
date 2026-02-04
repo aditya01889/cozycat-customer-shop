@@ -12,9 +12,6 @@
       "maxDuration": 30
     }
   },
-  "env": {
-    "NEXT_PUBLIC_SITE_URL": "@SITE_URL"
-  },
   "build": {
     "env": {
       "CI_DUMMY_ENV": "0"
