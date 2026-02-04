@@ -98,7 +98,7 @@ export async function GET(request: Request) {
         ingredients_display,
         created_at,
         updated_at
-      `)
+      `, { count: 'exact' })
       .eq('is_active', true)
 
     // Apply filters
