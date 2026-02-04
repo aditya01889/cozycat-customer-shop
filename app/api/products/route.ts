@@ -13,6 +13,10 @@ const productQuerySchema = z.object({
 
 export async function GET(request: Request) {
   try {
+    // DEBUG: Log the Supabase URL being used
+    const supabaseConfig = (await import('@/lib/env-validation')).getSupabaseConfig();
+    console.log('DEBUG: Supabase URL being used:', supabaseConfig.url);
+    
     // Parse query parameters from URL
     const { searchParams } = new URL(request.url)
     const queryParams = {
