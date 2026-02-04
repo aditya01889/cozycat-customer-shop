@@ -60,7 +60,7 @@ const nextConfig = {
     // Ensure proper path resolution for @/ aliases
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': './',
+      '@': require('path').resolve(__dirname, './'),
     };
     return config;
   },
@@ -71,6 +71,8 @@ const nextConfig = {
     optimizeCss: false,
     optimizePackageImports: []
   },
+  // Explicitly configure paths for Next.js
+  transpilePackages: [],
   images: {
     remotePatterns: [
       {
