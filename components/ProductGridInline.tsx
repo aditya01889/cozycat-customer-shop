@@ -81,7 +81,16 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
     }, 0)
   }
 
-  const formatWeight = (grams: number) => {
+  const formatWeight = (grams: number, categorySlug?: string) => {
+    // For broths, show ml instead of g
+    if (categorySlug === 'broths') {
+      return `${grams}ml`
+    }
+    // For cupcakes, show "Pack of 2"
+    if (categorySlug === 'cupcakes') {
+      return 'Pack of 2'
+    }
+    // For regular weights
     if (grams >= 1000) {
       return `${grams / 1000}kg`
     }
@@ -164,7 +173,7 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
           </h3>
           <p className="text-sm text-gray-600 mb-2">
             {hasValidVariants && variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)?.weight_grams 
-              ? formatWeight(variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)!.weight_grams) 
+              ? formatWeight(variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)!.weight_grams, product.categories?.slug)
               : 'Weight not available'
             }
           </p>
@@ -191,7 +200,7 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
               >
                 {variants.filter(v => v && typeof v === 'object' && v.weight_grams !== undefined).map((variant) => (
                   <option key={variant.id} value={variant.id}>
-                    {variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}
+                    {variant.weight_grams ? formatWeight(variant.weight_grams, product.categories?.slug) : 'Weight not available'}
                   </option>
                 ))}
               </select>
