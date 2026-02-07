@@ -172,9 +172,11 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
             </span>
           </h3>
           <p className="text-sm text-gray-600 mb-2">
-            {hasValidVariants && variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)?.weight_grams 
-              ? formatWeight(variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)!.weight_grams, product.categories?.slug)
-              : 'Weight not available'
+            {selectedVariant && selectedVariant.weight_grams !== undefined && selectedVariant.weight_grams !== null
+              ? formatWeight(selectedVariant.weight_grams, product.categories?.slug)
+              : hasValidVariants && variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)?.weight_grams 
+                ? formatWeight(variants.find(v => v && typeof v === 'object' && v.weight_grams !== undefined && v.weight_grams !== null)!.weight_grams, product.categories?.slug)
+                : 'Weight not available'
             }
           </p>
           <p className="text-lg font-bold text-orange-600">₹{minPrice}</p>

@@ -141,7 +141,7 @@ export default function ProductFiltersEnhanced({ categories, selectedCategory }:
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             <Link
-              href="/products"
+              href={`/products${searchParams.get('price') ? `?price=${searchParams.get('price')}` : ''}`}
               className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${
                 !selectedCategory
                   ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg'
@@ -152,22 +152,28 @@ export default function ProductFiltersEnhanced({ categories, selectedCategory }:
               All Products
             </Link>
             
-            {categories.map((category) => (
-              <Link
-                key={category.id}
-                href={`/products?category=${category.slug}`}
-                className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${
-                  selectedCategory === category.slug
-                    ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <span className="mr-2">
-                  {getCategoryEmoji(category.slug)}
-                </span>
-                {category.name}
-              </Link>
-            ))}
+            {categories.map((category) => {
+              const params = new URLSearchParams(searchParams)
+              params.set('category', category.slug)
+              const queryString = params.toString()
+              
+              return (
+                <Link
+                  key={category.id}
+                  href={`/products${queryString ? `?${queryString}` : ''}`}
+                  className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${
+                    selectedCategory === category.slug
+                      ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <span className="mr-2">
+                    {getCategoryEmoji(category.slug)}
+                  </span>
+                  {category.name}
+                </Link>
+              )
+            })}
           </div>
         </div>
       </div>
@@ -200,7 +206,7 @@ export default function ProductFiltersEnhanced({ categories, selectedCategory }:
           <ul className="space-y-2">
             <li>
               <Link
-                href="/products"
+                href={`/products${searchParams.get('price') ? `?price=${searchParams.get('price')}` : ''}`}
                 className={`block px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
                   !selectedCategory
                     ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold shadow-lg'
@@ -212,28 +218,34 @@ export default function ProductFiltersEnhanced({ categories, selectedCategory }:
               </Link>
             </li>
             
-            {categories.map((category) => (
-              <li key={category.id}>
-                <Link
-                  href={`/products?category=${category.slug}`}
-                  className={`block px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
-                    selectedCategory === category.slug
-                      ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold shadow-lg'
-                      : 'text-gray-700 hover:bg-gray-100'
-                  }`}
-                >
-                  <span className="mr-2">
-                    {getCategoryEmoji(category.slug)}
-                  </span>
-                  <div>
-                    <div className="font-bold">{category.name}</div>
-                    <div className="text-sm text-gray-500 mt-1">
-                      {category.description}
+            {categories.map((category) => {
+              const params = new URLSearchParams(searchParams)
+              params.set('category', category.slug)
+              const queryString = params.toString()
+              
+              return (
+                <li key={category.id}>
+                  <Link
+                    href={`/products${queryString ? `?${queryString}` : ''}`}
+                    className={`block px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
+                      selectedCategory === category.slug
+                        ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold shadow-lg'
+                        : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className="mr-2">
+                      {getCategoryEmoji(category.slug)}
+                    </span>
+                    <div>
+                      <div className="font-bold">{category.name}</div>
+                      <div className="text-sm text-gray-500 mt-1">
+                        {category.description}
+                      </div>
                     </div>
-                  </div>
-                </Link>
-              </li>
-            ))}
+                  </Link>
+                </li>
+              )
+            })}
           </ul>
         </div>
 
