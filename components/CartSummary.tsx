@@ -22,7 +22,9 @@ export default function CartSummary({
     getTotal, 
     getAmountForFreeDelivery, 
     isFreeDelivery,
-    hasItems 
+    hasItems,
+    meetsMinimumOrder,
+    getMinimumOrderMessage
   } = useCartStore()
 
   const subtotal = getSubtotal()
@@ -31,6 +33,8 @@ export default function CartSummary({
   const amountForFreeDelivery = getAmountForFreeDelivery()
   const freeDelivery = isFreeDelivery()
   const totalItems = getTotalItems()
+  const meetsMinOrder = meetsMinimumOrder()
+  const minOrderMessage = getMinimumOrderMessage()
 
   if (!hasItems()) {
     return (
@@ -84,6 +88,15 @@ export default function CartSummary({
               </p>
             </div>
           )}
+
+          {!meetsMinOrder && (
+            <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+              <p className="text-sm text-red-700 font-medium flex items-center">
+                <Shield className="w-4 h-4 mr-2" />
+                {minOrderMessage}
+              </p>
+            </div>
+          )}
           
           <div className="border-t pt-4">
             <div className="flex justify-between font-bold text-xl">
@@ -98,10 +111,28 @@ export default function CartSummary({
         {showCheckoutButton && (
           <Link
             href="/checkout"
-            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white py-4 px-6 rounded-2xl hover:from-orange-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-bold text-center block shadow-lg"
+            className={`w-full py-4 px-6 rounded-2xl font-bold text-center block shadow-lg transition-all duration-300 transform hover:scale-105 ${
+              meetsMinOrder 
+                ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white hover:from-orange-600 hover:to-pink-600' 
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            }`}
+            onClick={(e) => {
+              if (!meetsMinOrder) {
+                e.preventDefault()
+              }
+            }}
           >
-            Proceed to Checkout
-            <ArrowRight className="w-5 h-5 ml-2 inline" />
+            {meetsMinOrder ? (
+              <>
+                Proceed to Checkout
+                <ArrowRight className="w-5 h-5 ml-2 inline" />
+              </>
+            ) : (
+              <>
+                <Shield className="w-5 h-5 ml-2 inline" />
+                Minimum Order Not Met
+              </>
+            )}
           </Link>
         )}
 

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { calculateDeliveryFee } from '@/lib/shipping/config'
 
 export interface CartItem {
   productId: string
@@ -22,11 +23,14 @@ interface CartStore {
   getTotalPrice: () => number
   updateCartItemsWithImages: () => Promise<void>
   getSubtotal: () => number
-  getDeliveryFee: () => number
-  getTotal: () => number
-  getFreeDeliveryThreshold: () => number
-  getAmountForFreeDelivery: () => number
-  isFreeDelivery: () => boolean
+  getDeliveryFee: (pincode?: string) => number
+  getTotal: (pincode?: string) => number
+  getMinimumOrderAmount: (pincode?: string) => number
+  meetsMinimumOrder: (pincode?: string) => boolean
+  getMinimumOrderMessage: (pincode?: string) => string
+  getFreeDeliveryThreshold: (pincode?: string) => number
+  getAmountForFreeDelivery: (pincode?: string) => number
+  isFreeDelivery: (pincode?: string) => boolean
   getItemsCount: () => number
   hasItems: () => boolean
   getCartItemQuantity: (productId: string, variantId: string) => number
@@ -125,29 +129,48 @@ export const useCartStore = create<CartStore>()(
         return get().items.reduce((total, item) => total + (item.price * item.quantity), 0)
       },
 
-      getDeliveryFee: () => {
+      getDeliveryFee: (pincode = '110001') => {
         const subtotal = get().getSubtotal()
-        return subtotal >= 500 ? 0 : 40
+        const shippingCalculation = calculateDeliveryFee(pincode, subtotal)
+        return shippingCalculation.isServiceable ? shippingCalculation.deliveryFee : 0
       },
 
-      getTotal: () => {
+      getTotal: (pincode = '110001') => {
         const subtotal = get().getSubtotal()
-        const deliveryFee = get().getDeliveryFee()
+        const deliveryFee = get().getDeliveryFee(pincode)
         return subtotal + deliveryFee
       },
 
-      getFreeDeliveryThreshold: () => {
-        return 500
+      getMinimumOrderAmount: (pincode = '110001') => {
+        const shippingCalculation = calculateDeliveryFee(pincode, 0)
+        return shippingCalculation.isServiceable ? shippingCalculation.minOrderAmount : 0
       },
 
-      getAmountForFreeDelivery: () => {
+      meetsMinimumOrder: (pincode = '110001') => {
         const subtotal = get().getSubtotal()
-        const threshold = get().getFreeDeliveryThreshold()
+        const minimumOrder = get().getMinimumOrderAmount(pincode)
+        return subtotal >= minimumOrder
+      },
+
+      getMinimumOrderMessage: (pincode = '110001') => {
+        const shippingCalculation = calculateDeliveryFee(pincode, get().getSubtotal())
+        return shippingCalculation.isServiceable ? shippingCalculation.message : 'Delivery not available in your area'
+      },
+
+      getFreeDeliveryThreshold: (pincode = '110001') => {
+        const shippingCalculation = calculateDeliveryFee(pincode, 0)
+        return shippingCalculation.isServiceable ? shippingCalculation.zone?.deliveryFees?.freeAbove || 0 : 0
+      },
+
+      getAmountForFreeDelivery: (pincode = '110001') => {
+        const subtotal = get().getSubtotal()
+        const threshold = get().getFreeDeliveryThreshold(pincode)
         return Math.max(0, threshold - subtotal)
       },
 
-      isFreeDelivery: () => {
-        return get().getSubtotal() >= get().getFreeDeliveryThreshold()
+      isFreeDelivery: (pincode = '110001') => {
+        const subtotal = get().getSubtotal()
+        return subtotal >= get().getFreeDeliveryThreshold(pincode)
       },
 
       getItemsCount: () => {
