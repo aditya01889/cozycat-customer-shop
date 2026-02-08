@@ -55,3 +55,10 @@ scripts/backup/run-backup.bat
 scripts/results/
 scripts/performance/verification-*.sql
 scripts/performance/check-schema.sql
+
+# test reports (temporary analysis files)
+/test-results/
+/playwright-report/
+/coverage/
+test-results.xml
+test-results.json
