@@ -241,7 +241,6 @@ export default function Home() {
               <span className="mr-3">💬</span>
               Happy Cats & Happy Humans
             </h2>
-            <p className="text-lg text-gray-600">Testimonials temporarily disabled due to API issues. Will be restored soon.</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
