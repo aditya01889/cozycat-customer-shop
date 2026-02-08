@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { useToast } from '@/components/Toast/ToastProvider'
 import { ErrorHandler, ErrorType } from '@/lib/errors/error-handler'
 
-type User = Database['public']['Tables']['customers']['Row'] | Database['public']['Tables']['profiles']['Row']
+type User = Database['public']['Tables']['profiles']['Row']
 
 export default function AdminUsersContent() {
   const [users, setUsers] = useState<User[]>([])
@@ -34,38 +34,24 @@ export default function AdminUsersContent() {
       // Use pre-configured client-side Supabase client
       // const supabase = createClient() // Remove this line
       
-      // Fetch both profiles and customers
-      const [profilesResult, customersResult] = await Promise.all([
-        supabase
-          .from('profiles')
-          .select('*')
-          .order('created_at', { ascending: false }),
-        supabase
-          .from('customers')
-          .select('*')
-          .order('created_at', { ascending: false })
-      ])
+      // Fetch profiles only (customers table doesn't exist)
+      const profilesResult = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false })
 
       console.log('🔍 Profiles result:', profilesResult)
-      console.log('🔍 Customers result:', customersResult)
 
       if (profilesResult.error) {
         console.error('Profiles error:', profilesResult.error)
         throw profilesResult.error
       }
-      if (customersResult.error) {
-        console.error('Customers error:', customersResult.error)
-        throw customersResult.error
-      }
 
-      // Combine and deduplicate users
-      const allUsers = [...(profilesResult.data || []), ...(customersResult.data || [])]
-      const uniqueUsers = allUsers.filter((user, index, self) => 
-        index === self.findIndex((u) => u.id === user.id)
-      )
+      // Use profiles data directly
+      const allUsers = profilesResult.data || []
 
-      console.log('🔍 Combined users:', uniqueUsers)
-      setUsers(uniqueUsers)
+      console.log('🔍 Combined users:', allUsers)
+      setUsers(allUsers)
     } catch (error) {
       console.error('Error fetching users:', error)
       const appError = ErrorHandler.fromError(error)
@@ -117,7 +103,7 @@ export default function AdminUsersContent() {
     try {
       // Use pre-configured client-side Supabase client
       
-      // Update user in profiles table
+      // Update user in profiles table only
       const { error: profilesError } = await supabase
         .from('profiles')
         .update({
@@ -127,16 +113,7 @@ export default function AdminUsersContent() {
         })
         .eq('id', user.id)
 
-      // If user is also in customers table, update there too
-      const { error: customersError } = await supabase
-        .from('customers')
-        .update({
-          customer_name: (user as any).full_name,
-          phone: (user as any).phone
-        })
-        .eq('id', user.id)
-
-      if (profilesError && customersError) {
+      if (profilesError) {
         throw profilesError
       }
 
@@ -156,13 +133,13 @@ export default function AdminUsersContent() {
       // Use pre-configured client-side Supabase client
       // const supabase = createClient() // Remove this line
       
-      // Try to delete from both tables
-      const [profilesResult, customersResult] = await Promise.all([
-        supabase.from('profiles').delete().eq('id', userId),
-        supabase.from('customers').delete().eq('id', userId)
-      ])
+      // Delete from profiles table only
+      const profilesResult = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId)
 
-      if (profilesResult.error && customersResult.error) {
+      if (profilesResult.error) {
         throw profilesResult.error
       }
 
