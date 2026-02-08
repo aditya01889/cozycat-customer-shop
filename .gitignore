@@ -43,3 +43,22 @@ next-env.d.ts
 
 .vercel
 .env*.local
+
+# database backups (contains sensitive data)
+/database/backups/
+/cloud-backups/
+scripts/backup/*.log
+scripts/backup/last-backup-hash.txt
+scripts/backup/run-backup.bat
+
+# performance results (temporary analysis files)
+scripts/results/
+scripts/performance/verification-*.sql
+scripts/performance/check-schema.sql
+
+# test reports (temporary analysis files)
+/test-results/
+/playwright-report/
+/coverage/
+test-results.xml
+test-results.json

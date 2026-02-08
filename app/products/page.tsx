@@ -73,8 +73,13 @@ export default async function ProductsPage({
     })
   )
 
-  // Filter out null values
-  const validProducts = productsWithCategories.filter(product => product !== null)
+  // Filter out null values and products with invalid variants
+  const validProducts = productsWithCategories
+    .filter(product => product !== null)
+    .filter(product => {
+      const variants = product.product_variants || []
+      return variants.length > 0 && variants.some(v => v?.weight_grams !== undefined && v?.price !== undefined)
+    })
 
   // Filter by price range if specified
   let filteredProducts = validProducts

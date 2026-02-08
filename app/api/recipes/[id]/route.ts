@@ -26,6 +26,7 @@ export async function PUT(
 
     console.log('🔧 Update data:', updateData)
 
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('product_recipes')
       .update(updateData)
@@ -64,6 +65,7 @@ export async function DELETE(
     const { id } = await params
     const supabase = createServerSupabaseClient();
 
+    const supabase = getSupabaseClient()
     const { error } = await supabase
       .from('product_recipes')
       .delete()

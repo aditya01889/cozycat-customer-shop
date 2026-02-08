@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
     const validatedData = vendorSchema.parse(body)
     
     // Create vendor
+    const supabase = getSupabaseClient()
     const { data, error } = await supabase
       .from('vendors')
       .insert([validatedData])

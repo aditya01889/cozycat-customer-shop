@@ -28,8 +28,8 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const handleAddToCart = () => {
     console.log('Add to cart clicked, selected variant:', selectedVariant)
     
-    if (!selectedVariant) {
-      toast.error('Please select a variant first', {
+    if (!selectedVariant || selectedVariant.weight_grams === undefined) {
+      toast.error('Please select a valid variant first', {
         icon: '⚠️',
       })
       return
@@ -122,7 +122,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
               {selectedVariant ? `₹${selectedVariant.price}` : 'Price not available'}
             </span>
             {selectedVariant && (
-              <span className="text-lg text-gray-500">{formatWeight(selectedVariant.weight_grams)}</span>
+              <span className="text-lg text-gray-500">{selectedVariant.weight_grams ? formatWeight(selectedVariant.weight_grams) : 'Weight not available'}</span>
             )}
           </div>
 
@@ -152,7 +152,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
                   >
-                    <div className="font-medium">{formatWeight(variant.weight_grams)}</div>
+                    <div className="font-medium">{variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}</div>
                     <div className="text-sm text-gray-600">₹{variant.price}</div>
                     {selectedVariant?.id === variant.id && (
                       <div className="text-xs text-orange-600 font-medium mt-1">✓ Selected</div>

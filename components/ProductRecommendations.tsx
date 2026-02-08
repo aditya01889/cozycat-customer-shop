@@ -79,7 +79,12 @@ export default function ProductRecommendations({
     e.stopPropagation()
 
     const variant = product.product_variants[0]
-    if (!variant) return
+    if (!variant || variant.weight_grams === undefined) {
+      toast.error('Product variant not available', {
+        icon: '⚠️'
+      })
+      return
+    }
 
     addItem({
       productId: product.id,

@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
 
     if (productId) {
       // Get recipe for specific product
+      const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('product_recipes')
         .select('*')
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ data })
     } else {
       // Get all recipes
+      const supabase = getSupabaseClient()
       const { data, error } = await supabase
         .from('product_recipes')
         .select('*')
@@ -61,6 +63,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if recipe already exists
+    const supabase = getSupabaseClient()
     const { data: existing } = await supabase
       .from('product_recipes')
       .select('*')

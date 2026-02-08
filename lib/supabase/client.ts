@@ -25,17 +25,32 @@ const shouldCreateClient = !isCIMode() &&
 
 export const supabase = shouldCreateClient ? createClient(supabaseUrl, supabaseAnonKey || '', {
   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce',
-  },
-  // Add timeout configuration to prevent hanging requests
-  global: {
-    headers: {
-      'X-Client-Info': 'cozycat-kitchen/1.0.0',
-    },
+    getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    onAuthStateChange: (callback: any) => ({
+      data: { subscription: { unsubscribe: () => {} } }
+    }),
+    signInWithPassword: () => Promise.resolve({ data: { user: null }, error: new Error('CI dummy mode') }),
+    signUp: () => Promise.resolve({ data: { user: null }, error: new Error('CI dummy mode') }),
+    signOut: () => Promise.resolve({ error: null }),
+    resetPasswordForEmail: () => Promise.resolve({ error: null }),
   },
 }) : null
+
+export const supabase = (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true')
+  ? createMockSupabase()
+  : createClient(supabaseUrl, supabaseAnonKey || '', {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        flowType: 'pkce',
+      },
+      // Add timeout configuration to prevent hanging requests
+      global: {
+        headers: {
+          'X-Client-Info': 'cozycat-kitchen/1.0.0',
+        },
+      },
+    })
 
 export { createClient }

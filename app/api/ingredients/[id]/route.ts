@@ -89,6 +89,7 @@ export async function DELETE(
   try {
     const { id } = await params
 
+    const supabase = getSupabaseClient()
     const { error } = await supabase
       .from('ingredients')
       .delete()

@@ -86,7 +86,7 @@ export const SHIPPING_ZONES: ShippingZone[] = [
     name: 'National Delivery',
     description: 'All metro cities, Tier 1, Tier 2 cities',
     type: 'national',
-    minOrderAmount: 399,
+    minOrderAmount: 499,
     deliveryFees: {
       below: 799,
       freeAbove: 799,
@@ -298,7 +298,7 @@ export function getShippingPolicySummary() {
     },
     national: {
       name: 'National Delivery (Metro, Tier 1, Tier 2 cities)',
-      minOrder: 399,
+      minOrder: 499,
       deliveryFee: 70,
       freeAbove: 799,
       estimatedDays: '3-5 business days',

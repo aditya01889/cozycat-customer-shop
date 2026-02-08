@@ -166,6 +166,11 @@ function ProductCardEnhanced({ product, onQuickView }: {
   }
 
   const handleAddToCart = (variant: any) => {
+    if (!variant || variant.weight_grams === undefined) {
+      toast.error('Product variant not available')
+      return
+    }
+    
     addItem({
       productId: product.id,
       variantId: variant.id,
@@ -184,7 +189,12 @@ function ProductCardEnhanced({ product, onQuickView }: {
     if (hasMultipleVariants) {
       setShowVariantModal(true)
     } else {
-      handleAddToCart(variants[0])
+      const firstVariant = variants[0]
+      if (firstVariant && firstVariant.weight_grams !== undefined) {
+        handleAddToCart(firstVariant)
+      } else {
+        toast.error('Product variant not available')
+      }
     }
   }
 
@@ -297,7 +307,7 @@ function ProductCardEnhanced({ product, onQuickView }: {
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-semibold text-gray-900">
-                            {formatWeight(variant.weight_grams)}
+                            {variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}
                           </div>
                           <div className="text-sm text-gray-600">
                             ₹{variant.price}
@@ -351,6 +361,10 @@ function QuickViewModal({ product, isOpen, onClose }: {
 
   const handleAddToCart = () => {
     const variant = selectedVariant || variants[0]
+    if (!variant || variant.weight_grams === undefined) {
+      toast.error('Product variant not available')
+      return
+    }
     addItem({
       productId: product.id,
       variantId: variant.id,
@@ -421,7 +435,7 @@ function QuickViewModal({ product, isOpen, onClose }: {
                         onChange={() => setSelectedVariant(variant)}
                       />
                       <div className="flex-1">
-                        <div className="font-medium">{formatWeight(variant.weight_grams)}</div>
+                        <div className="font-medium">{variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}</div>
                         <div className="text-orange-600 font-bold">₹{variant.price}</div>
                       </div>
                     </label>

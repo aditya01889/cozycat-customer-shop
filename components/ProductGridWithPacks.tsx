@@ -79,6 +79,11 @@ function ProductCard({ product }: { product: Product }) {
   }
 
   const handleAddToCart = (variant: any, quantity: number = 1) => {
+    if (!variant || variant.weight_grams === undefined) {
+      toast.error('Product variant not available')
+      return
+    }
+    
     addItem({
       productId: product.id,
       variantId: variant.id,
@@ -97,8 +102,12 @@ function ProductCard({ product }: { product: Product }) {
     if (hasMultipleVariants || isMealOrBroth) {
       setShowVariantModal(true)
     } else {
-      // Add the only variant directly
-      handleAddToCart(variants[0])
+      const firstVariant = variants[0]
+      if (firstVariant && firstVariant.weight_grams !== undefined) {
+        handleAddToCart(firstVariant)
+      } else {
+        toast.error('Product variant not available')
+      }
     }
   }
 
@@ -195,7 +204,7 @@ function ProductCard({ product }: { product: Product }) {
                       <div className="flex items-center justify-between mb-3">
                         <div>
                           <div className="font-semibold text-gray-900">
-                            {formatWeight(variant.weight_grams)}
+                            {variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}
                           </div>
                           <div className="text-sm text-gray-600">
                             ₹{variant.price}

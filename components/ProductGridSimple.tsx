@@ -84,6 +84,11 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
   }
 
   const handleAddToCart = () => {
+    if (!selectedVariant || selectedVariant.weight_grams === undefined) {
+      toast.error('Product variant not available')
+      return
+    }
+    
     addItem({
       productId: product.id,
       variantId: selectedVariant.id,
@@ -151,7 +156,7 @@ function ProductCard({ product, getCartItemQuantity }: ProductCardProps) {
               >
                 {variants.map((variant) => (
                   <option key={variant.id} value={variant.id}>
-                    {formatWeight(variant.weight_grams)}
+                    {variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}
                   </option>
                 ))}
               </select>

@@ -22,7 +22,20 @@ class DatabaseConnectionPool {
   constructor() {
     this.maxPoolSize = parseInt(process.env.DB_POOL_MAX_SIZE || '10')
     this.maxIdleTime = parseInt(process.env.DB_POOL_MAX_IDLE_TIME || '300000') // 5 minutes
-    this.config = getSupabaseConfig()
+    
+    // Handle CI dummy mode
+    if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
+      this.config = {
+        url: process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://example.supabase.co',
+        serviceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || 'ci_dummy'
+      }
+    } else {
+      const supabaseConfig = getSupabaseConfig()
+      this.config = {
+        url: supabaseConfig.url,
+        serviceRoleKey: supabaseConfig.serviceRoleKey || ''
+      }
+    }
   }
 
   /**

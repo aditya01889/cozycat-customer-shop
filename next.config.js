@@ -55,11 +55,24 @@ const nextConfig = {
     // !! WARN !!
     ignoreBuildErrors: true,
   },
-  // Disable automatic optimization to prevent preload warnings
+  // Force Webpack instead of Turbopack for better PostCSS compatibility
+  webpack: (config, { isServer }) => {
+    // Ensure proper path resolution for @/ aliases
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': require('path').resolve(__dirname, './'),
+    };
+    return config;
+  },
+  // Add empty Turbopack config to silence the warning
+  turbopack: {},
+  // Ensure proper path resolution
   experimental: {
     optimizeCss: false,
     optimizePackageImports: []
   },
+  // Explicitly configure paths for Next.js
+  transpilePackages: [],
   images: {
     remotePatterns: [
       {

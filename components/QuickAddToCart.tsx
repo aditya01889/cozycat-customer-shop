@@ -40,7 +40,10 @@ export default function QuickAddToCart({ product, compact = false, showImage = t
   }
 
   const handleAddToCart = async () => {
-    if (!selectedVariant) return
+    if (!selectedVariant || selectedVariant.weight_grams === undefined) {
+      showError(new Error('Please select a valid variant'))
+      return
+    }
 
     setIsAdding(true)
     
@@ -120,7 +123,7 @@ export default function QuickAddToCart({ product, compact = false, showImage = t
                     : 'border-gray-200 hover:border-gray-300 text-gray-700'
                 }`}
               >
-                <div className="font-medium">{formatWeight(variant.weight_grams)}</div>
+                <div className="font-medium">{variant.weight_grams ? formatWeight(variant.weight_grams) : 'Weight not available'}</div>
                 <div className="text-gray-600">₹{variant.price}</div>
               </button>
             ))}
