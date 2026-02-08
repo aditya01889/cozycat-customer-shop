@@ -44,6 +44,19 @@ next-env.d.ts
 .vercel
 .env*.local
 
+# Staging database backups and temp files
+backups/
+temp-backup.env
+scripts/database/copy-prod-direct.js
+scripts/database/copy-prod-simple.js
+scripts/database/copy-prod-to-staging-simple.js
+scripts/database/create-staging-schema-from-prod.js
+scripts/database/import-latest-prod-backup.js
+scripts/database/import-prod-backup-to-staging.js
+scripts/database/supabase-backup-correct.js
+scripts/database/supabase-backup-restore-npx.js
+scripts/database/supabase-cli-backup-restore.js
+
 # database backups (contains sensitive data)
 /database/backups/
 /cloud-backups/
