@@ -5,13 +5,13 @@ on:
     branches: [staging]
   pull_request:
     branches: [staging]
-    types: [closed, merged]
+    types: [opened, synchronize, reopened, closed, merged]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/staging' && github.event_name == 'push'
-    
+    if: (github.ref == 'refs/heads/staging' && github.event_name == 'push') || (github.event_name == 'pull_request' && github.base_ref == 'refs/heads/staging')
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
