@@ -1,36 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
-
-// Create Supabase client only when environment variables are available
-const getSupabaseClient = () => {
-  if (process.env.CI_DUMMY_ENV === '1' || process.env.CI_DUMMY_ENV === 'true') {
-    // Return a mock client for CI builds
-    return {
-      from: () => ({
-        select: () => ({
-          eq: (column: string, value: any) => ({
-            order: () => ({ data: [], error: null }),
-            single: () => ({ data: null, error: new Error('CI dummy mode') })
-          }),
-          order: () => ({ data: [], error: null })
-        }),
-        insert: () => ({
-          select: () => ({
-            single: () => ({ data: null, error: new Error('CI dummy mode') })
-          })
-        })
-      })
-    }
-  }
-  
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-}
+import { createServerSupabaseClient } from '@/lib/supabase/server-helper'
 
 export async function GET(request: NextRequest) {
   try {
+    const supabase = createServerSupabaseClient();
     const { searchParams } = new URL(request.url)
     const productId = searchParams.get('productId')
 
@@ -69,6 +42,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = createServerSupabaseClient();
     const body = await request.json()
     const { product_id, ingredient_id, percentage } = body
 

@@ -35,12 +35,14 @@ async function fetchAnalyticsFromDB(type: string, period: string) {
           .gte('created_at', startDate.toISOString())
           .order('created_at', { ascending: false })
 
-        const totalRevenue = orders?.reduce((sum, order) => sum + (order.total_amount || 0), 0) || 0
+        // Type assertion to handle Supabase response
+        const ordersData = orders as any[] || []
+        const totalRevenue = ordersData.reduce((sum, order) => sum + (order.total_amount || 0), 0)
         
         return {
           totalOrders: totalOrders || 0,
           totalRevenue,
-          orders: orders || []
+          orders: ordersData
         }
 
       case 'products':
@@ -53,22 +55,25 @@ async function fetchAnalyticsFromDB(type: string, period: string) {
           `)
           .gte('created_at', startDate.toISOString())
 
-        // Aggregate product data
-        const productStats = topProducts?.reduce((acc: any, item) => {
+        // Type assertion to handle Supabase response
+        const productsData = topProducts as any[] || []
+        
+        // Aggregate product data with proper type checking
+        const productStats: Record<string, any> = {}
+        productsData.forEach((item: any) => {
           const productId = item.product_id
-          if (!acc[productId]) {
-            acc[productId] = {
+          if (!productStats[productId]) {
+            productStats[productId] = {
               id: productId,
-              name: item.products.name,
-              price: item.products.price,
+              name: item.products?.name || 'Unknown',
+              price: item.products?.price || 0,
               totalQuantity: 0,
               totalRevenue: 0
             }
           }
-          acc[productId].totalQuantity += item.quantity
-          acc[productId].totalRevenue += item.quantity * item.products.price
-          return acc
-        }, {}) || {}
+          productStats[productId].totalQuantity += item.quantity || 0
+          productStats[productId].totalRevenue += (item.quantity || 0) * (item.products?.price || 0)
+        })
 
         return {
           topProducts: Object.values(productStats)

@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient } from '@/lib/supabase/server-helper'
 import { createSecureHandler } from '@/lib/api/secure-handler'
 import { contactFormSchema } from '@/lib/validation/schemas'
 import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
-import { getSupabaseConfig } from '@/lib/env-validation'
 import { sendCustomEmail } from '@/lib/email/service'
-
-// Get validated Supabase configuration
-const { url: supabaseUrl, serviceRoleKey: supabaseServiceKey } = getSupabaseConfig()
 
 // Email sending schema for validation
 const emailSchema = contactFormSchema.pick({
@@ -51,7 +47,7 @@ export const POST = createSecureHandler({
     const { to, subject, message, name, customerName } = data
 
     // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey || '')
+    const supabase = createServerSupabaseClient();
 
     console.log('=== SENDING EMAIL VIA CENTRALIZED SERVICE ===')
     console.log('To:', to)

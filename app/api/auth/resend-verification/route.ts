@@ -3,11 +3,7 @@ import { createSecureHandler } from '@/lib/api/secure-handler'
 import { z } from 'zod'
 import { actionRateLimiters } from '@/lib/middleware/rate-limiter'
 import { sendVerificationEmail } from '@/lib/email/service'
-import { createClient } from '@supabase/supabase-js'
-import { getSupabaseConfig } from '@/lib/env-validation'
-
-// Get validated Supabase configuration
-const { url: supabaseUrl, serviceRoleKey: supabaseServiceKey } = getSupabaseConfig()
+import { createServerSupabaseClient } from '@/lib/supabase/server-helper'
 
 // Schema for resend verification request
 const resendVerificationSchema = z.object({
@@ -22,7 +18,7 @@ export const POST = createSecureHandler({
     const { email } = data
 
     // Initialize Supabase client
-    const supabase = createClient(supabaseUrl, supabaseServiceKey || '')
+    const supabase = createServerSupabaseClient();
 
     console.log('=== RESENDING VERIFICATION EMAIL ===')
     console.log('Email:', email)
@@ -37,7 +33,7 @@ export const POST = createSecureHandler({
         throw new Error('Failed to check user account')
       }
 
-      const user = users.users.find(u => u.email === email)
+      const user = users.users.find((u: any) => u.email === email)
 
       if (!user) {
         // Don't reveal if user exists or not for security
