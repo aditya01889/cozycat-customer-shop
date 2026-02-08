@@ -39,7 +39,11 @@ jobs:
 
       - name: Deploy to Staging URL
         run: |
+          # Deploy to preview
           vercel --token=${{ secrets.VERCEL_TOKEN }}
+          
+          # Assign custom domain to preview deployment
+          vercel alias --token=${{ secrets.VERCEL_TOKEN }} cozycatkitchen-staging.vercel.app
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
