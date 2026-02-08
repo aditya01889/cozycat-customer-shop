@@ -233,15 +233,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 bg-gradient-to-br from-gray-50 to-orange-50">
+      {/* Testimonials - Temporarily disabled due to API issues */}
+      {/* <section className="py-20 bg-gradient-to-br from-gray-50 to-orange-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center justify-center">
               <span className="mr-3">💬</span>
               Happy Cats & Happy Humans
             </h2>
-            <p className="text-lg text-gray-600">See what our customers (and their cats) have to say</p>
+            <p className="text-lg text-gray-600">Testimonials temporarily disabled due to API issues. Will be restored soon.</p>
           </div>
           
           <div className="grid md:grid-cols-3 gap-8">
