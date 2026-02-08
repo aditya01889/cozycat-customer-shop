@@ -92,7 +92,7 @@ const nextConfig = {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://xfnbhheapralprcwjvzl.supabase.co'
     const supabaseHostname = supabaseUrl.replace('https://', '').replace(/\/$/, '')
     
-    const cspValue = `default-src 'self'; script-src 'self'${scriptSrcUnsafeEval} 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://${supabaseHostname} wss://${supabaseHostname} https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com; object-src 'none'; base-uri 'self'; form-action 'self'`
+    const cspValue = `default-src 'self'; script-src 'self'${scriptSrcUnsafeEval} 'unsafe-inline' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; connect-src 'self' https://${supabaseHostname} wss://${supabaseHostname} https://api.razorpay.com https://lumberjack.razorpay.com https://checkout.razorpay.com; frame-src 'self' https://checkout.razorpay.com https://api.razorpay.com https://lumberjack.razorpay.com https://vercel.live; object-src 'none'; base-uri 'self'; form-action 'self'`
 
     return [
       {
