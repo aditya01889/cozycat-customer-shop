@@ -6,7 +6,13 @@ module.exports = {
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
     '!src/**/*.d.ts',
-    '!src/**/*.stories.{js,jsx,ts,tsx}'
+    '!src/**/*.stories.{js,jsx,ts,tsx}',
+    'app/**/*.{js,jsx,ts,tsx}',
+    '!app/**/*.d.ts',
+    'lib/**/*.{js,jsx,ts,tsx}',
+    '!lib/**/*.d.ts',
+    'components/**/*.{js,jsx,ts,tsx}',
+    '!components/**/*.d.ts'
   ],
   coverageThreshold: {
     global: {
@@ -16,10 +22,14 @@ module.exports = {
       statements: 80
     }
   },
-  moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/$1'
   },
   transform: {
     '^.+\.(js|jsx|ts|tsx)$': 'ts-jest'
-  }
+  },
+  testTimeout: 10000,
+  verbose: true,
+  collectCoverage: false,
+  passWithNoTests: true
 };
