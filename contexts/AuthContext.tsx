@@ -72,31 +72,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         console.log('✅ Profile record created/updated successfully')
 
-        // Only create customer record if user is a customer
-        if (profileRole === 'customer') {
-          console.log('� Creating customer record...')
-          
-          const { error: customerError } = await supabase
-            .from('customers')
-            .upsert({
-              id: user.id,
-              profile_id: user.id,
-              email: user.email,
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'id'
-            })
-
-          if (customerError) {
-            console.error('❌ Customer upsert error:', customerError)
-            throw customerError
-          }
-
-          console.log('✅ Customer record created successfully')
-        } else {
-          console.log('👤 User is not a customer, skipping customer record creation')
-        }
+        // Skip customer record creation - customers table doesn't exist
+        // Only profiles table is used in this application
+        console.log('📋 Customer record creation skipped - using profiles table only')
       }
       
       await Promise.race([ensureRecordPromise(), timeoutPromise])

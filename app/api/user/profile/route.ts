@@ -87,24 +87,9 @@ async function handleProfileUpdate(request: Request, authContext: AuthContext, v
     }
   }, 'profile database update')
 
-  // Also update the customer table phone to maintain consistency
-  await APIErrorHandler.withDatabaseErrorHandling(async () => {
-    const { error: customerError } = await (supabaseForWrite as any)
-      .from('customers')
-      .update({
-        phone: phone || '' // Use empty string if phone is null/undefined
-      })
-      .eq('id', user.id)
-
-    if (customerError) {
-      console.error('Customer database update error:', customerError)
-      // Don't fail the request, but log the error for debugging
-      console.warn('Profile updated but customer phone update failed:', customerError)
-      throw customerError
-    } else {
-      console.log('✅ Customer phone updated successfully')
-    }
-  }, 'customer phone update')
+  // Skip customer table update - customers table doesn't exist
+  // Only profiles table is used in this application
+  console.log('📋 Customer phone update skipped - using profiles table only')
 
   return createSuccessResponse(
     {
