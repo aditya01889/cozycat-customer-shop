@@ -1,6 +1,7 @@
 node_modules
 .next/
 coverage/
+.env.staging
 .env.local
 .env.production
 .DS_Store
